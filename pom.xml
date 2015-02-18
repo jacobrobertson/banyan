@@ -5,6 +5,7 @@
 	<artifactId>banyan-parent</artifactId>
 	<name>banyan-parent</name>
 	<version>1.2-SNAPSHOT</version>
+	<packaging>pom</packaging>
 	<modules>
 		<module>banyan-domain</module>
 		<module>banyan-web</module>
