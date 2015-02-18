@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<head>
+<title>Examples - ${message:TitleMotto}</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+</head>
+<body>
+<t:navigationbar />
+<t:corners>
+
+	<div class="ExampleTitle"><img src="icons/Focus.gif" />
+	<img src="icons/Focus.gif" alt="star" />
+	<img src="icons/Focus.gif" alt="star" />
+	&nbsp;
+	Click on one of these examples to get started exploring ${message:AppTitle}!
+	&nbsp;
+	<img src="icons/Focus.gif" alt="star" />
+	<img src="icons/Focus.gif" alt="star" />
+	<img src="icons/Focus.gif" alt="star" />
+	</div>
+	<br />
+<table class="ExamplesTable">
+<tr>
+	<td><t:examplesection group="examplesService.youMightNotKnow" /></td>
+	<td><t:examplesection group="examplesService.haveYouHeardOf" /></td>
+</tr>
+<tr>
+	<td><t:examplesection group="examplesService.families" /></td>
+	<td><t:examplesection group="examplesService.otherFamilies" /></td>
+</tr>
+</table>
+</t:corners>
+</body>
+</html>

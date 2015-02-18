@@ -1,0 +1,63 @@
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<head>
+<title>FAQ - ${message:TitleMotto}</title>
+<style>
+.HugeCross {
+	color: red;
+	font-size: 150%;
+}
+</style>
+</head>
+<body>
+<t:navigationbar />
+<t:imagesizes entries="entries" />
+<t:corners>
+	<span class="FaqTitle">What are all the icons for?</span>	<br />
+	<img src="icons/MenuMore.png" /> and <img src="icons/MenuLess.png" /> - <b>Show Menu</b> - Hover over these buttons to show a menu of options.  The green button means there are sub-species available to open up.<br />
+	<img src="icons/Detail.gif" /> and <img src="icons/Detail1.gif" /> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.<br />
+	<img src="icons/Show.gif" /> - <b>Show Children</b> - Will show all direct children of the chosen species.<br />
+	<img src="icons/ShowMore.png" /> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.<br />
+	<img src="icons/Hide.gif" /> - <b>Hide Children</b> - Closes all children of the chosen species.<br />
+	<img src="icons/Focus.gif" /> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.<br />
+	<img src="icons/Close.gif" /> - <b>Close</b> - Closes the chosen species, and all its children.<br />
+	<a class="preview" href="search.detail/Yellow_fronted_Canary_Serinus_mozambicus_55075" name="55075">
+		<img width="20" height="15" class="Thumb" src="http://bi.robestone.com/tiny/2c/Serinus mozambicus.jpg"/>
+	</a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
+</t:corners>
+
+<br />
+<t:corners>
+	<span class="FaqTitle">What is the difference between <img src="icons/Detail.gif" /> and <img src="icons/Detail1.gif" />?</span>	<br />
+	<img src="icons/Detail.gif" /> - Shows a hierarchy of species<br/>
+	<img src="icons/Detail1.gif" /> - Shows "sibling" species
+</t:corners>
+
+<br />
+<t:corners>
+	<span class="FaqTitle">What does the <span class="HugeCross">†</span> symbol mean?</span> <br />
+	It indicates that the given species is extinct, and so are any sub-species.
+</t:corners>
+
+<br />
+<t:corners>
+	<span class="FaqTitle">How do I save my tree?  What does the <b>#Tree</b> link do?</span> <br />
+	To save your tree, right click on the <b>#Tree</b> link and choose to copy or bookmark that link.  It will always take you back to that same tree.
+	<br />
+	This is sometimes called a "permalink" or "permanent link".
+</t:corners>
+
+<br />
+<t:corners>
+	<span class="FaqTitle">Why is there so much Latin?</span> <br />
+	The Latin is the scientific name, and is only shown when there is no other name available.
+</t:corners>
+
+<br />
+<t:corners>
+	<span class="FaqTitle">What if I find a mistake in the Tree of Life?</span> <br />
+	Go to <a class="CreditLink" href="http://species.wikimedia.org">Wiki Species</a> and fix the mistake yourself!
+	<br />
+	It won't show up here right away, but Wiki Species is where all this information lives.
+</t:corners>
+</body>
+</html>

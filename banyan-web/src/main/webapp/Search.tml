@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title><t:if test="navigationBar.showExampleCaptions">${navigationBar.exampleCaption} - </t:if>${message:TitleMotto}</title>
+</head>
+<body>
+	<t:navigationbar showExamplesCaption="true" />
+	<t:if test="!showWelcome">
+	<t:treecomponent root="root" />
+	<t:imagesizes entries="entries" />
+	<t:controlpanellinks entries="entries" root="root" />
+	</t:if>
+	<t:if test="showWelcome">
+	<t:corners>
+		<span class="Welcome">Welcome to Banyan!</span>&nbsp;&nbsp;Here are some good ways to get started...
+		<br /> <br />
+		<img src="icons/Detail1.gif" alt="click" />&nbsp;Click on the <t:pagelink page="Examples" id="Ex2">Examples</t:pagelink> link to get an idea of what kinds of things are possible...
+		<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... or go right to example trees of <a href="search.tree/3R50DdegO38k4ab5Nq-l55t1c_35008ugsn" id="Ex1">plants and animals</a>, <a href="search.tree/_0dAN0qeV0qhY0vbO0zwE0EBk0EDU" id="Ex2">insects</a>, or <a href="search.tree/_0v1k0v1K0v1N0v1V0v270v2v0v9j0GKY0KhJ0Ki40Kt1" id="Ex3">marsupials</a>. 
+		<br /> <br />
+		<img src="icons/Detail1.gif" alt="click" /><a href="search.tree/_6Fb6Hiavkazo" class="SearchExample">&nbsp;Use the Search box to find something - like "bears" or "viola arvensis"...
+		<br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;... then add to your tree by searching for something else - like "dwarf marsh violet" or "vulpes".</a>
+		<br /> <br />
+		<img src="icons/Detail1.gif" alt="click" />&nbsp;Click on the <t:actionlink t:id="random" id="RandomLink">Random</t:actionlink> link to see a random tree of species
+		<br /> <br />
+		<img src="icons/Detail1.gif" alt="click" />&nbsp;If something you see doesn't make sense, click on the <t:pagelink page="HowToUse" id="Ex3">FAQ</t:pagelink> link for answers to Frequently Asked Questions.
+	</t:corners>
+	</t:if>
+	<t:actionlink t:id="detail"></t:actionlink>
+	<t:actionlink t:id="tree"></t:actionlink>
+</body>
+</html>

@@ -1,0 +1,17 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+	<div id="controlpanel">
+		<a href="#cp4" id="cpShow" class="cpButton"><div class="MenuRow"><img src="icons/Show.gif" alt="show" />&nbsp;<span id="cpShowChildrenCaption">Show Children</span></div></a>
+		<a href="#cp5" id="cpShowMore" class="cpButton"><div class="MenuRow"><img src="icons/ShowMore.png" alt="show-more" />&nbsp;<span id="cpShowMoreCaption">Show More Species</span></div></a>
+		<a href="#cp1" id="cpHide" class="cpButton"><div class="MenuRow"><img src="icons/Hide.gif" alt="hide" />&nbsp;Hide Children</div></a>
+		<a href="#cp3" id="cpClose" class="cpButton"><div class="MenuRow"><img src="icons/Close.gif" alt="close" />&nbsp;Close</div></a>
+		<a href="#cp2" id="cpFocus" class="cpButton"><div class="MenuRow"><img src="icons/Focus.gif" alt="focus" />&nbsp;Focus</div></a>
+		<a href="#cp6" id="cpDetail" class="cpButton"><div class="MenuRow"><img src="icons/Detail.gif" alt="detail" />&nbsp;Go to Details</div></a>
+	</div>
+	<script type="text/javascript">
+var controlPanel = new Object();
+<t:loop source="entries" value="renderEntry">controlPanel['${renderEntry.id}'] = {cpHide:${renderHide},cpFocus:${renderFocus},cpClose:${renderClose},cpShow:${renderShow},cpShowMore:${renderShowMore},cpDetail:'search.detail/${renderDetail}',showCaption:${renderShowCaption},showMoreCaption:${renderShowMoreCaption}};
+</t:loop>
+	</script>
+</t:container>

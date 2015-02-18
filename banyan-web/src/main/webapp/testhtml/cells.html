@@ -1,0 +1,270 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" media="screen" href="../style/species.css" />
+<style>
+table {
+	border-collapse: collapse;
+	margin: 0px;
+	border: solid 0px black;
+	padding: 0px;
+	height: 99%;
+}
+.TestTable td {
+	background: gray;
+	border: 1px white dashed;
+}
+img {
+	border: medium none;
+}
+.n, .Entry { /* node */
+	padding: 0px;
+}
+.empty, .Blank { /* empty */
+}
+.Left {
+	padding-right: 5px;
+	border-left: solid 1px #c82;
+}
+.Top {
+	padding-right: 5px;
+	border-top: solid 1px #c82;
+}
+.Bottom {
+	padding-right: 5px;
+	border-bottom: solid 1px #c82;
+}
+.s { /* single-line */
+	border-bottom: solid 1px #c82;
+	padding-left: 5px;
+}
+.t { /* top-box */
+	padding-right: 5px;
+	border-left: solid 1px #c82;
+	border-top: solid 1px #c82;
+}
+.b { /* bottom-box */
+	padding-right: 5px;
+	border-left: solid 1px #c82;
+	border-bottom: solid 1px #c82;
+}
+.NodeCell {
+	padding: 0px;
+}
+.NodeDiv {
+	border: solid 1px black;
+}
+</style>
+</head>
+<body>
+
+<table class="TestTable">
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">2</div></td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank Top">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">4</div></td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Entry" rowspan="2"><div class="NodeDiv">1</div></td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank Left Top">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">3</div></td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">5</div></td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">6</div></td>
+<td class="Blank Bottom">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Entry" rowspan="2"><div class="NodeDiv">7</div></td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+<tr>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank Top">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+<td class="Blank">&nbsp;</td>
+</tr>
+</table>
+
+
+<br/>
+<br/>
+
+<table>
+
+<tr>
+	<td class="empty">&nbsp;</td>
+	<td class="empty">&nbsp;</td>
+	<td class="empty">&nbsp;</td>
+	<td class="NodeCell" rowspan="2">
+	
+	<b class="xtop">
+		<b class="xb1"></b>
+		<b class="xb2"></b>
+		<b class="xb3"></b>
+		<b class="xb4"></b>
+	</b>
+	<div id="node-124623" class="Node">
+		<i>(Entognatha)</i>
+		<a href="index.close/124623" title="Close"><img src="../icons/Close.gif"/></a> 
+		<a href="index.focus/124623" title="Focus"><img src="../icons/Focus.gif"/></a>
+		<a href="index.hidechildren/124623" title="Hide Children"><img src="../icons/Hide.gif"/></a>
+		<a href="index.showchildren/124623" title="Show Children"><img src="../icons/Show.gif"/></a>
+		<a title="Entognatha" class="preview" href="http://speciesimages.robestone.com/images/Entognatha.jpg"><img src="http://speciesimages.robestone.com/thumbs/Entognatha.jpg" class="Thumb"/></a>
+	</div>
+	<b class="xbottom">
+		<b class="xb4"></b>
+		<b class="xb3"></b>
+		<b class="xb2"></b>
+		<b class="xb1"></b>
+	</b>
+	
+	</td>
+</tr>
+<tr>
+	<td class="NodeCell" rowspan="2">
+	
+	<b class="xtop">
+		<b class="xb1"></b>
+		<b class="xb2"></b>
+		<b class="xb3"></b>
+		<b class="xb4"></b>
+	</b>
+	<div id="node-124623" class="Node">
+		<i>(Entognatha)</i>
+		<a href="index.close/124623" title="Close"><img src="../icons/Close.gif"/></a> 
+		<a href="index.focus/124623" title="Focus"><img src="../icons/Focus.gif"/></a>
+		<a href="index.hidechildren/124623" title="Hide Children"><img src="../icons/Hide.gif"/></a>
+		<a href="index.showchildren/124623" title="Show Children"><img src="../icons/Show.gif"/></a>
+		<a title="Entognatha" class="preview" href="http://speciesimages.robestone.com/images/Entognatha.jpg"><img src="http://speciesimages.robestone.com/thumbs/Entognatha.jpg" class="Thumb"/></a>
+	</div>
+	<b class="xbottom">
+		<b class="xb4"></b>
+		<b class="xb3"></b>
+		<b class="xb2"></b>
+		<b class="xb1"></b>
+	</b>
+	
+	</td>
+	<td class="s">&nbsp;</td>
+	<td class="t">&nbsp;</td>
+</tr>
+<tr>
+	<td class="empty">&nbsp;</td>
+	<td class="b">&nbsp;</td>
+	<td class="NodeCell" rowspan="2">
+	
+	<b class="xtop">
+		<b class="xb1"></b>
+		<b class="xb2"></b>
+		<b class="xb3"></b>
+		<b class="xb4"></b>
+	</b>
+	<div id="node-124623" class="Node">
+		<i>(Entognatha)</i>
+		<a href="index.close/124623" title="Close"><img src="../icons/Close.gif"/></a> 
+		<a href="index.focus/124623" title="Focus"><img src="../icons/Focus.gif"/></a>
+		<a href="index.hidechildren/124623" title="Hide Children"><img src="../icons/Hide.gif"/></a>
+		<a href="index.showchildren/124623" title="Show Children"><img src="../icons/Show.gif"/></a>
+		<a title="Entognatha" class="preview" href="http://speciesimages.robestone.com/images/Entognatha.jpg"><img src="http://speciesimages.robestone.com/thumbs/Entognatha.jpg" class="Thumb"/></a>
+	</div>
+	<b class="xbottom">
+		<b class="xb4"></b>
+		<b class="xb3"></b>
+		<b class="xb2"></b>
+		<b class="xb1"></b>
+	</b>
+	
+	</td>
+</tr>
+<tr>
+	<td class="empty">&nbsp;</td>
+	<td class="empty">&nbsp;</td>
+	<td class="empty">&nbsp;</td>
+</tr>
+
+
+</table>
+
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<a href="detail.detail/${entry.id}" title="Go to Details">
+	<img src="icons/Detail.gif" />
+</a>
+<t:if test="entry.extinct"><a title="Extinct" href="#"><span class="Extinct">†</span></a></t:if>
+<a title="${hoverTitle}" href="detail.detail/${urlId}" class="${entryClass}" name="${entryName}">
+	<t:if test="entry.commonName">${shortenedRenderableCommonName}&nbsp;</t:if><i>(${entry.latinName})</i>
+	<t:if test="showImage">
+		<img src="${renderThumbUrl}" class="Thumb" width="${entry.image.tinyWidth}" height="${entry.image.tinyHeight}" />
+	</t:if>
+</a>
+</t:container>

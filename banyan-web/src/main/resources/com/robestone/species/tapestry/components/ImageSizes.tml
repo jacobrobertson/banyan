@@ -1,0 +1,9 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+   "http://www.w3.org/TR/html4/strict.dtd">
+<t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
+<script type="text/javascript">
+var imageAttributes = new Object();
+<t:loop source="entries" value="renderEntry"><t:if test="renderEntry.image">imageAttributes['${renderLink}'] = {width:${renderEntry.image.previewWidth},height:${renderEntry.image.previewHeight},caption:"<t:outputraw value="${renderCaption}" />"};
+</t:if></t:loop>
+</script>
+</t:container>
