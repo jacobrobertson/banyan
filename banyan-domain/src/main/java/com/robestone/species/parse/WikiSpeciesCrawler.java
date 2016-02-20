@@ -28,13 +28,29 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public static void main(String[] args) {
 		
 		if (args == null || args.length == 0) {
-			args = new String[] { "Familia" };
+			args = new String[] { "Animalia" };
 		}
+		
+		boolean crawlAllStoredLinks = true;
+		/*
+		args = new String[] {
+				
+			"Maxillopoda",
+			"Eutardigrada",
+			"Rhinotermitidae",
+			"Atelopus franciscus",
+			"Alticus",
+			"Lamprologus callipterus",
+
+				
+		};
+		crawlAllStoredLinks = false;
+		//*/
+		
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 //		String name = EntityMapper.convertToSymbolsText("[264]efpa[285]o", true);
-		crawler.pushStoredLinks(false, 
-				args
+		crawler.pushStoredLinks(crawlAllStoredLinks, args
 		
 //		"Artocarpus altilis"
 		);// "Lethiscidae");//"Aïstopoda");//"Oligomyodi");
@@ -213,7 +229,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	
 	private static String getPage(String link) {
 		link = StringUtils.replace(link, " ", "_");
-		link = "http://species.wikimedia.org/wiki/" + link + "?redirect=no";
+		link = "https://species.wikimedia.org/wiki/" + link + "?redirect=no";
 		return getPageForUrl(link);
 	}
 	public static String getPageForUrl(String link) {

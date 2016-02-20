@@ -104,17 +104,21 @@ public class ExamplesService implements IExamplesService {
 		getHaveYouHeardOf().setShowExampleGroupName(true);
 		getYouMightNotKnow().setShowExampleGroupName(true);
 	}
+	private static final int FAMILIES = 0;
+	private static final int OTHER_FAMILIES = 0;
+	private static final int HAVE_YOU_HEARD_OF = 0;
+	private static final int YOU_MIGHT_NOT_KNOW = 0;
 	public ExampleGroup getFamilies() {
-		return getGroups().get(1);
+		return getGroups().get(FAMILIES);
 	}
 	public ExampleGroup getOtherFamilies() {
-		return getGroups().get(2);
+		return getGroups().get(OTHER_FAMILIES);
 	}
 	public ExampleGroup getHaveYouHeardOf() {
-		return getGroups().get(3);
+		return getGroups().get(HAVE_YOU_HEARD_OF);
 	}
 	public ExampleGroup getYouMightNotKnow() {
-		return getGroups().get(0);
+		return getGroups().get(YOU_MIGHT_NOT_KNOW);
 	}
 	private List<ExampleGroup> getGroups() {
 		return groups;
@@ -123,7 +127,7 @@ public class ExamplesService implements IExamplesService {
 		groups = null;
 		examples = null;
 		exampleGroupsByExampleCrunchedIds = null;
-	}
+	} 
 	private static class ExampleGroupMapper implements ParameterizedRowMapper<ExampleGroup> {
 		public ExampleGroup mapRow(ResultSet rs, int rowNum)
 				throws SQLException {

@@ -27,7 +27,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
-	public static final Integer TREE_OF_LIFE_ID = 159558;
+	public static final Integer TREE_OF_LIFE_ID = 8368;
 	
 	private SimpleJdbcTemplate template;
 	private boolean useInterestingAttributesForSearches = true;
@@ -384,6 +384,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return found;
 	}
 	public CompleteEntry findEntry(Integer id) {
+//		if (1 + 1 == 2) throw new RuntimeException("findEntry." + id);
 		return getEntryFromCache(id);
 	}
 	public Entry findDepictedEntry(Entry entry) {

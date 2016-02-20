@@ -69,7 +69,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		Set<String> allLinks = new HashSet<String>();
 
 		if (newLinks) {
-			String url = "http://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
+			String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
 					+ maxDays + "&limit=" + maxChanges
 					+ "&namespace=0";
 			System.out.println("url." + url);

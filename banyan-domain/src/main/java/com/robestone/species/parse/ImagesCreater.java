@@ -25,7 +25,7 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String DETAIL = "detail";
 	
 	private static final int TINY_LENGTH = 20;
-	static String LOCAL_STORAGE_DIR = "E:/speciesimages/";
+	static String LOCAL_STORAGE_DIR = "D:/speciesimages/";
 
 	public static void main(String[] args) throws IOException {
 		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
@@ -115,14 +115,61 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		return link;
 	}
+	/**
+	 * For some files, (or file types?)
+	 * we need to use this syntax
+	 * 
+	 * https://upload.wikimedia.org/wikipedia/commons
+	 * /thumb/9/99/Parasite140015-fig2_Protoopalina_pingi_%28Opalinidae%29_Microscopy.tif
+	 * /lossy-page1-194px-Parasite140015-fig2_Protoopalina_pingi_%28Opalinidae%29_Microscopy.tif.jpg
+	 * 
+	 * Instead of
+	 * 
+	 * https://upload.wikimedia.org/wikipedia/commons
+	 * /thumb/9/99/Parasite140015-fig2_Protoopalina_pingi_%28Opalinidae%29_Microscopy.tif
+	 * /20px-Parasite140015-fig2_Protoopalina_pingi_%28Opalinidae%29_Microscopy.tif
+	 * 
+	 * Also, in cases of PDFs!! use "page1-"
+	 * 
+	 * is there also a "-" sometimes? AFTER the 800px, not before
+	 * /thumb/4/43/xxx.ogv/800px--xxx.ogv.jpg
+	 * 
+	 *  Another pattern, is to simply place this after the image url - seems to be when the name itself is way too long
+	 *  /90px-thumbnail.jpg
+	 *  https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/xxx.jpg/90px-thumbnail.jpg
+	 */
+	private boolean downloadWithAlternatives(String dbLink, int width, String outFilePath, String type) {
+		
+		String[] keys = {null, "page1-", "lossy-page1-"};
+		String[] exts = {null, "jpg", "png"};
+		
+		for (String key: keys) {
+			for (String ext: exts) {
+				boolean okay = false;
+				okay = okay || doDownloadWithAlternatives(dbLink, width, outFilePath, type, ext, key, false);
+				okay = okay || doDownloadWithAlternatives(dbLink, width, outFilePath, type, ext, key, true);
+				if (okay) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private boolean doDownloadWithAlternatives(String dbLink, int width, String outFilePath, String type, String extension, String extraKey, boolean doubleDashPixels) {
+		String url = getThumbUrl(dbLink, width, extension, extraKey, doubleDashPixels);
+		return download(url, outFilePath, type);
+	}
+	
 	private static boolean download(String link, String outFilePath, String type) {
-		int tries = 10;
+		int tries = 1;
 		int fails = 0;
 		for (int i = 0; i < tries; i++) {
 			BufferedImage bi = null;
+			URL url = null;
+			URLConnection con = null;
 			try {
-				URL url = new URL(link);
-				URLConnection con = url.openConnection();
+				url = new URL(link);
+				con = url.openConnection();
 				con.setConnectTimeout(15000); // not sure what a good number is here?
 				InputStream in = con.getInputStream();
 				String contentEncoding = con.getHeaderField("Content-Encoding");
@@ -139,6 +186,7 @@ public class ImagesCreater extends AbstractWorker {
 				out.close();
 				return true;
 			} catch (Exception ioe) {
+				System.out.println(ioe.getMessage());
 				fails++;
 			}
 		}
@@ -178,12 +226,11 @@ public class ImagesCreater extends AbstractWorker {
 		File fileToMake = new File(iconFileName);
 		fileToMake.getParentFile().mkdirs();
 
-		String url = getThumbUrl(link, width);
-		boolean okay = download(url, iconFileName, fileExtension);
+		boolean okay = downloadWithAlternatives(link, width, iconFileName, fileExtension);
 		if (!okay && recoverOnFail) {
 			if (saved == null) {
 				// download un-changed image
-				url = getThumbUrl(link, -1);
+				String url = getThumbUrl(link, -1, null, null, false);
 				okay = download(url, iconFileName, fileExtension);
 				// if even that one failed, then don't pass the file back
 				if (!okay) {
@@ -197,8 +244,8 @@ public class ImagesCreater extends AbstractWorker {
 		
 		return fileToMake;
 	}
-	private String getThumbUrl(String link, int width) {
-		String prefix = "http://upload.wikimedia.org/wikipedia/commons/";
+	private String getThumbUrl(String link, int width, String extraExtension, String extraKey, boolean doubleDashPixels) {
+		String prefix = "https://upload.wikimedia.org/wikipedia/commons/";
 		String fileName = parseFileName(link);
 		String url = prefix;
 		if (width > 0) {
@@ -206,12 +253,40 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		url += fileName;
 		if (width > 0) {
-			url += "/" + width + "px-";
+			url += "/";
+			if (extraKey != null) {
+				url += extraKey;
+			}
+			url += (width + "px-");
+			if (doubleDashPixels) {
+				url += "-";
+			}
 			int slash = fileName.lastIndexOf("/");
 			String baseFileName = fileName.substring(slash + 1);
-			url += baseFileName;
+			String thumbnailName = getThumnailName(baseFileName);
+			url += thumbnailName;
+		}
+		if (extraExtension != null) {
+			url += ("." + extraExtension);
 		}
 		return url;
+	}
+	
+	/**
+The_North_American_sylva%3B_or%2C_A_description_of_the_forest_trees_of_the_United_States%2C_Canada_and_Nova_Scotia._Considered_particularly_with_respect_to_their_use_in_the_arts_and_their_introduction_into_%2814778618571%29.jpg
+Skeptrostachys_rupestris_%28as_Spiranthes_r.%29_-_Veyretia_cogniauxiana_%28as_Spiranthes_c.%29_-_Skeptrostachys_balanophorostachya_%28as_Stenorrhynchos_b.%27-um%29_-_Flora_Brasiliensis_3-4-48.jpg
+	 * @param baseFileName
+	 * @return
+	 */
+	private static int MAX_THUMBNAIL_NAME_LEN = 195; // not sure what the actual length is
+	private String getThumnailName(String baseFileName) {
+		if (baseFileName.length() < MAX_THUMBNAIL_NAME_LEN) {
+			return baseFileName;
+		} else {
+			int pos = baseFileName.lastIndexOf('.');
+			String ext = baseFileName.substring(pos);
+			return "thumbnail" + ext;
+		}
 	}
 
 	/**
@@ -232,12 +307,16 @@ public class ImagesCreater extends AbstractWorker {
 	 * @return the value to multiply the width by for other uses.
 	 */
 	private float getXRatioFromThumb(File file) {
-		BufferedImage image = ImageIoUtilities.getImage(file);
-		int h = image.getHeight();
-		if (h > TINY_LENGTH) {
-			return ((float) image.getWidth()) / ((float) h);
-		} else {
-			return 1f;
+		try {
+			BufferedImage image = ImageIoUtilities.getImage(file);
+			int h = image.getHeight();
+			if (h > TINY_LENGTH) {
+				return ((float) image.getWidth()) / ((float) h);
+			} else {
+				return 1f;
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("File: " + file.getAbsolutePath(), e);
 		}
 	}
 }

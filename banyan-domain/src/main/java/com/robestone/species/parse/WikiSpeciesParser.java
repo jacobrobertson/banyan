@@ -250,6 +250,7 @@ public class WikiSpeciesParser {
 		}
 		return null;
 	}
+	
 	private String getImage(String page) {
 		Matcher matcher = imageLinkPattern.matcher(page);
 		while (matcher.find()) {
@@ -266,16 +267,28 @@ public class WikiSpeciesParser {
 				continue;
 			} else if (imageLink.indexOf("_apps_") > 0) {
 				continue;
+			} else if (imageLink.indexOf("&quot;") > 0) {
+				// happens when there is a video with embedded controls
+				continue;
 			} else if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
+				continue;
+			} else if (
+					   imageLink.toUpperCase().endsWith(".OGV")
+					|| imageLink.toUpperCase().endsWith(".OGG")
+					) {
+				// video or sound
 				continue;
 			} else if (imageLink.toUpperCase().endsWith(".SVG")) {
 				// not sure how many of these there are, and I see that 
 				// some wiki icons are sneaking in, with weird names,
 				// and this might be the only way to stop them.
 				continue;
-			} else if (imageLink.toUpperCase().endsWith(".GIF")) {
-				// TODO might change this later - but there are thumbnail issues
-				// with gifs, and technically wikimedia forbids gifs
+//			} else if (imageLink.toUpperCase().endsWith(".GIF")) {
+//				// TODO might change this later - but there are thumbnail issues
+//				// with gifs, and technically wikimedia forbids gifs
+//				continue;
+			} else if (imageLink.contains("x, ")) {
+				// indicates it is a "srcset" of more than one image
 				continue;
 			}
 			return imageLink;
