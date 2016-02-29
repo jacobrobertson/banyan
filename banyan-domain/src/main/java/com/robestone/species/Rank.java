@@ -52,7 +52,7 @@ public enum Rank {
 	Claudius(210), // TODO this is a species???+
 	Superclassis(220, "*Super-class"),
 	Classis(230, "+Class", "Classes"),
-	Subclassis(240, "*Sub-class", "Subclasses"),
+	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),
 	
 	// --
 	Infraclassis(245, "*Sub-class"),
@@ -73,7 +73,7 @@ public enum Rank {
 	Subgroup(297, "*Sub-group"),
 	
 	Legio(300, "+Legion", "Legions"),
-	Supercohors(310),
+	Supercohors(310, "Supercohort"),
 	Cohors(320, "+Cohort"),
 	Subcohors(330, "*Sub-cohort"),
 	

@@ -233,7 +233,33 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testAtelopus_franciscus() throws IOException {
 		doTest("Atelopus franciscus", "Central Coast Stubfoot Toad", "Atelopus", "thumb/7/7a/Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv/220px--Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv.jpg", Rank.Species);
 	}
-
+	public void testPhiomorpha() throws IOException {
+		doTest("Phiomorpha", null, "Hystricognathi", "thumb/0/02/Nacktmull.jpg/220px-Nacktmull.jpg", Rank.Infraordo);
+	}
+	public void testCiliophrys() throws IOException {
+		doTest("Ciliophrys", null, "Pedinellaceae", null, Rank.Genus);
+	}
+	public void testChloranthales() throws IOException {
+		doTest("Chloranthales", null, "Magnoliopsida", "thumb/6/66/Chloranthus_serratus_%28200705%29.jpg/250px-Chloranthus_serratus_%28200705%29.jpg", Rank.Ordo);
+	}
+	public void testRubus_racemosus() throws IOException {
+		doTest("Rubus racemosus", null, "Rubus subg. Idaeobatus", null, Rank.Species);
+	}
+	public void testRubus_subg_Idaeobatus() throws IOException {
+		doTest("Rubus subg. Idaeobatus", null, "Rubus", null, Rank.Subgenus);
+	}
+	public void testDimares() throws IOException {
+		doTest("Dimares", null, "Dimarinae", null, Rank.Genus);
+	}
+	public void testTrachymedusae() throws IOException {
+		doTest("Trachymedusae", null, "Trachylinae", null, Rank.Ordo);
+	}
+	public void testSordarialesincertaesedis() throws IOException {
+		doTest("Sordariales incertae sedis", null, "Sordariales", null, Rank.Familia);
+	}
+	public void testCentropogonCampanulaceae() throws IOException {
+		doTest("Centropogon (Campanulaceae)", null, "Lobelioideae", null, Rank.Genus);
+	}
 	
 	
 	private void doTest(String latin, String common, String parent, String image,
@@ -271,6 +297,29 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 			assertEquals(parent, results.getParent().getLatinName());
 			assertEquals(parentRank, results.getParent().getRank());
 		}
+	}
+	
+	// This is failing
+	// Genus: <i><a href="/wiki/Rubus" title="Rubus">Rubus</a></i><br />
+	// Subgenus: <strong class="selflink"><i>R.</i> subg. <i>Idaeobatus</i></strong><br />
+	// vs this is okay
+	// Subgenus: <i><a href="/wiki/Aedes_(Aedimorphus)" title="Aedes (Aedimorphus)">Aedes (Aedimorphus)</a></i><br />
+	// Species: <i><strong class="selflink">Aedes vexans</strong></i></p>
+	public void testGetParent() {
+		// it's failing because of the "R."
+		doTestGetParent("Rubus subg. Idaeobatus", "Subgenus", "Rubus", "Genus: <i><a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a></i><br />\r\nSubgenus: <strong class=\"selflink\"><i>R. subg. Idaeobatus</strong><br />");
+		// make sure it still works with other patterns
+		doTestGetParent("Aedes vexans", "Species", "Aedes (Aedimorphus)", "Subgenus: <i><a href=\"/wiki/Aedes_(Aedimorphus)\" title=\"Aedes (Aedimorphus)\">Aedes (Aedimorphus)</a></i><br />\r\nSpecies: <i><strong class=\"selflink\">Aedes vexans</strong></i></p>");
+		doTestGetParent("R. subg. Idaeobatus", "Subgenus", "Rubus", "Genus: <i><a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a></i><br />\r\nSubgenus: <strong class=\"selflink\"><i>R. subg. Idaeobatus</strong><br />");
+		doTestGetParent("R. subg. Idaeobatus", "Subgenus", "Rubus", "Rubeae</a><br />  Genus: <a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a><br />  Subgenus: <strong class=\"selflink\">R. subg. Idaeobatus</strong><br />  Species: ");
+
+		doTestGetParent("Trachymedusae", "Ordo", "Trachylinae", "Sub-classis: <a href=\"/wiki/Trachylinae\" title=\"Trachylinae\">Trachylinae</a><br />\r\nOrdo: <strong class=\"selflink\">Trachymedusae</strong><br />\r\n");
+	}
+	private void doTestGetParent(String latinName, String rank, String expectParent, String text) {
+		WikiSpeciesParser parser = new WikiSpeciesParser();
+		CompleteEntry parent = parser.getParent(text, latinName, rank);
+		assertNotNull("Could not parse text", parent);
+		assertEquals(expectParent, parent.getLatinName());
 	}
 	
 }

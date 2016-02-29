@@ -240,8 +240,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 
 	public Collection<String> findAllUnmatchedParentNames() {
-		return template.query("select distinct(parent_latin_name) from species where parent_id = 0", 
+		List<String> parents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
 				new EntityMapperRowMapper());
+		List<String> entries = template.query("select distinct(latin_name) from species where (parent_id = 0 or parent_id is null)", 
+				new EntityMapperRowMapper());
+		Set<String> latinNames = new HashSet<String>();
+		latinNames.addAll(parents);
+		latinNames.addAll(entries);
+		return latinNames;
 	}
 	public Collection<String> findAllLatinNames() {
 		return template.query("select latin_name from species", 
@@ -708,11 +714,16 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return currentBest;
 	}
 	public void recreateCleanNames() {
+		int count = 0;
+		int showEvery = 10000;
 		logger.info(">recreateCleanNames");
 		List<CompleteEntry> found = template.query("select id, latin_name, common_name from species", this);
 		for (CompleteEntry entry: found) {
 			EntryUtilities.cleanEntry(entry);
-//			logger.debug("recreateCleanNames." + entry.getId());
+			count++;
+			if (count % showEvery == 0) {
+				logger.debug(">recreateCleanNames(" + count + ")." + entry.getId() + "." + entry.getLatinName());
+			}
 			template.update(
 					"update species set " +
 					" common_name_clean = ?," +
@@ -740,11 +751,16 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		logger.info("<fixParents");
 	}
 	private void assignParentIdsByParentLatinName() {
+		int showEvery = 10000;
 		logger.info(">assignParentIdsByParentLatinName");
 		List<CompleteEntry> found = template.query("select id, latin_name from species", this);
 		logger.info(">assignParentIdsByParentLatinName." + found.size());
+		int count = 0;
 		for (CompleteEntry one: found) {
-//			logger.debug(">assignParentIdsByParentLatinName." + one.getId() + "." + one.getLatinName());
+			count++;
+			if (count % showEvery == 0) {
+				logger.debug(">assignParentIdsByParentLatinName(" + count + ")." + one.getId() + "." + one.getLatinName());
+			}
 			template.update(
 					"update species set parent_id = ? where parent_latin_name = ?", 
 					one.getId(), one.getLatinName());

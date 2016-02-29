@@ -4,8 +4,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.zip.GZIPInputStream;
 
@@ -25,10 +27,10 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String DETAIL = "detail";
 	
 	private static final int TINY_LENGTH = 20;
-	static String LOCAL_STORAGE_DIR = "D:/speciesimages/";
+	static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
 
 	public static void main(String[] args) throws IOException {
-		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
+//		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
 		new ImagesCreater().
 		downloadTests("Rhinobatidae")
 //		downloadAll(true)
@@ -275,12 +277,30 @@ public class ImagesCreater extends AbstractWorker {
 	/**
 The_North_American_sylva%3B_or%2C_A_description_of_the_forest_trees_of_the_United_States%2C_Canada_and_Nova_Scotia._Considered_particularly_with_respect_to_their_use_in_the_arts_and_their_introduction_into_%2814778618571%29.jpg
 Skeptrostachys_rupestris_%28as_Spiranthes_r.%29_-_Veyretia_cogniauxiana_%28as_Spiranthes_c.%29_-_Skeptrostachys_balanophorostachya_%28as_Stenorrhynchos_b.%27-um%29_-_Flora_Brasiliensis_3-4-48.jpg
-	 * @param baseFileName
-	 * @return
+
+Herpestes_ichneumon_%D0%95%D0%B3%D0%B8%D0%BF%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%B0%D0%BD%D0%B3%D1%83%D1%81%D1%82%2C_%D0%B8%D0%BB%D0%B8_%D1%84%D0%B0%D1%80%D0%B0%D0%BE%D0%BD%D0%BE%D0%B2%D0%B0_%D0%BA%D1%80%D1%8B%D1%81%D0%B0%2C_%D0%B8%D0%BB%D0%B8_%D0%B8%D1%85%D0%BD%D0%B5%D0%B2%D0%BC%D0%BE%CC%81%D0%BD.jpg/245px-Herpestes_ichneumon_%D0%95%D0%B3%D0%B8%D0%BF%D0%B5%D1%82%D1%81%D0%BA%D0%B8%D0%B9_%D0%BC%D0%B0%D0%BD%D0%B3%D1%83%D1%81%D1%82%2C_%D0%B8%D0%BB%D0%B8_%D1%84%D0%B0%D1%80%D0%B0%D0%BE%D0%BD%D0%BE%D0%B2%D0%B0_%D0%BA%D1%80%D1%8B%D1%81%D0%B0%2C_%D0%B8%D0%BB%D0%B8_%D0%B8%D1%85%D0%BD%D0%B5%D0%B2%D0%BC%D0%BE%CC%81%D0%BD.jpg > tiny(20) >
+Maxillaria_lilacea_-_Brasiliorchis_polyantha_%28as_Maxillaria_p.%29_-_Brasiliorchis_phoenicanthera_%28as_Maxillaria_p.%29_-_Brasiliorchis_chrysantha_%28as_Maxillaria_c.%29_-_Fl.Br._3-6-09.jpg
+Maxillaria_lilacea_-_Brasiliorchis_polyantha_(as_Maxillaria_p.)_-_Brasiliorchis_phoenicanthera_(as_Maxillaria_p.)_-_Brasiliorchis_chrysantha_(as_Maxillaria_c.)_-_Fl.Br._3-6-09.jpg
+Stelis_pellifeloidis_%as_Pleurothallis_p.%_-_Pleurothallis_cristata_-_Acianthera_rodriguesii_%as_Pleurothallis_r.%_-_Anathallis_pusilla_-_%as_Pl._exigua%_-_Fl.Br.3-4-104.jpg
+Malaxis_cogniauxiana_%as_Microstylis_gracilis%_-_Malaxis_excavata_%as_Microstylis_quadrangularis%_-_Prosthechea_pygmaea_%as_Microstylis_humilis%_-_Fl.Br._3-6-114.jpg
+
+This image was failing because wikimedia has the wrong library installed to handle large TIF files
+https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Aedes_vexans.tif/lossy-page1-20px-Aedes_vexans.tif.jpg
+
 	 */
-	private static int MAX_THUMBNAIL_NAME_LEN = 195; // not sure what the actual length is
+	// get this number through testing - can't make it too short or that will fail also
+	private static int MAX_THUMBNAIL_NAME_LEN = 165; 
 	private String getThumnailName(String baseFileName) {
-		if (baseFileName.length() < MAX_THUMBNAIL_NAME_LEN) {
+		
+		// convert base out of URL encoding before checking length
+		String decoded;
+		try {
+			decoded = URLDecoder.decode(baseFileName, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		
+		if (decoded.length() < MAX_THUMBNAIL_NAME_LEN) {
 			return baseFileName;
 		} else {
 			int pos = baseFileName.lastIndexOf('.');
@@ -288,7 +308,7 @@ Skeptrostachys_rupestris_%28as_Spiranthes_r.%29_-_Veyretia_cogniauxiana_%28as_Sp
 			return "thumbnail" + ext;
 		}
 	}
-
+	
 	/**
 	 * @param latinName like "Aplodontia"
 	 * @return like "af/ff3";

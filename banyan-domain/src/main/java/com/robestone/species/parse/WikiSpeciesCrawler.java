@@ -28,19 +28,14 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public static void main(String[] args) {
 		
 		if (args == null || args.length == 0) {
-			args = new String[] { "Animalia" };
+			args = new String[] { "Ciliophrys" };
 		}
 		
 		boolean crawlAllStoredLinks = true;
 		/*
 		args = new String[] {
 				
-			"Maxillopoda",
-			"Eutardigrada",
-			"Rhinotermitidae",
-			"Atelopus franciscus",
-			"Alticus",
-			"Lamprologus callipterus",
+			"Eutheria",
 
 				
 		};
@@ -63,6 +58,11 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private WikiSpeciesParser parser = new WikiSpeciesParser();
 	private RedirectPageParser redirectPageParser = new RedirectPageParser();
 	private int updatedCount = 0;
+	
+	public void crawlStoredLinks() {
+		pushStoredLinks(true);
+		crawl();
+	}
 	
 	public void pushStoredLinks(String... actualLinks) {
 		pushStoredLinks(true, actualLinks);
@@ -256,7 +256,9 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				in = new GZIPInputStream(in);
 	        }
 			String page = IOUtils.toString(in, "UTF-8");
-			Thread.sleep(50);  // not sure how long a sleep I need
+			// I do this to avoid spamming wikispecies too hard
+			// not sure how long a sleep I need
+			Thread.sleep(250);
 			return page;
 		} catch (IOException ioe) {
 			System.out.println("getPageForUrl.IOException." + ioe.getMessage() +  "(" + maxRetries + ")." + link);

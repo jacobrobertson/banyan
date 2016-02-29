@@ -15,26 +15,31 @@ public class RecentChangesUpdater extends AbstractWorker {
 		if (args != null && args.length > 0) {
 			recent.maxChanges = Integer.parseInt(args[0]);
 		}
-		if (args != null && args.length > 1) {
-			recent.maxOldestLinks = Integer.parseInt(args[1]);
-		}
 		
-		recent.run();
+		boolean crawlNewLinks = true;
+		boolean runMaintenance = false;
+		
+		if (crawlNewLinks) {
+			recent.crawlNewLinks();
+		}
+		if (runMaintenance) {
+			recent.runMaintenance();
+		}
 	}
 	
+	private int maxOldLinks = 1000;
 	private int maxChanges = 1000;
-	private int maxOldestLinks = 0; // doing in other job now
-	private int maxDays = 2;
+	private int maxDays = 10;
 	
-	public void run() throws Exception {
-		run(true, maxOldestLinks);
+	public void runAll() throws Exception {
+		System.out.println("RecentChangesUpdater.runAll");
+		crawlNewLinks();
+		runMaintenance();
 	}
-	public void run(boolean newLinks, int oldLinks) throws Exception {
-		System.out.println("RecentChangesUpdater.run");
-		// get all links from most recent page
-		// run the crawler with those links
-		crawlLinks(newLinks, oldLinks);
-
+	
+	public void runMaintenance() throws Exception {
+		System.out.println("RecentChangesUpdater.runMaintenance");
+		
 		// any changes that "fix" what the crawling found
 		new WikiSpeciesTreeFixer(speciesService).fixReplacedBy();
 		
@@ -45,7 +50,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 		speciesService.fixExtinct();
 		 
 		// clean names
-		speciesService.recreateCleanNames();
+		// TODO - I don't know what purpose this accomplishes unless I've updated the naming logic, but maybe there's another reason for this
+//		speciesService.recreateCleanNames();
 		 
 		// run full boring suite
 		BoringWorker.main(null);
@@ -65,29 +71,33 @@ public class RecentChangesUpdater extends AbstractWorker {
 		ThumbnailDownloader.main(null);
 	}
 
-	public void crawlLinks(boolean newLinks, int oldLinks) {
+	public void crawlNewLinks() {
 		Set<String> allLinks = new HashSet<String>();
 
-		if (newLinks) {
-			String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
-					+ maxDays + "&limit=" + maxChanges
-					+ "&namespace=0";
-			System.out.println("url." + url);
-			String page = WikiSpeciesCrawler.getPageForUrl(url, 100);
-			
-			Set<String> parsedLinks = WikiSpeciesCrawler.parseLinks(page);
-			System.out.println("crawlNewLinks.found." + parsedLinks.size());
-			
-			allLinks.addAll(parsedLinks);
-		}
+		String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
+				+ maxDays + "&limit=" + maxChanges
+				+ "&namespace=0";
+		System.out.println("url." + url);
+		String page = WikiSpeciesCrawler.getPageForUrl(url, 100);
 		
-		Collection<String> oldestLinks = parseStatusService.findOldestLinks(oldLinks);
+		Set<String> parsedLinks = WikiSpeciesCrawler.parseLinks(page);
+		System.out.println("crawlNewLinks.found." + parsedLinks.size());
+		
+		allLinks.addAll(parsedLinks);
+			
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.pushStoredLinks(allLinks, true);
+		crawler.crawl();
+	}
+	public void crawlOldLinks() {
+		Collection<String> oldestLinks = parseStatusService.findOldestLinks(maxOldLinks);
 		System.out.println("oldestLinks." + oldestLinks.size());
 
+		Set<String> allLinks = new HashSet<String>();
 		allLinks.addAll(oldestLinks);
-		
+
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
-		crawler.pushStoredLinks(allLinks, newLinks);
+		crawler.pushStoredLinks(allLinks);
 		crawler.crawl();
 	}
 

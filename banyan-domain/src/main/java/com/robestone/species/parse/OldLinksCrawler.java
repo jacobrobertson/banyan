@@ -7,12 +7,12 @@ package com.robestone.species.parse;
 public class OldLinksCrawler {
 
 	public static void main(String[] args) throws Exception {
-		int numberToCrawl = 1000;
-		if (args != null && args.length == 1) {
-			numberToCrawl = Integer.parseInt(args[0]);
-		}
+//		int numberToCrawl = 1000;
+//		if (args != null && args.length == 1) {
+//			numberToCrawl = Integer.parseInt(args[0]);
+//		}
 		RecentChangesUpdater rcu = new RecentChangesUpdater();
-		rcu.run(false, numberToCrawl);
+		rcu.crawlOldLinks();
 	}
 	
 }

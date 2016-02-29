@@ -345,7 +345,7 @@ public class TreeComponent extends AbstractTreeComponent {
 		return getThumbnailUrl(entry, "tiny");
 	}
 	public static String getThumbnailUrl(Entry entry, String type) {
-		return "http://jacobrobertson.com/bi/" + type + "/" +
+		return "/banyan-images/" + type + "/" +
 			entry.getImage().getImagePathPart();
 	}
 	public static String getHoverTitle(Entry entry) {

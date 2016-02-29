@@ -70,6 +70,9 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 		}
 		return all;
 	}
+	public List<ParseStatus> findAllDoneNonAuth() {
+		return template.query("select * from crawl where status = 'DONE' and (type <> 'AUTH' or type is null)", this);
+	}
 	public ParseStatus mapRow(ResultSet rs, int row) throws SQLException {
 		ParseStatus status = new ParseStatus();
 		status.setDate(rs.getDate("status_date"));

@@ -65,7 +65,7 @@ public class Image {
 	}
 	public void setLocalNameFromLatinName(String latinName) {
 		int pos = link.lastIndexOf('.');
-		String extension = link.substring(pos + 1);
+		String extension = link.substring(pos + 1).toLowerCase();
 		this.imagePathPart = ImagesCreater.getImagePathHashed(latinName) + "/" + latinName + "." + extension;
 	}
 	public String getImagePathPart() {

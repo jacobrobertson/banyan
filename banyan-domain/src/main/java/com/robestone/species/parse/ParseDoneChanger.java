@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.robestone.species.Entry;
 
@@ -17,10 +18,25 @@ public class ParseDoneChanger extends AbstractWorker {
 	public static void main(String[] args) {
 		ParseDoneChanger pc = new ParseDoneChanger();
 //		pc.setAllAsDone();
-		pc.createForAllSpecies();
+//		pc.createForAllSpecies();
+//		pc.findBadStatuses();
+		pc.changeForUnmatchedParents();
+		
+		new WikiSpeciesCrawler().crawlStoredLinks();
 	}
 	
-	
+	public void findBadStatuses() {
+		List<ParseStatus> statuses = this.parseStatusService.findAllDoneNonAuth();
+		Collection<String> entries = this.speciesService.findAllLatinNames();
+		Set<String> set = new HashSet<String>(entries);
+		int count = 0;
+		for (ParseStatus status: statuses) {
+			if (!set.contains(status.getLatinName())) {
+				System.out.println((count++) + ": " + status.getLatinName());
+			}
+		}
+	}
+
 	public void setAllAsDone() {
 		parseStatusService.setAllAsDone();
 	}
@@ -60,10 +76,10 @@ public class ParseDoneChanger extends AbstractWorker {
 	public void changeForUnmatchedParents() {
 		// get all parent names that have no matching number
 		Collection<String> names = speciesService.findAllUnmatchedParentNames();
-		names = new HashSet<String>(names); // paranoid about distinct not working...
 		// update the parse status to FOUND
 		int updated = 0;
 		int inserted = 0;
+		System.out.println("changeForUnmatchedParents." + names.size());
 		for (String name: names) {
 			if (name == null) {
 				continue;
@@ -76,11 +92,11 @@ public class ParseDoneChanger extends AbstractWorker {
 			if (changed == 0) {
 				status.setDate(null);
 				parseStatusService.updateStatus(status);
-				System.out.println("inserted." + name);
 				inserted++;
+				System.out.println("inserted." + (inserted) + "." + name);
 			} else {
-				System.out.println("updated." + name);
 				updated++;
+				System.out.println("updated." + (updated) + "." + name);
 			}
 		}
 		System.out.println("inserted." + inserted);

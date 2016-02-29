@@ -25,7 +25,7 @@ public class WikiSpeciesParser {
 	private Pattern depictedPattern = Pattern.compile("title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<a href=\"/w.*?/.*?\" (?:class=\".*?\"\\s*)?title=\".*?\">(.*?)<");
 //	                                                                                                                                                <a href="/w/index.php?title=Onniella&amp;action=edit&amp;redlink=1" class="new" title="Onniella (page does not exist)">Onniella</a></i></div>
 	private Pattern imageLinkPattern = Pattern.compile("//upload.wikimedia.org/wikipedia/commons/(.*?)\"");
-
+	
 	private static String getRanksPatternPart(boolean nonCapture) {
 		StringBuilder buf = new StringBuilder();
 		Rank[] ranks = Rank.values();
@@ -72,27 +72,68 @@ public class WikiSpeciesParser {
 		return text;
 	}
 	public CompleteEntry parse(String name, String text) {
-		return parse(name, text, true);
-	}
-	public CompleteEntry parse(String name, String text, boolean checkVernacularParser) {
-		String fullText = text;
-		text = getSmallerPage(text);
-		text = getSimplifiedPage(text);
-		text = cleanPage(text);
+		CompleteEntry entry = parse(name, name, text, true);
 		
-		name = StringUtils.replace(name, "_", " ");
-	
-		// took the self link check out because of C. latrans
-		String latinName = name; //getGroup(selfLinkPattern, text, 1);
-//		if (!name.equals(latinName)) {
-//			return null;
-//		}
+		if (entry == null) {
+			String newName = getNameNoIncertaeSedis(name);
+			if (newName != null) {
+				// in this section, handle these cases
+				// if the latin name is Sordariales incertae sedis, we check for
+				//	  Sordariales
+				//    Incertae sedis
+				// TODO there might be other patterns
+				entry = parse(name, INCERTAE_SEDIS, text, true);
+				if (entry == null) {
+					entry = parse(name, INCERTAE_SEDIS.toLowerCase(), text, true);
+				}
+				if (entry == null) {
+					entry = parse(name, newName, text, true);
+				}
+			}
+		}
+		
+		return entry;
+	}
+	private String getRank(String latinName, String text) {
 		String rank = getGroup(rankPattern, text, 1);
 		if (rank == null) {
 			String ename = getEscapedName(latinName);
 			Pattern rankPattern2 = Pattern.compile(getRanksPatternPart(false) + "[ :]+(?:<i>)?(?:<b>)?" + ename);
 			rank = getGroup(rankPattern2, text, 1);
 		}
+		return rank;
+	}
+	private static final String INCERTAE_SEDIS = "Incertae sedis";
+	private String getNameNoIncertaeSedis(String latinName) {
+		if (latinName.equalsIgnoreCase(INCERTAE_SEDIS)) {
+			return null;
+		}
+		int pos = latinName.toLowerCase().indexOf(INCERTAE_SEDIS.toLowerCase());
+		if (pos == 0) {
+			return latinName.substring(INCERTAE_SEDIS.length()).trim();
+		} else if (pos > 0) {
+			return latinName.substring(0, pos - 1).trim();
+		} else {
+			return null;
+		}
+	}
+	public CompleteEntry parse(String name, String text, boolean checkVernacularParser) {
+		return parse(name, name, text, checkVernacularParser);
+	}
+	public CompleteEntry parse(String pageNameLatin, String selfLinkName, String text, boolean checkVernacularParser) {
+		String fullText = text;
+		text = getSmallerPage(text);
+		text = getSimplifiedPage(text);
+		text = cleanPage(text);
+		
+		selfLinkName = StringUtils.replace(selfLinkName, "_", " ");
+	
+		// took the self link check out because of C. latrans
+		String latinName = selfLinkName; //getGroup(selfLinkPattern, text, 1);
+//		if (!name.equals(latinName)) {
+//			return null;
+//		}
+		String rank = getRank(latinName, text);
 		
 		String extinct = getGroup(extinctPattern, text, 1);
 		if (extinct == null) {
@@ -128,7 +169,7 @@ public class WikiSpeciesParser {
 		CompleteEntry results = new CompleteEntry();
 		results.setRank(Rank.valueOfWithAlternates(rank));
 		results.setCommonName(commonName);
-		results.setLatinName(latinName);
+		results.setLatinName(pageNameLatin);
 		results.setParent(parent);
 		results.setImageLink(imageLink);
 		results.setExtinct(extinct != null);
@@ -145,7 +186,7 @@ public class WikiSpeciesParser {
 		}
 		return commonName.substring(0, pos);
 	}
-	private CompleteEntry getParent(String text, String latinName, String rank) {
+	public CompleteEntry getParent(String text, String latinName, String rank) {
 //		text = getRankSection(text);
 		CompleteEntry parent = null;
 		Pattern parentPattern = getParentPattern(rank, latinName, true);
@@ -184,21 +225,33 @@ public class WikiSpeciesParser {
 				}
 			}
 		}
-		if (parent == null) {
-			int pos = latinName.indexOf("incertae sedis");
-			if (pos > 1) {
-				latinName = latinName.substring(pos);
-				parent = getParent(text, latinName, rank);
-			}
-		}
 		cleanNameCharacters(parent);
 		return parent;
+	}
+	/**
+	 * Convert
+	 * Some latin name
+	 * to
+	 * S. latin name
+	 */
+	private String getLatinAbbreviationPattern(String latin) {
+		int pos = latin.indexOf(' ');
+		if (pos > 0) {
+			String left = latin.substring(0, pos);
+			String right = latin.substring(pos + 1);
+			char ch = left.charAt(0);
+			String pattern = "(?:" + ch + "\\. " + right + "|" + latin + ")";
+			return pattern;
+		} else {
+			return latin;
+		}
 	}
 	private String escapeRegEx(String t) {
 		t = t.replaceAll("\\(", "\\\\(");
 		t = t.replaceAll("\\)", "\\\\)");
 		return t;
 	}
+
 	private Pattern getParentPattern(String childRank, String childLatin, boolean normal) {
 		String w = "(?:[\\p{L}\\(\\)_\\. \\&%#0-9;']|</?i>)+"; // &#160;
 		String preName;
@@ -210,6 +263,8 @@ public class WikiSpeciesParser {
 			preName = "/w/index.php\\?title=";
 			postName = "&amp;action=edit&amp;redlink=1\" class=\"new\" "; 
 		}
+		childLatin = escapeRegEx(childLatin);
+		childLatin = getLatinAbbreviationPattern(childLatin);
 		Pattern parentPattern = Pattern.compile(
 				getRanksPatternPart(true) +
 				"[:\\s†]*" +
@@ -223,11 +278,12 @@ public class WikiSpeciesParser {
 //				"(" + w + ")" +
 //				"(?:'|</i>|</a>|</b>|<br />|\\s|</p>|<dd>|</dd>|<dl>|</dl>|<p>|</span>)*" +
 //				"(?:(?:<i>)?(?:\\p{L}+:\\s*not divided\\s*)(?:<i>)?(?:<br ?/?>\\s*))*" +
+				"(?:" + getRanksPatternPart(true) + ":\\s*Unassigned<br\\s*/>\\s*)?" +
 				childRank + 
 				"(:|\\s)+" +
 				"[^:]*" +
 				//"(<.*?>)*\\s*('\\[\\?)*\\s*" +
-				escapeRegEx(childLatin)
+				childLatin
 				);
 		return parentPattern;
 	}
