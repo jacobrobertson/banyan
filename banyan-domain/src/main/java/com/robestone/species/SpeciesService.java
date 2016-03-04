@@ -244,6 +244,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		}
 	}
 
+	public Collection<CompleteEntry> findEntriesWithInvalidParent() {
+		return template.query(
+				"select latin_name, parent_latin_name from species where parent_id is null", 
+				this);
+	}
 	public Collection<String> findAllUnmatchedParentNames() {
 		List<String> unmatchedParents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
 				new EntityMapperRowMapper());
