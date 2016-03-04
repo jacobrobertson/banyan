@@ -1,5 +1,7 @@
 package com.robestone.species.parse;
 
+import com.robestone.species.LogHelper;
+
 
 public class WikipediaCrawler {
 
@@ -13,13 +15,13 @@ public class WikipediaCrawler {
 	
 	public void showBoth(String key) {
 		Taxobox box = toTaxobox(key);
-		System.out.println(toTemplate(box));
-		System.out.println("---------------------");
-		System.out.println(toPage(box, true));
+		LogHelper.speciesLogger.info(toTemplate(box));
+		LogHelper.speciesLogger.info("---------------------");
+		LogHelper.speciesLogger.info(toPage(box, true));
 	}
 	public void showOne(String key) {
 		Taxobox box = toTaxobox(key);
-		System.out.println(toPage(box, false));
+		LogHelper.speciesLogger.info(toPage(box, false));
 	}
 	public String toPage(Taxobox box, boolean hasTemplate) {
 		String converted = formatter.toWikispeciesPage(box, hasTemplate);
@@ -41,7 +43,7 @@ public class WikipediaCrawler {
 	private String getWikipediaPage(String latinName) {
 		String link = toLink(latinName);
 		String redirect = "#Redirect [[";
-		String page = WikiSpeciesCrawler.getPageForUrl(link);
+		String page = WikiSpeciesCache.getPageForUrl(link);
 		int pos = page.indexOf(redirect);
 		if (pos < 0) {
 			return page;
@@ -49,7 +51,7 @@ public class WikipediaCrawler {
 		int end = page.indexOf("]]", pos);
 		String commonName = page.substring(pos + redirect.length(), end);
 		link = toLink(commonName);
-		page = WikiSpeciesCrawler.getPageForUrl(link);
+		page = WikiSpeciesCache.getPageForUrl(link);
 		return page;
 	}
 }

@@ -13,7 +13,7 @@ public class BoringWorker extends AbstractWorker {
 		BoringWorker w = new BoringWorker();
 		
 		w.speciesService.fixBoringCommonNames();
-		new BoringPrunerWorker().run();
+		new BoringPrunerWorker().run(true);
 		
 		/*
 		// first pass - this is simple

@@ -1,11 +1,5 @@
 package com.robestone.species.parse;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -14,28 +8,27 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.util.html.EntityMapper;
 
 public class WikiSpeciesCrawler extends AbstractWorker {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		if (args == null || args.length == 0) {
-			args = new String[] { "Ciliophrys" };
+			args = new String[] { };
 		}
 		
 		boolean crawlAllStoredLinks = true;
-		/*
+		//*
 		args = new String[] {
 				
-			"Eutheria",
+			"ISSN 2176-7793",
 
 				
 		};
@@ -59,7 +52,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private RedirectPageParser redirectPageParser = new RedirectPageParser();
 	private int updatedCount = 0;
 	
-	public void crawlStoredLinks() {
+	public void crawlStoredLinks() throws Exception {
 		pushStoredLinks(true);
 		crawl();
 	}
@@ -115,25 +108,25 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 	}
 	
-	public void crawl() {
+	public void crawl() throws Exception {
 		while (!currentStack.empty()) {
 			// loop for all found links
 			while (!currentStack.empty()) {
 				ParseStatus status = currentStack.pop();
-	//			System.out.println(found);
+	//			LogHelper.speciesLogger.info(found);
 				if (status.getType() != null) {
 					continue;
 				}
-				System.out.println("crawlOne." + currentStack.size() + "." + status);
+				LogHelper.speciesLogger.info("crawlOne." + currentStack.size() + "." + status);
 				crawlOne(status);
 			}
 			currentStack = nextStack;
 			nextStack = new Stack<ParseStatus>();
 		}
 	}
-	public void crawlOne(ParseStatus ps) {
+	public void crawlOne(ParseStatus ps) throws Exception {
 		// get the contents of the page
-		String page = getPage(ps.getLatinName());
+		String page = WikiSpeciesCache.CACHE.readFile(ps.getLatinName());
 		if (page == null) {
 			return;
 		}
@@ -154,7 +147,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		ps.setStatus(ParseStatus.DONE);
 		parseStatusService.updateStatus(ps);
 	}
-	
+
 	public void visitUnparseablePage(ParseStatus ps, String page) {
 		String redirectTo = redirectPageParser.getRedirectTo(page);
 		if (redirectTo != null) {
@@ -187,7 +180,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		if (added) {
 			// record the status of the link
 			// push to the stack
-			System.out.println("foundNewLink." + link.getLatinName());
+			LogHelper.speciesLogger.info("foundNewLink." + link.getLatinName());
 			nextStack.push(link);
 			parseStatusService.updateStatus(link);
 		}
@@ -196,14 +189,14 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public void visitPage(ParseStatus link, String page) {
 		String type = getType(page);
 		if (type != null) {
-			System.out.println("type." + link.getLatinName() + "." + type);
+			LogHelper.speciesLogger.info("type." + link.getLatinName() + "." + type);
 			link.setType(type);
 			return;
 		}
 		boolean isDeleted = isDeleted(page);
 		link.setDeleted(isDeleted);
 		if (isDeleted) {
-			System.out.println("deleted." + link.getLatinName());
+			LogHelper.speciesLogger.info("deleted." + link.getLatinName());
 			return;
 		}
 		// parse it
@@ -216,63 +209,6 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				parsed(results);
 				results = results.getParent();
 			}
-		}
-	}
-	static void savePage(ParseStatus link, String page) {
-		try {
-			IOUtils.write(page, new FileOutputStream("E:\\WikiSpeciesCache\\" + link.getLatinName()));
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-//			throw new RuntimeException(ioe);
-		}
-	}
-	
-	private static String getPage(String link) {
-		link = StringUtils.replace(link, " ", "_");
-		link = "https://species.wikimedia.org/wiki/" + link + "?redirect=no";
-		return getPageForUrl(link);
-	}
-	public static String getPageForUrl(String link) {
-		return getPageForUrl(link, 3);
-	}
-	public static String getPageForUrl(String link, int maxRetries) {
-		try {
-			URL url = new URL(link);
-			URLConnection con = url.openConnection();
-			HttpURLConnection hconn = (HttpURLConnection) con;
-			con.setConnectTimeout(15000); // not sure what a good number is here?
-			hconn.addRequestProperty("Content-Type", "text/html;charset=UTF-8");
-			hconn.setUseCaches(false);
-			int status = hconn.getResponseCode();
-			if (status == HttpURLConnection.HTTP_NOT_FOUND) {
-				// 401 means it was deleted
-				// this is a pretty big workaround, but it should work...
-				System.out.println("status." + status + "." + link);
-				return DELETED_PAGE;
-			}
-			InputStream in = con.getInputStream();
-			String contentEncoding = con.getHeaderField("Content-Encoding");
-	        if ("gzip".equalsIgnoreCase(contentEncoding)) {
-				in = new GZIPInputStream(in);
-	        }
-			String page = IOUtils.toString(in, "UTF-8");
-			// I do this to avoid spamming wikispecies too hard
-			// not sure how long a sleep I need
-			Thread.sleep(250);
-			return page;
-		} catch (IOException ioe) {
-			System.out.println("getPageForUrl.IOException." + ioe.getMessage() +  "(" + maxRetries + ")." + link);
-			if (maxRetries == 0) {
-				return null;
-			} else {
-				try {
-					Thread.sleep(500);
-				} catch (InterruptedException e) {
-				}
-				return getPageForUrl(link, maxRetries - 1);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
 		}
 	}
 	
@@ -324,16 +260,34 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		return count >= 5; // 3 might be better, but this hasn't really actually been a problem
 	}
 	private static Pattern chinese = Pattern.compile(".*[a-zA-Z]{2,}.*");
-	private static String DELETED_PAGE = "This page has been deleted.";
 	private static boolean isDeleted(String page) {
-		return page.contains(DELETED_PAGE);
+		return page.contains(WikiSpeciesCache.DELETED_PAGE);
+	}
+	private static Pattern[] authTypes = getAuthTypes();
+	public static Pattern[] getAuthTypes() {
+		String[] authTypes = {
+				"Taxon_Authorities", 
+//				"Entomologists", "Botanists", "Lichenologists",	"Palaeontologists", "Paleobotanists", "Ichthyologists",
+				"[A-Za-z_]+ists",
+				"ISSN"};
+		Pattern[] patterns = new Pattern[authTypes.length];
+		for (int i = 0; i < authTypes.length; i++) {
+			patterns[i] = Pattern.compile("<a href=\"/wiki/Category\\:" + authTypes[i]);
+		}
+		return patterns;
 	}
 	public static String getType(String page) {
-		String[] authTypes = {
-				"Entomologists", "Taxon_Authorities", "Botanists", "Lichenologists",
-				"Palaeontologists", "Paleobotanists"};
-		for (String authType: authTypes) {
-			if (page.contains("<a href=\"/wiki/Category:" + authType)) {
+		for (Pattern authType: authTypes) {
+			Matcher m = authType.matcher(page);
+			if (m.find()) {
+				return ParseStatus.AUTHORITY;
+			}
+		}
+		String[] authHints = {
+				"<span class=\"mw-headline\" id=\"Authored_taxa\">Authored taxa</span>"
+		};
+		for (String hint: authHints) {
+			if (page.contains(hint)) {
 				return ParseStatus.AUTHORITY;
 			}
 		}

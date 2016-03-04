@@ -30,7 +30,7 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 	}
 	
 	public static final int MAX_INTERESTING_CHILD_COUNT = 10;
-	private static final Logger logger = Logger.getLogger(InterestingSubspeciesWorker.class);
+	public static final Logger logger = Logger.getLogger(InterestingSubspeciesWorker.class);
 
 	public void run() {
 		Tree tree = speciesService.findInterestingTreeFromPersistence();
@@ -38,13 +38,16 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 	}
 	
 	public void assignInterestingSubspecies(Tree tree) {
-		logger.debug("assignInterestingSubspecies > " + tree.size());
-//		int count = 0;
+		logger.info("assignInterestingSubspecies > " + tree.size());
+		int count = 0;
+		int max = 1000;
 		for (Entry entry: tree.getEntries()) {
-//			logger.debug("assignInterestingSubspecies." + (count++));
+			if (count++ % max == 0) {
+				logger.info("assignInterestingSubspecies." + (count) + "." + entry.getLatinName());
+			}
 			assignInterestingSubspecies(entry);
 		}
-		logger.debug("assignInterestingSubspecies < " + tree.size());
+		logger.info("assignInterestingSubspecies < " + tree.size());
 	}
 	public void assignInterestingSubspecies(Entry entry) {
 		logger.debug("assignInterestingSubspecies." + entry.getLatinName());

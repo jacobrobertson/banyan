@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.robestone.species.CommonNameSimilarityChecker;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.species.Rank;
 
 public class WikipediaTaxoboxParser {
@@ -106,7 +107,7 @@ public class WikipediaTaxoboxParser {
 			String nonTaxoPart = edit.substring(taxoboxString.length());
 			commonName = commonNameParser.parse(box.getLatinName(), nonTaxoPart);
 			if (commonName != null) {
-				System.out.println(">>>>> COMMON NAME PARSER: " + commonName);
+				LogHelper.speciesLogger.info(">>>>> COMMON NAME PARSER: " + commonName);
 			}
 			box.setCommonName(commonName);
 		}
@@ -161,7 +162,7 @@ public class WikipediaTaxoboxParser {
 		if (value == null) {
 			return null;
 		}
-//		System.out.println("parseLineValue." + key + "/" + value);
+//		LogHelper.speciesLogger.info("parseLineValue." + key + "/" + value);
 		String name = WikiSpeciesParser.getGroup(pattern, value);
 		return name;
 	}
@@ -329,7 +330,7 @@ public class WikipediaTaxoboxParser {
 					value = null;
 				}
 				Line line = new Line(key, value);
-//				System.out.println("line." + line.getKey() + "/" + line.getValue());
+//				LogHelper.speciesLogger.info("line." + line.getKey() + "/" + line.getValue());
 				lines.add(line);
 			}
 		}

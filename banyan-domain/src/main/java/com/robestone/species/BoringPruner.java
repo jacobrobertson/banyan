@@ -25,7 +25,7 @@ import com.robestone.species.parse.ImagesCreater;
  */
 public class BoringPruner {
 
-	private Logger logger = Logger.getLogger(BoringPruner.class);
+	public Logger logger = Logger.getLogger(BoringPruner.class);
 	
 	private Set<CompleteEntry> detached = new HashSet<CompleteEntry>();
 	private Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
@@ -169,7 +169,7 @@ public class BoringPruner {
 		for (CompleteEntry e: leaves) {
 			boolean boring = isLeafBoring(e);
 			if (boring) {
-				logger.debug("pruneBoringLeaves.boring." + e.getId());
+				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
 				detach(e);
 				changed++;
 			}

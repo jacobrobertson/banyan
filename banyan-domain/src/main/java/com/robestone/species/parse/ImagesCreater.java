@@ -19,6 +19,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.robestone.image.ImageIoUtilities;
 import com.robestone.species.Entry;
+import com.robestone.species.LogHelper;
 
 public class ImagesCreater extends AbstractWorker {
 
@@ -84,7 +85,7 @@ public class ImagesCreater extends AbstractWorker {
 				e.printStackTrace();
 			}
 			count++;
-			System.out.println("made thumbs > " + count + "/" + size);
+			LogHelper.speciesLogger.info("made thumbs > " + count + "/" + size);
 		}
 	}
 	private static String getExtensionFromLink(String link) {
@@ -188,7 +189,7 @@ public class ImagesCreater extends AbstractWorker {
 				out.close();
 				return true;
 			} catch (Exception ioe) {
-				System.out.println(ioe.getMessage());
+				LogHelper.speciesLogger.info(ioe.getMessage());
 				fails++;
 			}
 		}
@@ -213,6 +214,11 @@ public class ImagesCreater extends AbstractWorker {
 		downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
 		imagesMeasurer.runOne(entry);
 	}
+	/*
+	public static String getLegalFileNamePart(String latinName) {
+		
+	}
+	*/
 	private static String getFilePath(String latinName, String thumbType, String fileExtension) {
 		String hashPath = getImagePathHashed(latinName);
 		String iconFileName = 

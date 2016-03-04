@@ -61,7 +61,7 @@ public class SpeciesServiceTest extends TestCase {
 	public void testFindOwls() {
 		int id = service.findBestId("owl", new HashSet<Integer>());
 		Entry found = service.findEntry(id);
-		assertEquals("Owls", found.getCommonName());
+		assertEquals("Owl", found.getCommonName());
 	}
 	public void test45293Fails() {
 		CompleteEntry entry = service.findEntry(45293);

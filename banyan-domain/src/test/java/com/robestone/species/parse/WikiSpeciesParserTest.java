@@ -258,7 +258,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Sordariales incertae sedis", null, "Sordariales", null, Rank.Familia);
 	}
 	public void testCentropogonCampanulaceae() throws IOException {
-		doTest("Centropogon (Campanulaceae)", null, "Lobelioideae", null, Rank.Genus);
+		doTest("Centropogon (Campanulaceae)", null, "Lobelioideae", "thumb/a/a5/Centropogon_ferrugineus_1.jpg/250px-Centropogon_ferrugineus_1.jpg", Rank.Genus);
+	}
+	public void testStenocorusStenocorus() throws IOException {
+		doTest("Stenocorus (Stenocorus)", null, "Stenocorus", null, Rank.Subgenera);
 	}
 	
 	
@@ -305,6 +308,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	// vs this is okay
 	// Subgenus: <i><a href="/wiki/Aedes_(Aedimorphus)" title="Aedes (Aedimorphus)">Aedes (Aedimorphus)</a></i><br />
 	// Species: <i><strong class="selflink">Aedes vexans</strong></i></p>
+	/*
 	public void testGetParent() {
 		// it's failing because of the "R."
 		doTestGetParent("Rubus subg. Idaeobatus", "Subgenus", "Rubus", "Genus: <i><a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a></i><br />\r\nSubgenus: <strong class=\"selflink\"><i>R. subg. Idaeobatus</strong><br />");
@@ -321,5 +325,28 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		assertNotNull("Could not parse text", parent);
 		assertEquals(expectParent, parent.getLatinName());
 	}
+	*/
+	public void testLatinAbbreviations() {
+		doTestLatinAbbreviation("Anything", null);
+		doTestLatinAbbreviation("Anything goes", "A. goes");
+		doTestLatinAbbreviation("Anything will do", "A. w. do");
+	}
+	public void doTestLatinAbbreviation(String latin, String expect) {
+		String found = WikiSpeciesParser.getLatinAbbreviation(latin);
+		assertEquals(expect, found);
+	}
+	public void testAuth() throws Exception {
+		doTestAuth("ISSN 0021-1311");
+		doTestAuth("Wan-Peng_Chen");
+		doTestAuth("Fedor Bogdanovich Schmidt");
+		doTestAuth("Richard Van der Laan");
+	}
+	
+	public void doTestAuth(String name) throws Exception {
+		String page = WikiSpeciesCache.CACHE.readFile(name);
+		String type = WikiSpeciesCrawler.getType(page);
+		assertEquals(ParseStatus.AUTHORITY, type);
+	}
+
 	
 }

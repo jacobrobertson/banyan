@@ -64,7 +64,7 @@ public class ImagesMeasurerWorker extends AbstractWorker {
 		try {
 			String path = ImagesCreater.getImageFilePath(entry, type);
 			File file = new File(path);
-//			System.out.println("measure." + file);
+//			LogHelper.speciesLogger.info("measure." + file);
 			BufferedImage bi = ImageIoUtilities.getImage(file);
 			int h = bi.getHeight();
 			int w = bi.getWidth();

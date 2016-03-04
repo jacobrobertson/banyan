@@ -118,7 +118,7 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="var" path="M2_REPO/org/apache/tapestry/tapestry-core/5.1.0.5/tapestry-core-5.1.0.5.jar" sourcepath="M2_REPO/org/apache/tapestry/tapestry-core/5.1.0.5/tapestry-core-5.1.0.5-sources.jar">
+	<classpathentry kind="var" path="M2_REPO/org/apache/tapestry/tapestry-core/5.1.0.5/tapestry-core-5.1.0.5.jar" sourcepath="/M2_REPO/org/apache/tapestry/tapestry-core/5.1.0.5/tapestry-core-5.1.0.5-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>

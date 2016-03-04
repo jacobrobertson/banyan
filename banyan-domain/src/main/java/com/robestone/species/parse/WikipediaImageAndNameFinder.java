@@ -12,6 +12,7 @@ import java.util.List;
 import com.robestone.species.CommonNameSimilarityChecker;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 
 public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
@@ -52,15 +53,15 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 				totalCount++;
 				Taxobox box = crawler.toTaxobox(entry.getLatinName());
 				if (isBoxInteresting(box, entry)) {
-					System.out.println("=============================== "  + interestingCount + "/" + totalCount);
-					System.out.println(entry.getLatinName());
+					LogHelper.speciesLogger.info("=============================== "  + interestingCount + "/" + totalCount);
+					LogHelper.speciesLogger.info(entry.getLatinName());
 					boolean isImageInteresting = (box.getImage() != null && entry.getImageLink() == null);
 					if (isImageInteresting) {
-						System.out.println(formatter.formatImage(box).trim());
+						LogHelper.speciesLogger.info(formatter.formatImage(box).trim());
 					}
 					boolean isNamesInteresting = isNamesInteresting(box, entry);
 					if (isNamesInteresting) {
-						System.out.println(formatter.formatVernacularNames(box).trim());
+						LogHelper.speciesLogger.info(formatter.formatVernacularNames(box).trim());
 					}
 					boolean outputAndIncrement;
 					if (onlyKeepBest) {
@@ -77,7 +78,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 					}
 				}
 			} catch (RuntimeException e) {
-				System.out.println(totalCount + " - " + entry.getLatinName());
+				LogHelper.speciesLogger.info(totalCount + " - " + entry.getLatinName());
 				throw e;
 			}
 		}

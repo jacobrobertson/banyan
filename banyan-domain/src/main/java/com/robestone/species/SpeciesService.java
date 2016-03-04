@@ -27,7 +27,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
-	public static final Integer TREE_OF_LIFE_ID = 8368;
+	public static final Integer TREE_OF_LIFE_ID = 141817;
 	
 	private SimpleJdbcTemplate template;
 	private boolean useInterestingAttributesForSearches = true;
@@ -120,7 +120,10 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		for (CompleteEntry entry: entries) {
 			cleanEntryFromPersistence(entry);
 		}
-		return EntryUtilities.buildTree(entries);
+		logger.info("findInterestingTreeFromPersistence < cleaned > buildTree");
+		Tree tree = EntryUtilities.buildTree(entries);
+		logger.info("findInterestingTreeFromPersistence <");
+		return tree;
 	}
 	public void updateFromBoringWork(Collection<CompleteEntry> interesting, Collection<CompleteEntry> boring) {
 		logger.info(">updateFromBoringWork.interesting." + interesting.size());
@@ -182,7 +185,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	public void updateRedirect(String from, String to) {
 		to = to.replace("_", " ");
 //		logger.info("redirect." + from + " > " + to);
-		template.update("delete from species where latin_name = ?", from);
+		// not sure I need to delete the old species - it will be orphaned, but might be helpful in research
+		// another reason to leave the entry is that helps my parse done changer
+//		template.update("delete from species where latin_name = ?", from);
 		int count = template.update("update redirect set redirect_to = ? where redirect_from = ?", to, from);
 		if (count == 0) {
 			template.update("insert into redirect (redirect_from, redirect_to) values (?, ?)", from, to);
@@ -240,21 +245,19 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 
 	public Collection<String> findAllUnmatchedParentNames() {
-		List<String> parents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
+		List<String> unmatchedParents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
 				new EntityMapperRowMapper());
-		List<String> entries = template.query("select distinct(latin_name) from species where (parent_id = 0 or parent_id is null)", 
-				new EntityMapperRowMapper());
+		
 		Set<String> latinNames = new HashSet<String>();
-		latinNames.addAll(parents);
-		latinNames.addAll(entries);
+		latinNames.addAll(unmatchedParents);
+		
+		Collection<String> allLatin = findAllLatinNames();
+		latinNames.removeAll(allLatin);
+		
 		return latinNames;
 	}
 	public Collection<String> findAllLatinNames() {
 		return template.query("select latin_name from species", 
-				new EntityMapperRowMapper());
-	}
-	public Collection<String> findAllInterestingLatinNames() {
-		return template.query("select latin_name from species where boring_final = false", 
 				new EntityMapperRowMapper());
 	}
 	public Collection<CompleteEntry> findBoringEntries(boolean bothBoring) {

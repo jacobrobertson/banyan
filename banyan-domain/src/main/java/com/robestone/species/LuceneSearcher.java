@@ -115,7 +115,7 @@ public class LuceneSearcher implements EntrySearcher {
 	 */
 	public LuceneSearcher(SpeciesService speciesService) {
 		List<CompleteEntry> entries = speciesService.findEntriesForLuceneIndex();
-		System.out.println("LuceneSearcher.entries." + entries.size());
+		LogHelper.speciesLogger.info("LuceneSearcher.entries." + entries.size());
 		buildIndex(entries);
 	}
 	public LuceneSearcher(Collection<? extends Entry> entries) {
@@ -141,11 +141,11 @@ public class LuceneSearcher implements EntrySearcher {
 		int count = 0;
 		for (Entry entry: entries) {
 			Document doc = buildDocument(entry);
-//			System.out.println(EntryComparator.getCompareName(entry) + " =>" + doc);
+//			LogHelper.speciesLogger.info(EntryComparator.getCompareName(entry) + " =>" + doc);
 			writer.addDocument(doc);
 			count++;
 		}
-		System.out.println("doBuildIndex." + count);
+		LogHelper.speciesLogger.info("doBuildIndex." + count);
 		writer.optimize();
 		writer.close();
 
@@ -179,7 +179,7 @@ public class LuceneSearcher implements EntrySearcher {
 			}
 			doc.add(new Field(COMMON_NOTOKEN, StringUtils.join(commonNames, " "), Field.Store.YES, Field.Index.NOT_ANALYZED));
 		}
-//		System.out.println("buildDocument." + doc);
+//		LogHelper.speciesLogger.info("buildDocument." + doc);
 		return doc;
 	}
 	protected String toQueryId(Integer id) {

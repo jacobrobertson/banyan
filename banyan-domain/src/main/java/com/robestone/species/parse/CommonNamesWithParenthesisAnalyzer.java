@@ -10,6 +10,7 @@ import java.util.Set;
 import com.robestone.species.CommonNameSplitter;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.species.ParenthesisSplitter;
 
 public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
@@ -49,7 +50,7 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 		if (changed) {
 			e.setCommonNames(names);
 			commonNameSplitter.joinCommonName(e);
-			System.out.println(e.getLatinName() + " / " + originalName + " >> " + e.getCommonName());
+			LogHelper.speciesLogger.info(e.getLatinName() + " / " + originalName + " >> " + e.getCommonName());
 			// TODO persist
 		}
 	}
@@ -80,14 +81,14 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 				}
 				int p2 = cn.indexOf(')');
 				if (p2 < 0) {
-					System.out.println("Weird: " + cn);
+					LogHelper.speciesLogger.info("Weird: " + cn);
 					continue;
 				}
 				String inner = cn.substring(pos + 1, p2);
 				String innerClean = EntryUtilities.getClean(inner, false);
 				boolean added = innersClean.add(innerClean);
 				if (added) {
-					System.out.println(e.getCommonName() + "/" + cn + "/" + e.getLatinName());
+					LogHelper.speciesLogger.info(e.getCommonName() + "/" + cn + "/" + e.getLatinName());
 					inners.add(inner);
 				}
 			}
@@ -95,7 +96,7 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 		List<String> list = new ArrayList<String>(inners);
 		Collections.sort(list);
 		for (String s: list) {
-			System.out.println("\"" + s + "\", Disambiguation,");
+			LogHelper.speciesLogger.info("\"" + s + "\", Disambiguation,");
 		}
 	}
 	

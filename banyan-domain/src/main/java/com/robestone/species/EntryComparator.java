@@ -15,7 +15,7 @@ public class EntryComparator implements Comparator<Entry> {
 		try {
 			return n1.compareToIgnoreCase(n2);
 		} catch (NullPointerException npe) {
-			System.out.println("EntryComparator.compare." + e1.getId() + "/" + e2.getId());
+			LogHelper.speciesLogger.info("EntryComparator.compare." + e1.getId() + "/" + e2.getId());
 			throw new RuntimeException(npe);
 		}
 	}

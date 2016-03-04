@@ -54,6 +54,8 @@ public enum Rank {
 	Classis(230, "+Class", "Classes"),
 	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),
 	
+//	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
+	
 	// --
 	Infraclassis(245, "*Sub-class"),
 	
@@ -94,7 +96,7 @@ public enum Rank {
 			),
 	Familia(410, "+Family", "Familiae", "Famila", "Familae"),
 	Parafamilia(415),
-	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia"),
+	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
 	
 	// TODO -- ? these might be another term for "genus"
 	Genera(425, "*Genus", "Generus", "Genre"),
@@ -199,6 +201,10 @@ public enum Rank {
 	}
 	
 	public static void main(String[] args) {
+		
+//		String t = MorphologicalGroup.getNames().toString();
+//		LogHelper.speciesLogger.info(t);
+		
 		// see http://en.wikipedia.org/wiki/Taxonomic_rank
 		String[] lines = {
 		"	regio	",
@@ -324,7 +330,7 @@ public enum Rank {
 				continue;
 			}
 			line = line.substring(0, 1).toUpperCase() + line.substring(1);
-			System.out.println(line + "(" + index + "),");
+			LogHelper.speciesLogger.info(line + "(" + index + "),");
 			index += 10;
 		}
 	}

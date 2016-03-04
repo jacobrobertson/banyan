@@ -1,6 +1,8 @@
 package com.robestone.species;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Wiki Species has many problems with tree inconsistencies.  Many of these I'm just
@@ -15,14 +17,17 @@ import java.util.List;
  */
 public class WikiSpeciesTreeFixer {
 
-	private String[][] replacedBy = 
-	{
-			{"Eutheria", "Placentalia"},	
-	};
+	private Map<String, String> replacedBy = new HashMap<String, String>(); {
+		replacedBy.put("Eutheria", "Placentalia");
+	}
 	
-	private String[] boring = {
-//		"Eutheria"	
-	};
+//	private String[] boring = {
+////		"Eutheria"	 
+//	};
+	
+	private Map<String, String> assignParent = new HashMap<String, String>(); {
+		assignParent.put("Aves", "Avialae");
+	}
 	
 	private SpeciesService speciesService;
 	
@@ -30,6 +35,12 @@ public class WikiSpeciesTreeFixer {
 		this.speciesService = speciesService;
 	}
 
+	public void run() {
+		fixReplacedBy();
+		fixByMakingBoring();
+		fixAssignParent();
+	}
+	
 	/**
 	 * These types of fixes will take all species that have a parent of X and simply replace that
 	 * parent with Y.
@@ -38,9 +49,8 @@ public class WikiSpeciesTreeFixer {
 	 * 		the rest (including parent id) all need to be updated by the workflow.
 	 */
 	public void fixReplacedBy() {
-		for (String[] replacement: replacedBy) {
-			String toReplace = replacement[0];
-			String replaceWith = replacement[1];
+		for (String toReplace: replacedBy.keySet()) {
+			String replaceWith = replacedBy.get(toReplace);
 			fixReplacedBy(toReplace, replaceWith);
 		}
 	}
@@ -49,7 +59,7 @@ public class WikiSpeciesTreeFixer {
 		Entry parent = speciesService.findEntryByLatinName(toReplace, true);
 		List<CompleteEntry> children = speciesService.findChildren(parent.getId());
 		for (CompleteEntry child: children) {
-			System.out.println("fixReplacedBy." + 
+			LogHelper.speciesLogger.info("fixReplacedBy." + 
 					child.getLatinName() + "(" + child.getId() + ")." +
 					child.getParentLatinName() + " => " + replaceWith);
 			// does not change parent latin id - has to be handled elsewhere
@@ -57,14 +67,29 @@ public class WikiSpeciesTreeFixer {
 			speciesService.updateParentLatinName(child);
 		}
 	}
+	public void fixAssignParent() {
+		for (String child: assignParent.keySet()) {
+			String newParent = assignParent.get(child);
+			fixAssignParent(child, newParent);
+		}
+	}
+	public void fixAssignParent(String child, String newParent) {
+		CompleteEntry entry = speciesService.findEntryByLatinName(child, true);
+		entry.setParentLatinName(newParent);
+		LogHelper.speciesLogger.info("fixAssignParent." + 
+				entry.getLatinName() + "(" + entry.getId() + ")." +
+				entry.getParentLatinName() + " => " + newParent);
+		speciesService.updateParentLatinName(entry);
+	}
+	
 	/**
 	 * These are species that I don't know exactly what to do with, so I just override
 	 * their boring flag.
 	 */
 	public void fixByMakingBoring() {
-		for (String one: boring) {
-			
-		}
+//		for (String one: boring) {
+//			
+//		}
 	}
 	
 }

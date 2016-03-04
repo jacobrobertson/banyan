@@ -7,6 +7,7 @@ import org.apache.tapestry5.ioc.annotations.Inject;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
 import com.robestone.species.IExamplesService;
+import com.robestone.species.LogHelper;
 import com.robestone.species.tapestry.pages.Search;
 import com.robestone.species.tapestry.services.SearchContext;
 
@@ -38,7 +39,7 @@ public class NavigationBar {
 	}
 
 	public Object onActionFromTree(String crunchedIds) {
-		System.out.println("NavigationBar.onActionFromTree." + crunchedIds);
+		LogHelper.speciesLogger.info("NavigationBar.onActionFromTree." + crunchedIds);
 		getSearchContext().setCrunchedIds(crunchedIds);
 		return Search.NAME;
 	}
@@ -47,7 +48,7 @@ public class NavigationBar {
 		return Search.NAME;
 	}
 	public Object onActionFromStartOver() {
-		System.out.println("onActionFromStartOver");
+		LogHelper.speciesLogger.info("onActionFromStartOver");
 		getSearchContext().startOver();
 		return Search.NAME;
 	}
@@ -56,7 +57,7 @@ public class NavigationBar {
 		return Search.NAME;
 	}
 	public void onActionFromSearch(String search) {
-		System.out.println("onActionFromSearch." + search);
+		LogHelper.speciesLogger.info("onActionFromSearch." + search);
 		setSearch(search);
 		onSelectedFromSearch();
 	}
@@ -64,7 +65,7 @@ public class NavigationBar {
 		getSearchContext().search();
 	}
 	public Object onSuccess() {
-		System.out.println("NavigationBar.onSuccess");
+		LogHelper.speciesLogger.info("NavigationBar.onSuccess");
 		return Search.NAME;
 	}
 	public String getExampleCaption() {

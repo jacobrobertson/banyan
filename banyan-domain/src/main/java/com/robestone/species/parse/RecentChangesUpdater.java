@@ -4,6 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.log4j.Level;
+
+import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
 
 public class RecentChangesUpdater extends AbstractWorker {
@@ -17,7 +20,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		}
 		
 		boolean crawlNewLinks = true;
-		boolean runMaintenance = false;
+		boolean runMaintenance = true;
 		
 		if (crawlNewLinks) {
 			recent.crawlNewLinks();
@@ -28,20 +31,20 @@ public class RecentChangesUpdater extends AbstractWorker {
 	}
 	
 	private int maxOldLinks = 1000;
-	private int maxChanges = 1000;
+	private int maxChanges = 5000;
 	private int maxDays = 10;
 	
 	public void runAll() throws Exception {
-		System.out.println("RecentChangesUpdater.runAll");
+		LogHelper.speciesLogger.info("RecentChangesUpdater.runAll");
 		crawlNewLinks();
 		runMaintenance();
 	}
 	
 	public void runMaintenance() throws Exception {
-		System.out.println("RecentChangesUpdater.runMaintenance");
-		
+		LogHelper.speciesLogger.info("RecentChangesUpdater.runMaintenance");
+		//*
 		// any changes that "fix" what the crawling found
-		new WikiSpeciesTreeFixer(speciesService).fixReplacedBy();
+		new WikiSpeciesTreeFixer(speciesService).run();
 		
 		// fix the parents (i.e. set ids for parent latin name) 
 		speciesService.fixParents();
@@ -55,8 +58,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 		 
 		// run full boring suite
 		BoringWorker.main(null);
-		
+		//*/
 		// create new interesting crunched ids
+		InterestingSubspeciesWorker.logger.setLevel(Level.INFO);
 		new InterestingSubspeciesWorker().run();
 		
 		new SiblingsWithSameCommonNamesAnalyzer().run();
@@ -71,17 +75,17 @@ public class RecentChangesUpdater extends AbstractWorker {
 		ThumbnailDownloader.main(null);
 	}
 
-	public void crawlNewLinks() {
+	public void crawlNewLinks() throws Exception {
 		Set<String> allLinks = new HashSet<String>();
 
 		String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
 				+ maxDays + "&limit=" + maxChanges
 				+ "&namespace=0";
-		System.out.println("url." + url);
-		String page = WikiSpeciesCrawler.getPageForUrl(url, 100);
+		LogHelper.speciesLogger.info("url." + url);
+		String page = WikiSpeciesCache.getPageForUrl(url, 100);
 		
 		Set<String> parsedLinks = WikiSpeciesCrawler.parseLinks(page);
-		System.out.println("crawlNewLinks.found." + parsedLinks.size());
+		LogHelper.speciesLogger.info("crawlNewLinks.found." + parsedLinks.size());
 		
 		allLinks.addAll(parsedLinks);
 			
@@ -89,9 +93,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 		crawler.pushStoredLinks(allLinks, true);
 		crawler.crawl();
 	}
-	public void crawlOldLinks() {
+	public void crawlOldLinks() throws Exception {
 		Collection<String> oldestLinks = parseStatusService.findOldestLinks(maxOldLinks);
-		System.out.println("oldestLinks." + oldestLinks.size());
+		LogHelper.speciesLogger.info("oldestLinks." + oldestLinks.size());
 
 		Set<String> allLinks = new HashSet<String>();
 		allLinks.addAll(oldestLinks);

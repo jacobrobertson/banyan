@@ -1,10 +1,10 @@
 package com.robestone.species.parse;
 
+import static com.robestone.species.parse.WikipediaTaxoboxParser.W;
+
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
-
-import static com.robestone.species.parse.WikipediaTaxoboxParser.W;
 
 
 /**

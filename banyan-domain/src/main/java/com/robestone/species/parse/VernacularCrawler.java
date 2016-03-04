@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 
 /**
  * Attempts to "crawl" (really just iterate)
@@ -37,7 +38,7 @@ public class VernacularCrawler {
 			
 	public void run() throws IOException {
 		String[] files = new File(dir).list();
-		System.out.println("files.length." + files.length);
+		LogHelper.speciesLogger.info("files.length." + files.length);
 		for (String file: files) {
 			run(file);
 		}
@@ -50,7 +51,7 @@ public class VernacularCrawler {
 		if (e != null && e.getCommonName() == null) {
 			String sidebar = getSidebar(latinName, page);
 			if (sidebar != null) {
-				System.out.println("missingVernacular." + latinName + " > " + sidebar);
+				LogHelper.speciesLogger.info("missingVernacular." + latinName + " > " + sidebar);
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
+import com.robestone.species.LogHelper;
 
 public class SiblingsWithSameCommonNamesAnalyzer extends AbstractWorker {
 
@@ -28,7 +29,7 @@ public class SiblingsWithSameCommonNamesAnalyzer extends AbstractWorker {
 			if (count > 0) {
 				found.add(key);
 				i++;
-				System.out.println(i + ". " + key + " (" + count + ")");
+				LogHelper.speciesLogger.info(i + ". " + key + " (" + count + ")");
 			}
 		}
 	}

@@ -6,6 +6,7 @@ import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
 
 import com.robestone.species.ISpeciesService;
+import com.robestone.species.LogHelper;
 import com.robestone.species.tapestry.services.SearchContext;
 
 @IncludeStylesheet("context:style/species.css")
@@ -28,11 +29,11 @@ public class AbstractPage {
 		return searchContext;
 	}
 	public Object onSuccess() {
-		System.out.println("AbstractPage.onSuccess");
+		LogHelper.speciesLogger.info("AbstractPage.onSuccess");
 		return Search.NAME;
 	}
 	public Object onActionFromTree(String crunchedIds) {
-		System.out.println(getClass().getSimpleName() + ".onActionFromTree." + crunchedIds);
+		LogHelper.speciesLogger.info(getClass().getSimpleName() + ".onActionFromTree." + crunchedIds);
 		getSearchContext().setCrunchedIds(crunchedIds);
 		return Search.NAME;
 	}

@@ -2,6 +2,7 @@ package com.robestone.species.parse;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.species.Tree;
 
 /**
@@ -23,7 +24,7 @@ public class CommonNameFixer extends AbstractWorker {
 				if (!cn.equals(fixed)) {
 					e.setCommonName(fixed);
 					speciesService.updateCommonName(e);
-					System.out.println("CommonNameFixer." + cn + " > " + fixed);
+					LogHelper.speciesLogger.info("CommonNameFixer." + cn + " > " + fixed);
 				}
 			}
 		}

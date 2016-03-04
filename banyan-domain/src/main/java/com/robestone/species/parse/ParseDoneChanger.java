@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.robestone.species.Entry;
+import com.robestone.species.LogHelper;
 
 /**
  * Changes things that say they're done back to an undone status.
@@ -15,14 +15,15 @@ import com.robestone.species.Entry;
 public class ParseDoneChanger extends AbstractWorker {
 
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		ParseDoneChanger pc = new ParseDoneChanger();
 //		pc.setAllAsDone();
 //		pc.createForAllSpecies();
 //		pc.findBadStatuses();
-		pc.changeForUnmatchedParents();
+		pc.changeForNoSpeciesFound();
 		
-		new WikiSpeciesCrawler().crawlStoredLinks();
+//		new WikiSpeciesCrawler().crawlStoredLinks();
+//		new RecentChangesUpdater().runAll();
 	}
 	
 	public void findBadStatuses() {
@@ -32,7 +33,7 @@ public class ParseDoneChanger extends AbstractWorker {
 		int count = 0;
 		for (ParseStatus status: statuses) {
 			if (!set.contains(status.getLatinName())) {
-				System.out.println((count++) + ": " + status.getLatinName());
+				LogHelper.speciesLogger.info((count++) + ": " + status.getLatinName());
 			}
 		}
 	}
@@ -40,22 +41,25 @@ public class ParseDoneChanger extends AbstractWorker {
 	public void setAllAsDone() {
 		parseStatusService.setAllAsDone();
 	}
-	/**
-	 * This will create many many new parses for scientists, etc...
-	 */
 	public void changeForNoSpeciesFound() {
-		List<ParseStatus> all = parseStatusService.findAllStatus();
-		for (ParseStatus one: all) {
+		int count = 0;
+		boolean persist = true;
+		List<ParseStatus> statuses = parseStatusService.findAllDoneNonAuth();
+		Set<String> names = new HashSet<String>(speciesService.findAllLatinNames());
+		LogHelper.speciesLogger.info("changeForNoSpeciesFound.all." + statuses.size() + "/" + names.size());
+		for (ParseStatus one: statuses) {
 			if (one.getType() != null) {
 				continue;
 			}
-			Entry e = speciesService.findEntryByLatinName(one.getLatinName());
-			if (e == null) {
-				System.out.println("changeForNoSpeciesFound." + one.getLatinName());
+			if (!names.contains(one.getLatinName())) {
+				LogHelper.speciesLogger.info("changeForNoSpeciesFound." + (count++) + "." + one.getLatinName());
 				one.setStatus(ParseStatus.FOUND);
-				parseStatusService.updateStatus(one);
+				if (persist) {
+					parseStatusService.updateStatus(one);
+				}
 			}
 		}
+		LogHelper.speciesLogger.info("changeForNoSpeciesFound<" + count);
 	}
 	/**
 	 * This will create many many new parses for scientists, etc...
@@ -65,7 +69,7 @@ public class ParseDoneChanger extends AbstractWorker {
 		for (String latinName: all) {
 			ParseStatus parsed = parseStatusService.findForLatinName(latinName);
 			if (parsed == null) {
-				System.out.println("createForAllSpecies." + latinName);
+				LogHelper.speciesLogger.info("createForAllSpecies." + latinName);
 				parsed = new ParseStatus();
 				parsed.setUrl(latinName);
 				parsed.setStatus(ParseStatus.DONE);
@@ -79,7 +83,7 @@ public class ParseDoneChanger extends AbstractWorker {
 		// update the parse status to FOUND
 		int updated = 0;
 		int inserted = 0;
-		System.out.println("changeForUnmatchedParents." + names.size());
+		LogHelper.speciesLogger.info("changeForUnmatchedParents." + names.size());
 		for (String name: names) {
 			if (name == null) {
 				continue;
@@ -93,13 +97,13 @@ public class ParseDoneChanger extends AbstractWorker {
 				status.setDate(null);
 				parseStatusService.updateStatus(status);
 				inserted++;
-				System.out.println("inserted." + (inserted) + "." + name);
+				LogHelper.speciesLogger.info("inserted." + (inserted) + "." + name);
 			} else {
 				updated++;
-				System.out.println("updated." + (updated) + "." + name);
+				LogHelper.speciesLogger.info("updated." + (updated) + "." + name);
 			}
 		}
-		System.out.println("inserted." + inserted);
-		System.out.println("updated." + updated);
+		LogHelper.speciesLogger.info("inserted." + inserted);
+		LogHelper.speciesLogger.info("updated." + updated);
 	}
 }

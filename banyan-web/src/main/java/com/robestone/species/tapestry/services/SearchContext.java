@@ -13,6 +13,7 @@ import com.robestone.species.EntryUtilities;
 import com.robestone.species.IExamplesService;
 import com.robestone.species.ISpeciesService;
 import com.robestone.species.IdCruncher;
+import com.robestone.species.LogHelper;
 import com.robestone.species.SpeciesService;
 
 public class SearchContext {
@@ -31,7 +32,7 @@ public class SearchContext {
 		return search;
 	}
 	public void setSearch(String search) {
-		System.out.println("setSearch." + search);
+		LogHelper.speciesLogger.info("setSearch." + search);
 		this.search = search;
 	}
 	
@@ -61,7 +62,7 @@ public class SearchContext {
 	private boolean runCommand(String query) {
 		if (query.indexOf("run:") == 0) {
 			String command = query.substring(4);
-			System.out.println("runCommand." + command);
+			LogHelper.speciesLogger.info("runCommand." + command);
 			if (command.equals("clear")) {
 				getService().clearCache();
 				examplesService.clearCache();
@@ -77,7 +78,7 @@ public class SearchContext {
 		focusOnSearch = false;
 	}
 	public void setCrunchedIds(String crunchedIds) {
-		System.out.println("setCrunchedIds." + crunchedIds);
+		LogHelper.speciesLogger.info("setCrunchedIds." + crunchedIds);
 		List<Integer> ids;
 		if (!StringUtils.isEmpty(crunchedIds)) {
 			ids = cruncher.toList(crunchedIds);

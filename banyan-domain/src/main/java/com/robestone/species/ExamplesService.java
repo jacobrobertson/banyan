@@ -43,7 +43,7 @@ public class ExamplesService implements IExamplesService {
 				Set<Integer> ids = speciesService.findBestIds(terms, new ArrayList<Integer>());
 				crunched = cruncher.toString(ids);
 			}
-			System.out.println("crunchIds." + terms + " >> " + crunched);
+			LogHelper.speciesLogger.info("crunchIds." + terms + " >> " + crunched);
 			template.update("update example set crunched_ids = ?, terms = ? where example_id = ?", crunched, terms, example.getId());
 		}
 	}

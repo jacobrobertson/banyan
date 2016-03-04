@@ -8,6 +8,7 @@ import org.apache.tapestry5.services.ExceptionReporter;
 
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.species.tapestry.components.NavigationBar;
 
 /**
@@ -48,12 +49,12 @@ public class Search extends AbstractPage implements ExceptionReporter {
 	}
 	
 	public void onSelectedFromSearch() {
-		System.out.println("onSelectedFromSearch." + search);
+		LogHelper.speciesLogger.info("onSelectedFromSearch." + search);
 		getSearchContext().search(search);
 	}
 	
 	public Object onActionFromStartOver() {
-		System.out.println("onActionFromStartOver");
+		LogHelper.speciesLogger.info("onActionFromStartOver");
 		getSearchContext().startOver();
 		return this;
 	}
@@ -64,7 +65,7 @@ public class Search extends AbstractPage implements ExceptionReporter {
 	
 	public Entry getRoot() {
 		Entry root = getSearchContext().getRoot();
-		System.out.println("getRoot." + root);
+		LogHelper.speciesLogger.info("getRoot." + root);
 		return root;
 	}
 	

@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import com.robestone.species.CompleteEntry;
+import com.robestone.species.LogHelper;
 
 public class LettersAnalyzer extends AbstractWorker {
 
@@ -36,7 +37,7 @@ public class LettersAnalyzer extends AbstractWorker {
 			if (pos >= 0) {
 				continue;
 			}
-			System.out.println(c + " (" + letters.get(c).size() + "): " + letters.get(c));
+			LogHelper.speciesLogger.info(c + " (" + letters.get(c).size() + "): " + letters.get(c));
 		}
 	}
 //	String okayLetters = " &'(),\"/-.";

@@ -14,7 +14,6 @@ public class WikiSpeciesParser {
 
 	public static final String OKINA = String.valueOf((char) 0x02BB);
 
-//	private Pattern redirectedPattern = Pattern.compile("\\(Redirected from <a href=");
 	private Pattern rankPattern = Pattern.compile("(?:\\s+|(?:<dd>)|(?:<p>))" +
 			getRanksPatternPart(false) +
 			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?<strong class=\"selflink\">");
@@ -74,6 +73,7 @@ public class WikiSpeciesParser {
 	public CompleteEntry parse(String name, String text) {
 		CompleteEntry entry = parse(name, name, text, true);
 		
+		// incertae sedis
 		if (entry == null) {
 			String newName = getNameNoIncertaeSedis(name);
 			if (newName != null) {
@@ -92,7 +92,37 @@ public class WikiSpeciesParser {
 			}
 		}
 		
+		// cases like Centropogon (Campanulaceae)
+		if (entry == null) {
+			String[] names = getNamesNoParens(name);
+			if (names != null) {
+				entry = parse(name, names[0], text, true);
+				// for now, don't check the name in parens until we have an actual test case for it
+//				if (entry == null) {
+//					entry = parse(name, names[1], text, true);
+//				}
+			}
+		}
+		
+		// handle abbreviated names
+		if (entry == null) {
+			String newName = getLatinAbbreviation(name);
+			if (newName != null) {
+				entry = parse(name, newName, text, true);
+			}
+		}
+		
 		return entry;
+	}
+	private String[] getNamesNoParens(String name) {
+		int pos = name.indexOf("(");
+		if (pos < 0) {
+			return null;
+		}
+		String left = name.substring(0, pos - 1).trim();
+		String right = name.substring(pos + 1);
+		right = StringUtils.chomp(right, ")");
+		return new String[] {left, right};
 	}
 	private String getRank(String latinName, String text) {
 		String rank = getGroup(rankPattern, text, 1);
@@ -134,6 +164,9 @@ public class WikiSpeciesParser {
 //			return null;
 //		}
 		String rank = getRank(latinName, text);
+		if (rank == null) {
+			return null;
+		}
 		
 		String extinct = getGroup(extinctPattern, text, 1);
 		if (extinct == null) {
@@ -208,14 +241,14 @@ public class WikiSpeciesParser {
 			}
 			if (parentLatinName != null) {
 				parent = new CompleteEntry(null, null, parentLatinName);
-//				System.out.println("red parent." + parentLatinName);
+//				LogHelper.speciesLogger.info("red parent." + parentLatinName);
 				// get the parent rank too
 				String ename = getEscapedName(parentLatinName);
 				Pattern parentRankPattern = Pattern.compile(
 						getRanksPatternPart(false) +
 						"(:| )\\s*<a href=\"/w/index.php\\?title=" + ename);
 				String parentRankString = getGroup(parentRankPattern, text, 1);
-//				System.out.println("parent rank." + parentRankString);
+//				LogHelper.speciesLogger.info("parent rank." + parentRankString);
 				if (parentRankString != null) {
 					Rank parentRank = Rank.valueOfWithAlternates(parentRankString);
 					parent.setRank(parentRank);
@@ -233,18 +266,30 @@ public class WikiSpeciesParser {
 	 * Some latin name
 	 * to
 	 * S. latin name
+	 * 
+	 * Also 
+	 * Sceloporus grammicus microlepidotus
+	 * to
+	 * S. g. microlepidotus
 	 */
-	private String getLatinAbbreviationPattern(String latin) {
-		int pos = latin.indexOf(' ');
-		if (pos > 0) {
-			String left = latin.substring(0, pos);
-			String right = latin.substring(pos + 1);
-			char ch = left.charAt(0);
-			String pattern = "(?:" + ch + "\\. " + right + "|" + latin + ")";
-			return pattern;
-		} else {
-			return latin;
+	public static String getLatinAbbreviation(String latin) {
+		String[] split = latin.split(" ");
+		if (split.length == 1) {
+			return null;
 		}
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < split.length; i++) {
+			if (i > 0) {
+				buf.append(" ");
+			}
+			if (i == split.length - 1) {
+				buf.append(split[i]);
+			} else {
+				buf.append(split[i].charAt(0));
+				buf.append('.');
+			}
+		}
+		return buf.toString();
 	}
 	private String escapeRegEx(String t) {
 		t = t.replaceAll("\\(", "\\\\(");
@@ -263,8 +308,8 @@ public class WikiSpeciesParser {
 			preName = "/w/index.php\\?title=";
 			postName = "&amp;action=edit&amp;redlink=1\" class=\"new\" "; 
 		}
+		childRank = escapeRegEx(childRank);
 		childLatin = escapeRegEx(childLatin);
-		childLatin = getLatinAbbreviationPattern(childLatin);
 		Pattern parentPattern = Pattern.compile(
 				getRanksPatternPart(true) +
 				"[:\\s†]*" +
@@ -377,10 +422,10 @@ public class WikiSpeciesParser {
 			
 			// don't do this anymore - using EntityMapper at the dao layer.
 //			for (int i = 0; i < c.length(); i++) {
-////				System.out.println(c + " => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
+////				LogHelper.speciesLogger.info(c + " => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
 //				int ch = c.charAt(i);
 //				if (ch > 255) {
-//					System.out.println(c + "(" + i + ") => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
+//					LogHelper.speciesLogger.info(c + "(" + i + ") => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
 //					c = StringUtils.replaceChars(c, (char) ch, '_');
 //				}
 //			}
