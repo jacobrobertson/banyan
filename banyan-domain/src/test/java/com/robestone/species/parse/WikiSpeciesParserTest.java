@@ -220,6 +220,7 @@ public class WikiSpeciesParserTest extends TestCase {
 	public void testAves() throws IOException {
 		doTest("Aves", "Birds", "Avialae", "thumb/f/f7/Pieni_2_0622.jpg/300px-Pieni_2_0622.jpg", Rank.Classis);
 	}
+	
 	// tests proper parsing of thumbs with two versions
 	// thumb/c/c6/Rapanea.gif/375px-Rapanea.gif 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rapanea.gif/500px-Rapanea.gif 2x
 	public void testMyrsinoideae() throws IOException {
@@ -263,7 +264,51 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testStenocorusStenocorus() throws IOException {
 		doTest("Stenocorus (Stenocorus)", null, "Stenocorus", null, Rank.Subgenera);
 	}
+	/* still can't parse it even with new rank
+	public void testHyphomycetes() throws IOException {
+		doTest("Hyphomycetes", null, "Anamorphic fungi", null, Rank.Subgenera);
+	}
+	*/
 	
+	public void testTuojiangosaurus_multispinus() throws IOException {
+		doTest("Tuojiangosaurus multispinus", null, "Tuojiangosaurus", null, Rank.Species);
+	}
+	public void testDictyococcites() throws IOException {
+		doTest("Dictyococcites", null, "Prymnesiophyceae incertae sedis", null, Rank.Genus);
+	}
+	public void testButschliella() throws IOException {
+		doTest("Butschliella", null, "Cryptophyta incertae sedis", null, Rank.Genus);
+	}
+	public void testLycaena_tityrus() throws IOException {
+		doTest("Lycaena tityrus", "Sooty Copper", "Lycaena", "thumb/8/8f/Lycaena_tityrus_1%28loz%29.jpg/250px-Lycaena_tityrus_1%28loz%29.jpg", Rank.Species);
+	}
+	public void testPuperita_pupa() throws IOException {
+		doTest("Puperita pupa", null, "Puperita", "thumb/c/ca/Puperita_pupa%2C_Salinas_de_Araya%2C_Sucre_-_Venezuela_001.jpg/250px-Puperita_pupa%2C_Salinas_de_Araya%2C_Sucre_-_Venezuela_001.jpg", Rank.Species);
+	}
+	public void testCamptochaeta_mixta() throws IOException {
+		doTest("Camptochaeta mixta", null, "Camptochaeta", null, Rank.Species);
+	}
+	public void testChlorobium() throws IOException {
+		doTest("Chlorobium", null, "Chlorobium/Pelodictyon group", null, Rank.Genus);
+	}
+	public void testPerigraphacinctumslovenica() throws IOException {
+		doTest("Perigrapha i-cinctum slovenica", null, "Perigrapha i-cinctum", null, Rank.Subspecies);
+	}
+	public void testAbantiadesalbofasciatus() throws IOException {
+		doTest("Abantiades albofasciatus", null, "Abantiades (Herrich-Schäffer)", null, Rank.Species);
+	}
+	public void testActinobalanusactinomorphus() throws IOException {
+		doTest("Actinobalanus actinomorphus", null, "Actinobalanus", null, Rank.Species);
+	}
+	public void testMicrodytescameroni() throws IOException {
+		doTest("Microdytes cameroni", null, "Microdytes Balfour-Browne", null, Rank.Species);
+	}
+	public void testOurateamembranacea() throws IOException {
+		doTest("Ouratea membranacea", null, "Ouratea", null, Rank.Species);
+	}
+	public void testMoeritherium() throws IOException {
+		doTest("Moeritherium", null, "Moeritheriidae", "thumb/9/97/Moeritherium.jpg/250px-Moeritherium.jpg", Rank.Genus);
+	}
 	
 	private void doTest(String latin, String common, String parent, String image,
 			Rank rank) throws IOException {
@@ -327,13 +372,14 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	*/
 	public void testLatinAbbreviations() {
-		doTestLatinAbbreviation("Anything", null);
-		doTestLatinAbbreviation("Anything goes", "A. goes");
-		doTestLatinAbbreviation("Anything will do", "A. w. do");
+		doTestLatinAbbreviation("Anything", "null");
+		doTestLatinAbbreviation("Anything goes", "[A. goes]");
+		doTestLatinAbbreviation("Anything will do", "[A. will do, A. w. do]");
+		doTestLatinAbbreviation("This (one) too", "[T. (one) too, T. (o.) too]");
 	}
 	public void doTestLatinAbbreviation(String latin, String expect) {
-		String found = WikiSpeciesParser.getLatinAbbreviation(latin);
-		assertEquals(expect, found);
+		Object found = WikiSpeciesParser.getLatinAbbreviations(latin);
+		assertEquals(expect, String.valueOf(found));
 	}
 	public void testAuth() throws Exception {
 		doTestAuth("ISSN 0021-1311");
@@ -341,12 +387,19 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuth("Fedor Bogdanovich Schmidt");
 		doTestAuth("Richard Van der Laan");
 	}
-	
+	// TODO this "unit test" relies on downloding the file from URL or being cached - better to put into resources!!
 	public void doTestAuth(String name) throws Exception {
-		String page = WikiSpeciesCache.CACHE.readFile(name);
-		String type = WikiSpeciesCrawler.getType(page);
+		String page = WikiSpeciesCache.CACHE.readFile(name, false);
+		String type = WikiSpeciesCrawler.getType(name, page);
 		assertEquals(ParseStatus.AUTHORITY, type);
 	}
-
+	public void testRedirectSelfLinks() throws Exception {
+		String page = getPage("Euphaedra kakamegae");
+		int pos = page.indexOf("<strong class=\"selflink\">");
+		assertEquals(-1, pos);
+		page = WikiSpeciesParser.preProcessRedirectSelfLinks(page);
+		pos = page.indexOf("<strong class=\"selflink\">");
+		assertTrue(pos > 0);
+	}
 	
 }

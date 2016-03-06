@@ -9,7 +9,9 @@ public class RedirectPageParser {
 		Pattern.compile(
 				"<img src=\".*?\" alt=\"#REDIRECT ?\" ?/><span class=\"redirectText\"><a href=\"/wiki/(.*?)\""),
 		Pattern.compile(
-				"<div class=\"redirectMsg\">\\s*<p>Redirect to:\\s*</p>\\s*<ul class=\"redirectText\">\\s*<li>\\s*<a href=\"/w/index.php\\?title=(.*?)&amp;redirect=no\"")
+				"<div class=\"redirectMsg\">\\s*<p>Redirect to:\\s*</p>\\s*<ul class=\"redirectText\">\\s*<li>\\s*<a href=\"/w/index.php\\?title=(.*?)&amp;redirect=no"),
+		Pattern.compile(
+				"<li>REDIRECT <a href=\"/wiki/(.*?)\" title=\".*?\">.*?</a></li>"),
 	};
 	
 	

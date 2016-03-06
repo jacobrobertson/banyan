@@ -1,9 +1,11 @@
 package com.robestone.species.parse;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
@@ -14,7 +16,7 @@ public class WikiSpeciesParser {
 
 	public static final String OKINA = String.valueOf((char) 0x02BB);
 
-	private Pattern rankPattern = Pattern.compile("(?:\\s+|(?:<dd>)|(?:<p>))" +
+	private Pattern rankPattern = Pattern.compile("(?:\\s+|<dd>|<p>|<li>)†?" +
 			getRanksPatternPart(false) +
 			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?<strong class=\"selflink\">");
 	private Pattern extinctPattern = Pattern.compile(":([\\s†]*)?(?:<i>|<b>)*([\\s†]*)<strong class=\"selflink\">");
@@ -30,6 +32,7 @@ public class WikiSpeciesParser {
 		Rank[] ranks = Rank.values();
 		for (Rank rank: ranks) {
 			for (String name: rank.getNames()) {
+				name = getEscapedName(name);
 				if (buf.length() == 0) {
 					if (nonCapture) {
 						buf.append("(?:");
@@ -45,11 +48,12 @@ public class WikiSpeciesParser {
 		buf.append(")");
 		return buf.toString();
 	}
-	private static String getEscapedName(String name) {
-		name = name.replace("(", "\\(");
-		name = name.replace(")", "\\)");
-		name = name.replace(".", "\\.");
-		return name;
+	private static String getEscapedName(String t) {
+		t = t.replaceAll("\\(", "\\\\(");
+		t = t.replaceAll("\\)", "\\\\)");
+		t = t.replaceAll("\\?", "\\\\?");
+		t = t.replaceAll("\\.", "\\\\.");
+		return t;
 	}
 	private String getSmallerPage(String text) {
 		int pos = text.indexOf("<div class=\"printfooter\">");
@@ -68,6 +72,15 @@ public class WikiSpeciesParser {
 		text = StringUtils.replace(text, "\r", " ");
 		text = StringUtils.replace(text, "&#160;", " ");
 		text = StringUtils.replace(text, "{{okina}}", OKINA);
+		
+		while (true) {
+			int len = text.length();
+			text = StringUtils.replace(text, "  ", " ");
+			if (text.length() == len) {
+				break;
+			}
+		}
+		
 		return text;
 	}
 	public CompleteEntry parse(String name, String text) {
@@ -106,9 +119,14 @@ public class WikiSpeciesParser {
 		
 		// handle abbreviated names
 		if (entry == null) {
-			String newName = getLatinAbbreviation(name);
-			if (newName != null) {
-				entry = parse(name, newName, text, true);
+			List<String> newNames = getLatinAbbreviations(name);
+			if (newNames != null) {
+				for (String newName: newNames) {
+					entry = parse(name, newName, text, true);
+					if (entry != null) {
+						break;
+					}
+				}
 			}
 		}
 		
@@ -121,14 +139,14 @@ public class WikiSpeciesParser {
 		}
 		String left = name.substring(0, pos - 1).trim();
 		String right = name.substring(pos + 1);
-		right = StringUtils.chomp(right, ")");
+		right = StringUtils.removeEnd(right, ")");
 		return new String[] {left, right};
 	}
 	private String getRank(String latinName, String text) {
 		String rank = getGroup(rankPattern, text, 1);
 		if (rank == null) {
 			String ename = getEscapedName(latinName);
-			Pattern rankPattern2 = Pattern.compile(getRanksPatternPart(false) + "[ :]+(?:<i>)?(?:<b>)?" + ename);
+			Pattern rankPattern2 = Pattern.compile(getRanksPatternPart(false) + "[ :†]+(?:<i>)?(?:<b>)?" + ename);
 			rank = getGroup(rankPattern2, text, 1);
 		}
 		return rank;
@@ -152,6 +170,9 @@ public class WikiSpeciesParser {
 	}
 	public CompleteEntry parse(String pageNameLatin, String selfLinkName, String text, boolean checkVernacularParser) {
 		String fullText = text;
+		text = preProcessRedirectSelfLinks(text);
+		text = preProcessAbbreviations(text);
+		text = preProcessCleanOther(text);
 		text = getSmallerPage(text);
 		text = getSimplifiedPage(text);
 		text = cleanPage(text);
@@ -271,12 +292,48 @@ public class WikiSpeciesParser {
 	 * Sceloporus grammicus microlepidotus
 	 * to
 	 * S. g. microlepidotus
+	 * and
+	 * S. grammicus microlepidotus
+	 * 
+	 * Also
+	 * Sciacharis (Sciacharis) antennalis
+	 * S. (S.) antennalis
 	 */
-	public static String getLatinAbbreviation(String latin) {
+	public static List<String> getLatinAbbreviations(String latin) {
+		int pos = latin.indexOf(' ');
+		if (pos < 0) {
+			return null;
+		}
+		List<String> all = new ArrayList<String>();
+		String left = latin.substring(0, pos);
+		
+		boolean parens = left.startsWith("(");
+		if (parens) {
+			left = left.substring(1, left.length() - 1);
+		}
+		
+		String abbrev = left.charAt(0) + ".";
+		if (parens) {
+			abbrev = "(" + abbrev + ") ";
+		} else {
+			abbrev = abbrev + " ";
+		}
+		String right = latin.substring(pos + 1);
+		all.add(abbrev + right);
+		List<String> rightAbbreviations = getLatinAbbreviations(right);
+		if (rightAbbreviations != null) {
+			for (String rightAbbrev: rightAbbreviations) {
+				all.add(abbrev + rightAbbrev);
+			}
+		}
+		return all;
+	}
+		/*
 		String[] split = latin.split(" ");
 		if (split.length == 1) {
 			return null;
 		}
+		List<String> names = new ArrayList<String>();
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < split.length; i++) {
 			if (i > 0) {
@@ -291,14 +348,10 @@ public class WikiSpeciesParser {
 		}
 		return buf.toString();
 	}
-	private String escapeRegEx(String t) {
-		t = t.replaceAll("\\(", "\\\\(");
-		t = t.replaceAll("\\)", "\\\\)");
-		return t;
-	}
+		*/
 
 	private Pattern getParentPattern(String childRank, String childLatin, boolean normal) {
-		String w = "(?:[\\p{L}\\(\\)_\\. \\&%#0-9;']|</?i>)+"; // &#160;
+		String w = "(?:[\\p{L}\\(\\)_\\. \\&%#0-9;'\\/\\-]|</?i>)+"; // &#160;
 		String preName;
 		String postName;
 		if (normal) {
@@ -308,8 +361,8 @@ public class WikiSpeciesParser {
 			preName = "/w/index.php\\?title=";
 			postName = "&amp;action=edit&amp;redlink=1\" class=\"new\" "; 
 		}
-		childRank = escapeRegEx(childRank);
-		childLatin = escapeRegEx(childLatin);
+		childRank = getEscapedName(childRank);
+		childLatin = getEscapedName(childLatin);
 		Pattern parentPattern = Pattern.compile(
 				getRanksPatternPart(true) +
 				"[:\\s†]*" +
@@ -398,9 +451,23 @@ public class WikiSpeciesParser {
 	}
 	private String getSimplifiedPage(String p) {
 		p = p.replaceAll("</?i>", "");
+		p = p.replaceAll("</abbr>", "");
 //		p = p.replaceAll("</?[a-z0-9]{1,6}( ?/)?>", "");
 		// Ordo: not divided<br />
 		p = p.replaceAll("\\p{L}+:\\s*not divided<br ?/?>", "");
+		p = removeEmptyRanks(p);
+		return p;
+	}
+	private String removeEmptyRanksPattern = getRanksPatternPart(false) + "\\s*:\\s*(\\-|none|not divided|unassigned)?\\s*<br\\s*/>";
+	/**
+	 * Familia: -<br />
+	 * Familia:<br />
+	 * Genus: unassigned<br />
+	 * Subgenus: <i>none</i><br />
+	 * --- but I can ignore the <i> because that's already been cleaned
+	 */
+	private String removeEmptyRanks(String p) {
+		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;
 	}
 	private void cleanNameCharacters(CompleteEntry e) {
@@ -431,5 +498,48 @@ public class WikiSpeciesParser {
 //			}
 		}
 		return c;
+	}
+	/**
+	 * I can only do it in very specific cases, because otherwise it might be the parent, etc.
+	 * <i><a href="/wiki/X_Y_Z" title="X Y Z" class="mw-redirect">X Y Z</a></i></p>
+	 * replace with
+	 * <i><strong class="selflink">X Y Z</strong></i><br />
+	 */
+	private static final Pattern redirectSelfLinksPattern = Pattern.compile("<i><a href=\"/wiki/(.*?)\" title=\"(.*?)\" class=\"mw-redirect\">(.*?)</a></i></p>");
+	public static String preProcessRedirectSelfLinks(String page) {
+		String fixedPage = page;
+		Matcher m = redirectSelfLinksPattern.matcher(page);
+		while (m.find()) {
+			String toReplace = m.group();
+			String replaceWith = "<i><strong class=\"selflink\">" + m.group(2) + "</strong></i><br />";
+			fixedPage = fixedPage.replace(toReplace, replaceWith);
+		}
+		return fixedPage;
+	}
+	/**
+	 * <i><strong class="selflink"><abbr title="Lycaena">L.</abbr>&#160; tityrus</strong></i><br />
+	 * replace with
+	 * <i><strong class="selflink">L.&#160; tityrus</strong></i><br />
+	 */
+	private static final Pattern preprocessAbbreviationsPattern = Pattern.compile("<abbr title=\".*?\">(.*?)</abbr>");
+	private static String preProcessAbbreviations(String page) {
+		String fixedPage = page;
+		Matcher m = preprocessAbbreviationsPattern.matcher(page);
+		while (m.find()) {
+			String toReplace = m.group();
+			String replaceWith = m.group(1);
+			fixedPage = fixedPage.replace(toReplace, replaceWith);
+		}
+		return fixedPage;
+	}
+	private static String preProcessCleanOther(String page) {
+		String[] others = {
+				"(nomen dubium)", // just clean these out until I have a better strategy
+				"(tentative)", // same thing - don't know what else to do for now
+		};
+		for (String other: others) {
+			page = StringUtils.replace(page, other, "");
+		}
+		return page;
 	}
 }

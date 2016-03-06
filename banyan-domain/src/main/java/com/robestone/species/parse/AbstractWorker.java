@@ -5,6 +5,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.robestone.species.ExamplesService;
 import com.robestone.species.ImageService;
+import com.robestone.species.ParseStatusService;
 import com.robestone.species.SpeciesService;
 
 public class AbstractWorker {

@@ -11,9 +11,7 @@ public class BoringWorker extends AbstractWorker {
 
 	public static void main(String[] args) {
 		BoringWorker w = new BoringWorker();
-		
-		w.speciesService.fixBoringCommonNames();
-		new BoringPrunerWorker().run(true);
+		w.runBoringPrunerWorker();
 		
 		/*
 		// first pass - this is simple
@@ -37,6 +35,10 @@ public class BoringWorker extends AbstractWorker {
 		// one more check to get rid of boring children from the counts
 		w.speciesService.assignChildCounts(true, true);
 		*/
+	}
+	public void runBoringPrunerWorker() {
+		speciesService.fixBoringCommonNames();
+		new BoringPrunerWorker().run(true);
 	}
 	
 }

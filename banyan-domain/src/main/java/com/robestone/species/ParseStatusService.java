@@ -1,4 +1,4 @@
-package com.robestone.species.parse;
+package com.robestone.species;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,12 +13,16 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-import com.robestone.species.EntityMapperJdbcTemplate;
+import com.robestone.species.parse.ParseStatus;
 
 public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 
 	private SimpleJdbcTemplate template;
 	
+	public boolean updateToAuth(String link) {
+		int count = template.update("update crawl set type = 'AUTH' where link = ? and (type <> 'AUTH' or type is null)", link);
+		return (count == 1);
+	}
 	public int updateStatus(ParseStatus status) {
 		if (status.isDeleted()) {
 			return template.update("delete from crawl where link = ?", status.getLatinName());
@@ -69,6 +73,13 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 			}
 		}
 		return all;
+	}
+	public List<ParseStatus> findAllAuth() {
+		List<ParseStatus> all = template.query("select * from crawl where type = 'AUTH'", this);
+		return all;
+	}
+	public List<ParseStatus> findAllNonAuth() {
+		return template.query("select * from crawl where (type <> 'AUTH' or type is null)", this);
 	}
 	public List<ParseStatus> findAllDoneNonAuth() {
 		return template.query("select * from crawl where status = 'DONE' and (type <> 'AUTH' or type is null)", this);

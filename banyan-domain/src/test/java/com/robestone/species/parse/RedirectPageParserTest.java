@@ -6,8 +6,9 @@ import junit.framework.TestCase;
 
 public class RedirectPageParserTest extends TestCase {
 
-	public void testOligomyodi() throws IOException {
+	public void testRedirectPages() throws IOException {
 		doTest("Oligomyodi", "Tyranni");
+		doTest("Cryptochrysis virescens", "Chroomonas_virescens");
 	}
 	
 	private void doTest(String name, String redirectTo) throws IOException {

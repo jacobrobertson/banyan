@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * TODO there is a problem with me trying to use numbers in an order for
@@ -42,7 +42,7 @@ public enum Rank {
 	
 	Superphylum(150, "*Super-division"),
 	Phylum(160, "*Division"),
-	Subphylum(170, "*Sub-division"),
+	Subphylum(170, "*Sub-division", "Subphyla"),
 	Infraphylum(180, "*Sub-division"),
 	
 	Superdivisio(260, "*Super-division", "Superdivision"), // out of order now...
@@ -54,7 +54,7 @@ public enum Rank {
 	Classis(230, "+Class", "Classes"),
 	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),
 	
-//	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
+	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
 	
 	// --
 	Infraclassis(245, "*Sub-class"),
@@ -66,21 +66,23 @@ public enum Rank {
 //	Subdivisio(280),
 	
 	Supersectio(490, "*Super-section", "Supersection"), // out of order - I moved these around
-	Sectio(290, "+Section", "Sections", "Sectiones"),
-	Subsectio(510, "*Sub-section", "Subsection"),
+	Sectio(290, "+Section", "Sections", "Sectiones", "Sectione"),
+	Subsectio(510, "*Sub-section", "Subsection", "Subsect", "Sebsectio" /*ugh!*/, "Subsectiones", "Subsections"),
 	
 	// --
 	Supergroup(295, "*Super-group"),
 	Group(296),
 	Subgroup(297, "*Sub-group"),
+	InformalGroup(298, "+Informal group"),
 	
 	Legio(300, "+Legion", "Legions"),
+	Megacohors(305, "+Megacohort"),
 	Supercohors(310, "Supercohort"),
 	Cohors(320, "+Cohort"),
-	Subcohors(330, "*Sub-cohort"),
+	Subcohors(330, "*Sub-cohort", "Subcohort"),
 	
 	Superordo(340, "*Super-order", "Superorder", "Magnordo"), // magnordo - ??
-	Ordo(350, "+Order", "Ordines"),
+	Ordo(350, "+Order", "Ordines", "Ordine"),
 	Hyperordo(360, "Hyperorder"),
 	Subordo(370, "*Sub-order", "Subordines", "Suborder", "Subordine"),
 	Infraordo(380, "*Sub-order", "Infraordines", "Infraorder"),
@@ -99,7 +101,7 @@ public enum Rank {
 	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
 	
 	// TODO -- ? these might be another term for "genus"
-	Genera(425, "*Genus", "Generus", "Genre"),
+	Genera(425, "*Genus", "Generus", "Genre", "genera"),
 	Subgenera(426, "*Sub-genus"),
 	
 	Supertribus(430, "*Super-tribe", "Supertribe", "Supertribes"),
@@ -107,27 +109,25 @@ public enum Rank {
 	Subtribus(450, "*Sub-tribe", "Subtribu", "Subtribe", "Substribes"),
 	
 	Supergenus(460, "*Super-genus"),
-	Genus(470),
+	Genus(470, "Genua"),
 	Subgenus(480, "*Sub-genus", "Subenus"),
 	GenusGroup(485, "+Genus Group"),
+	FormGenus(488, "Form genus", "Form genera"),
 	
-	// moved...
-//	Supersectio(490),
-//	Sectio(500),
-//	Subsectio(510),
+	Series(520, "Serie"),
+	Subseries(535, "Subserie"),
 	
-	Series(520),
 	Superspecies(530, "*Super-species"),
-	Species(540, "*Species", "Specie"),
-	Klepton(550),
-	Subspecies(560, "*Sub-species", "Subspeies", "Subpecies", "Subspecie", "Susbspecies"), // TODO fix in wikispecies
-	SpeciesGroup(565, "+Species Group"),
+	Species(540, "*Species", "Specie", "species", "Spcies", "Specoes"),
+	Subspecies(560, "*Sub-species", "Subspeies", "Subpecies", "Subspecie", "Susbspecies", "Sub-Species", "Sudspecies", "subspecies"), 
+		// TODO fix "Susbspecies" and "Sudspecies" and "species" in wikispecies
+		//		the only reason I haven't is that on some of these there's so many pages or templates
+	SpeciesGroup(565, "+Species Group", "Species group"),
 	
+	Klepton(550),
 	Hybrid(570),
 	Convarietas(580),
 	
-	// wikispecies seems to use the english form of this even though they
-	// say they prefer latin
 	Supervarietas(590, "*Super-variety", "Supervariety"),
 	Varietas(600, "+Variety", "Varieties",
 			"Variant" // used only twice, and I didn't want to edit wikispecies...
@@ -135,16 +135,46 @@ public enum Rank {
 	Subvarietas(610, "*Sub-variety", "Subvariety"),
 	
 	Natio(620),
-	Superforma(630, "Superform", "Superformae"),
+	Superforma(630, "*Super-form", "Superform", "Superformae"),
 	Forma(640, "+Form", "Formae"),
-	Subforma(650, "Subform", "Subformae"),
+	Subforma(650, "*Sub-form", "Subform", "Subformae"),
+	
 	Aberratio(660),
 	Lusus(670),
+	
+	// Viruses
+	Strain(675),
+	Serotype(678),
+	
+	Synonym(680, "?Synonym", "Synonym?"),
+	InvalidCombination(681, "+Invalid combination", "Invalid combinations"),
+	FossilSpecies(682, "+Fossil species"),
+	TypeSpecies(683, "+Type species"),
+	
+	Nothosectio(699),
+	Nothogenus(700),
+	Nothospecies(701),
+	Nothosubspecies(702),
+	Nothovarietas(710),
+	
+	Ichnogenus(820),
+	Ichnospecies(840),
+	
 	Empty(0); // i.e. no real class in this position for this species
 	
 	private int rankIndex;
 	private Set<String> names;
 	private String commonName;
+	
+	static {
+		// execute after other init
+		Set<Integer> rankIds = new HashSet<Integer>();
+		for (Rank rank: values()) {
+			if (!rankIds.add(rank.rankIndex)) {
+				throw new IllegalArgumentException("Rank " + rank + " has duplicate index");
+			}
+		}
+	}
 	
 	/**
 	 * @param alternateNames Often due to using the plural instead of the singular
@@ -156,8 +186,8 @@ public enum Rank {
 			if (name.startsWith("*")) {
 				this.commonName = name.substring(1);
 			} else if (name.startsWith("+")) {
-					this.commonName = name.substring(1);
-					set.add(commonName);
+				this.commonName = name.substring(1);
+				set.add(commonName);
 			} else {
 				set.add(name);
 			}

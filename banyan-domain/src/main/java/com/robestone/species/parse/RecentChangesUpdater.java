@@ -32,17 +32,23 @@ public class RecentChangesUpdater extends AbstractWorker {
 	
 	private int maxOldLinks = 1000;
 	private int maxChanges = 5000;
-	private int maxDays = 10;
+	private int maxDays = 1;
 	
 	public void runAll() throws Exception {
 		LogHelper.speciesLogger.info("RecentChangesUpdater.runAll");
 		crawlNewLinks();
+		crawlOldLinks(); // TODO was doing in another job, but haven't been doing that...
 		runMaintenance();
 	}
 	
 	public void runMaintenance() throws Exception {
 		LogHelper.speciesLogger.info("RecentChangesUpdater.runMaintenance");
-		//*
+		
+		/*
+		
+		// sets AUTH so we don't try and parse those again
+		new AuthWorker().setStatusForRedirect();
+		
 		// any changes that "fix" what the crawling found
 		new WikiSpeciesTreeFixer(speciesService).run();
 		
@@ -55,10 +61,13 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// clean names
 		// TODO - I don't know what purpose this accomplishes unless I've updated the naming logic, but maybe there's another reason for this
 //		speciesService.recreateCleanNames();
-		 
-		// run full boring suite
-		BoringWorker.main(null);
+
 		//*/
+
+		// run full boring suite
+		new BoringWorker().runBoringPrunerWorker();
+		
+		
 		// create new interesting crunched ids
 		InterestingSubspeciesWorker.logger.setLevel(Level.INFO);
 		new InterestingSubspeciesWorker().run();
@@ -72,7 +81,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		new ExamplesCruncherWorker().run();
 		
 		// download the images - has to be last due to "System.exit"
-		ThumbnailDownloader.main(null);
+		new ImagesCreater().downloadAll(true);
 	}
 
 	public void crawlNewLinks() throws Exception {
@@ -90,6 +99,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		allLinks.addAll(parsedLinks);
 			
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(true);
 		crawler.pushStoredLinks(allLinks, true);
 		crawler.crawl();
 	}
@@ -101,6 +111,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		allLinks.addAll(oldestLinks);
 
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(true);
 		crawler.pushStoredLinks(allLinks);
 		crawler.crawl();
 	}

@@ -9,7 +9,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
@@ -23,28 +23,25 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		if (args == null || args.length == 0) {
 			args = new String[] { };
 		}
-		
+		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = true;
-		//*
+		/*
 		args = new String[] {
 				
-			"ISSN 2176-7793",
+			"Euphaedra kakamegae",
 
 				
 		};
 		crawlAllStoredLinks = false;
 		//*/
 		
-		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
-//		String name = EntityMapper.convertToSymbolsText("[264]efpa[285]o", true);
-		crawler.pushStoredLinks(crawlAllStoredLinks, args
-		
-//		"Artocarpus altilis"
-		);// "Lethiscidae");//"Aïstopoda");//"Oligomyodi");
+		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
+		crawler.pushStoredLinks(crawlAllStoredLinks, args);
 		crawler.crawl();
 	}
 	
+	private boolean forceNewDownloadForCache = false;
 	private Stack<ParseStatus> nextStack = new Stack<ParseStatus>();
 	private Stack<ParseStatus> currentStack = new Stack<ParseStatus>();
 	private Set<ParseStatus> found = new HashSet<ParseStatus>();
@@ -126,7 +123,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	public void crawlOne(ParseStatus ps) throws Exception {
 		// get the contents of the page
-		String page = WikiSpeciesCache.CACHE.readFile(ps.getLatinName());
+		String page = WikiSpeciesCache.CACHE.readFile(ps.getLatinName(), forceNewDownloadForCache);
 		if (page == null) {
 			return;
 		}
@@ -187,7 +184,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public void visitPage(ParseStatus link, String page) {
-		String type = getType(page);
+		String type = getType(link.getLatinName(), page);
 		if (type != null) {
 			LogHelper.speciesLogger.info("type." + link.getLatinName() + "." + type);
 			link.setType(type);
@@ -200,7 +197,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			return;
 		}
 		// parse it
-		CompleteEntry results = parser.parse(link.getLatinName(), page);
+		CompleteEntry results = parsePage(link, page);
 		if (results == null) {
 			visitUnparseablePage(link, page);
 		} else {
@@ -210,6 +207,22 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				results = results.getParent();
 			}
 		}
+	}
+	private CompleteEntry parsePage(ParseStatus link, String page) {
+		String name = link.getLatinName();
+		CompleteEntry results = parser.parse(name, page);
+		if (results != null) {
+			return results;
+		}
+		// try the redirect "from" name(s)
+		List<String> froms = speciesService.findRedirectFrom(name);
+		for (String from: froms) {
+			results = parser.parse(from, page);
+			if (results != null) {
+				return results;
+			}
+		}
+		return null;
 	}
 	
 	public void parsed(CompleteEntry entry) {
@@ -266,7 +279,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private static Pattern[] authTypes = getAuthTypes();
 	public static Pattern[] getAuthTypes() {
 		String[] authTypes = {
-				"Taxon_Authorities", 
+				"([A-Za-z]+_)?Taxon_Authorities", "Repositories",
 //				"Entomologists", "Botanists", "Lichenologists",	"Palaeontologists", "Paleobotanists", "Ichthyologists",
 				"[A-Za-z_]+ists",
 				"ISSN"};
@@ -276,7 +289,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 		return patterns;
 	}
-	public static String getType(String page) {
+	public static String getType(String latinName, String page) {
+		if (latinName.startsWith("ISSN")) {
+			return ParseStatus.AUTHORITY;
+		}
 		for (Pattern authType: authTypes) {
 			Matcher m = authType.matcher(page);
 			if (m.find()) {
@@ -284,18 +300,43 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			}
 		}
 		String[] authHints = {
-				"<span class=\"mw-headline\" id=\"Authored_taxa\">Authored taxa</span>"
+				"<span class=\"mw-headline\" id=\"Authored_taxa\">Authored taxa</span>",
+				"<span class=\"mw-headline\" id=\"Described_taxa\">Described taxa</span>",
+				"<span class=\"mw-headline\" id=\"works_include\">works include</span>",
+				"<span class=\"mw-headline\" id=\"work_include\">works include</span>",
+				"<span class=\"mw-headline\" id=\"works_including\">works including</span>",
 		};
 		for (String hint: authHints) {
-			if (page.contains(hint)) {
+			int find = StringUtils.indexOfIgnoreCase(page, hint);
+			if (find > 0) {
 				return ParseStatus.AUTHORITY;
 			}
 		}
+		
+		// because some hints might not be conclusive, we only check them if there is also no taxobox
+		boolean hasTaxoBox = page.contains("id=\"Taxonavigation\">Taxonavigation");
+		if (!hasTaxoBox) {
+			String[] authHints2 = {
+					"id=\"Publications\">Publications",
+					"<li><b>Dates:</b>",
+					"<li><b>Dates</b>", // <li><b>Dates</b> 1758-1759, 2 vols. [2: 825-1384]</li>
+			};
+			for (String hint: authHints2) {
+				int find = StringUtils.indexOfIgnoreCase(page, hint);
+				if (find > 0) {
+					return ParseStatus.AUTHORITY;
+				}
+			}
+		}
+		
+		
 		// CAN'T DO -- some good pages are also disambiguation
 //		if (page.contains("<a href=\"/wiki/Category:Disambiguation_pages\"")) {
 //			return true;
 //		}
 		return null;
 	}
-
+	public void setForceNewDownloadForCache(boolean forceNewDownloadForCache) {
+		this.forceNewDownloadForCache = forceNewDownloadForCache;
+	}
 }

@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
-Class-Path: antlr-runtime-3.1.1.jar aopalliance-1.0.jar commons-codec-
- 1.3.jar commons-collections-3.2.1.jar commons-dbcp-1.2.2.jar commons-
- io-1.4.jar commons-lang-2.4.jar commons-logging-1.1.1.jar commons-poo
- l-1.3.jar javassist-3.9.0.GA.jar log4j-1.2.14.jar lucene-core-2.4.1.j
- ar mysql-connector-java-5.1.6.jar slf4j-api-1.5.2.jar slf4j-log4j12-1
- .5.2.jar species-domain-1.2-SNAPSHOT.jar spring-beans-2.5.6.jar sprin
- g-context-2.5.6.jar spring-core-2.5.6.jar spring-jdbc-2.5.6.jar sprin
- g-tx-2.5.6.jar spring-web-2.5.6.jar stax-api-1.0.1.jar stax2-api-3.0.
- 1.jar tapestry-core-5.1.0.5.jar tapestry-ioc-5.1.0.5.jar tapestry-spr
- ing-5.1.0.5.jar tapestry5-annotations-5.1.0.5.jar woodstox-core-asl-4
- .0.3.jar
+Class-Path: antlr-2.7.7.jar antlr-runtime-3.3.jar commons-codec-1.5.ja
+ r commons-collections-3.2.1.jar commons-dbcp-1.2.2.jar commons-io-1.4
+ .jar commons-lang-2.4.jar commons-lang3-3.4.jar commons-logging-1.1.1
+ .jar commons-pool-1.3.jar javassist-3.12.1.GA.jar javax.inject-1.jar 
+ log4j-1.2.14.jar lucene-core-2.4.1.jar mysql-connector-java-5.1.6.jar
+  plastic-5.3.8.jar slf4j-api-1.6.1.jar slf4j-log4j12-1.6.1.jar specie
+ s-domain-1.2-SNAPSHOT.jar spring-beans-2.5.6.jar spring-context-2.5.6
+ .jar spring-core-2.5.6.jar spring-jdbc-2.5.6.jar spring-tx-2.5.6.jar 
+ spring-web-2.5.6.jar stringtemplate-3.2.1.jar tapestry-core-5.3.8.jar
+  tapestry-func-5.3.8.jar tapestry-ioc-5.3.8.jar tapestry-json-5.3.8.j
+ ar tapestry-spring-5.3.8.jar tapestry5-annotations-5.3.8.jar
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.RandomUtils;
 
 public class IdCruncherTest extends TestCase {
 
@@ -221,12 +221,12 @@ public class IdCruncherTest extends TestCase {
 	}
 	private Score doTestRandom() {
 		int min = 30000;
-		min = RandomUtils.nextInt(min);
+		min = RandomUtils.nextInt(0, min);
 		int max = 250000 - min;
-		int count = RandomUtils.nextInt(50) + 1;
+		int count = RandomUtils.nextInt(0, 50) + 1;
 		List<Integer> ints = new ArrayList<Integer>();
 		for (int i = 0; i < count; i++) {
-			int num = RandomUtils.nextInt(max) + min;
+			int num = RandomUtils.nextInt(0, max) + min;
 			ints.add(num);
 		}
 		Collections.sort(ints);

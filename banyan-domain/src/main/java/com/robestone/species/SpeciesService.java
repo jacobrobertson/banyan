@@ -15,8 +15,8 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
@@ -67,7 +67,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		Integer[] all = cache.getAllIds(); // assumes the cache is loaded
 		int size = all.length;
 		while (idsToUse.size() < treeSize) {
-			int randomIndex = RandomUtils.nextInt(size);
+			int randomIndex = RandomUtils.nextInt(0, size);
 			Integer id = all[randomIndex];
 			EntryProperties e = cache.getEntryProperties(id);
 			if (e.image != null && e.commonName != null) {
@@ -126,8 +126,17 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return tree;
 	}
 	public void updateFromBoringWork(Collection<CompleteEntry> interesting, Collection<CompleteEntry> boring) {
+		updateFromBoringWorkMarkInteresting(interesting);
+		updateFromBoringWorkMarkBoring(boring);
+	}
+	public void updateFromBoringWorkMarkInteresting(Collection<CompleteEntry> interesting) {
+		int count = 0;
+		int showEvery = 10000;
 		logger.info(">updateFromBoringWork.interesting." + interesting.size());
 		for (CompleteEntry e: interesting) {
+			if (count++ % showEvery == 0) {
+				logger.info(">updateFromBoringWork.interesting." + count + "." + e.getLatinName());
+			}
 			template.update("update species set " +
 					"interesting_parent_id = ?, " +
 					"interesting_child_count = ?, " +
@@ -137,15 +146,44 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 					e.getLoadedChildrenSize(),
 					e.getId());
 		}
+	}
+	public void updateFromBoringWorkMarkBoring(Collection<CompleteEntry> boring) {
+		int count = 0;
 		logger.info(">updateFromBoringWork.boring." + boring.size());
+		count = 0;
+		// this size is really uncertain, but I know 100 will do at least a 4x speedup from size 1
+		int subSize = 100;
+		String placeholders = getPlaceholders(subSize);
+		int subCount = 0;
+		Object[] subIds = new Integer[subSize];
 		for (CompleteEntry e: boring) {
-			template.update("update species set " +
-					"interesting_parent_id = null, " +
-					"boring_final = 1 " +
-					"where id = ?",
-					e.getId());
+			subIds[subCount] = e.getId();
+			count++;
+			subCount++;
+			if (subCount == subSize || count == boring.size()) {
+				for (int i = subCount; i < subIds.length; i++) {
+					subIds[i] = -1;
+				}
+				logger.info(">updateFromBoringWork.boring." + count + "." + e.getLatinName());
+				subCount = 0;
+				template.update("update species set " +
+						"interesting_parent_id = null, " +
+						"boring_final = 1 " +
+						"where id in (" + placeholders + ")",
+						subIds);
+			}
 		}
 		logger.info("<updateFromBoringWork");
+	}
+	private String getPlaceholders(int size) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < size; i++) {
+			if (i > 0) {
+				buf.append(',');
+			}
+			buf.append('?');
+		}
+		return buf.toString();
 	}
 	public void updateCommonName(CompleteEntry e) {
 		template.update("update species set common_name = ? where id = ?", e.getCommonName(), e.getId());
@@ -184,7 +222,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	
 	public void updateRedirect(String from, String to) {
 		to = to.replace("_", " ");
-//		logger.info("redirect." + from + " > " + to);
+		logger.info("updateRedirect." + from + " > " + to);
 		// not sure I need to delete the old species - it will be orphaned, but might be helpful in research
 		// another reason to leave the entry is that helps my parse done changer
 //		template.update("delete from species where latin_name = ?", from);
@@ -205,12 +243,13 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	 * This happens usually because of a redirect page, but can also
 	 * happen when a worker is stopped abnormally.
 	 */
-	private void assignParentIdsForNullOrMissingId() {
+	public void assignParentIdsForNullOrMissingId() {
 		logger.info(">assignParentIdsForNullOrMissingId");
 		Collection<CompleteEntry> entries = template.query(
-				"select id, parent_id, parent_latin_name from species ", this);
+				"select id, parent_id, parent_latin_name, latin_name from species ", this);
 		logger.info("assignParentIdsForNullOrMissingId.entries." + entries.size());
 		// hook them together
+		int count = 0;
 		Tree tree = EntryUtilities.buildTree(entries);
 		for (CompleteEntry e: entries) {
 			Entry p = tree.get(e.getParentId());
@@ -222,12 +261,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 					p = findEntryByLatinName(to);
 					// not all redirect-to pages will be in the db 
 					if (p != null) {
+						logger.info("assignParentIdsForNullOrMissingId.fix." + (count++) + "." + e.getLatinName());
 						template.update("update species set parent_id = ? where id = ?", p.getId(), e.getId());
 					}
 				}
 			}
 			// if we still don't have a parent, then set the id to null in the db
-			if (p == null) {
+			if (p == null && e.getParentId() != null) {
+				logger.info("assignParentIdsForNullOrMissingId.broken." + e.getLatinName());
 				template.update("update species set parent_id = null where id = ?", e.getId());
 			}
 		}
@@ -242,6 +283,18 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		} else {
 			return found.get(0);
 		}
+	}
+	public List<String> findRedirectFrom(String to) {
+		List<String> found = template.query(
+				"select redirect_from from redirect where redirect_to = ?", 
+				new EntityMapperRowMapper(), to);
+		return found;
+	}
+	public List<String> findAllRedirectFroms() {
+		List<String> found = template.query(
+				"select redirect_from from redirect", 
+				new EntityMapperRowMapper());
+		return found;
 	}
 
 	public Collection<CompleteEntry> findEntriesWithInvalidParent() {
@@ -728,8 +781,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		List<CompleteEntry> found = template.query("select id, latin_name, common_name from species", this);
 		for (CompleteEntry entry: found) {
 			EntryUtilities.cleanEntry(entry);
-			count++;
-			if (count % showEvery == 0) {
+			if (count++ % showEvery == 0) {
 				logger.debug(">recreateCleanNames(" + count + ")." + entry.getId() + "." + entry.getLatinName());
 			}
 			template.update(

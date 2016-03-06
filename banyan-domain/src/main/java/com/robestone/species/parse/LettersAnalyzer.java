@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 
 public class LettersAnalyzer extends AbstractWorker {
@@ -21,11 +20,10 @@ public class LettersAnalyzer extends AbstractWorker {
 	}
 	public void run() {
 		Map<Character, Set<String>> letters = new HashMap<Character, Set<String>>();
-		Collection<CompleteEntry> all = 
-			speciesService.findCompleteTreeFromPersistence().getEntries();
-		for (CompleteEntry e: all) {
+		Collection<String> names = speciesService.findAllLatinNames();
+		for (String name: names) {
 //			addLetters(letters, e.getCommonName());
-			addLetters(letters, e.getLatinName());
+			addLetters(letters, name);
 		}
 		List<Character> list = new ArrayList<Character>(letters.keySet());
 		Collections.sort(list);

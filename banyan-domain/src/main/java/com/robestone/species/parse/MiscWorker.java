@@ -1,6 +1,8 @@
 package com.robestone.species.parse;
 
-import com.robestone.species.WikiSpeciesTreeFixer;
+import com.robestone.species.BoringPruner;
+import com.robestone.species.Tree;
+
 
 
 /**
@@ -16,7 +18,22 @@ public class MiscWorker extends AbstractWorker {
 	
 	
 	public void run() {
-		new WikiSpeciesTreeFixer(speciesService).run();
+		speciesService.assignParentIdsForNullOrMissingId();
+//		new WikiSpeciesTreeFixer(speciesService).run();
+	}
+	
+	public void run2() {
+		Tree tree = speciesService.findCompleteTreeFromPersistence();
+		BoringPruner pruner = new BoringPruner();
+		
+//		pruner.logger.setLevel(Level.DEBUG);
+		
+		pruner.prune(tree);
+
+//		printTree(tree.getRoot(), 0);
+		
+		speciesService.updateFromBoringWorkMarkBoring(pruner.getBoring());
+		
 	}
 	
 }

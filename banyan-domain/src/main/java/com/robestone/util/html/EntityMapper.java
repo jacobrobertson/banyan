@@ -48,7 +48,7 @@ public class EntityMapper {
 		return parseAndRender(text, renderer, def, def != null);
 	}
 	private static String parseAndRender(String text, EntityRenderer renderer, String def, boolean convertUnparseable) {
-		List list = parse(text, def, convertUnparseable);
+		List<Object> list = parse(text, def, convertUnparseable);
 		StringBuffer buf = new StringBuffer();
 		int len = list.size();
 		for (int i = 0; i < len; i++) {
@@ -72,12 +72,12 @@ public class EntityMapper {
 	/**
 	 * Doesn't handle error cases, where the entity is invalid
 	 */
-	private static List parse(String text, String def, boolean convertUnparseable) {
+	private static List<Object> parse(String text, String def, boolean convertUnparseable) {
 	    if (text == null) {
 	        throw new IllegalArgumentException("Can't work with nulls!");
 	    }
 		StringBuffer buf = new StringBuffer();
-		List list = new ArrayList();
+		List <Object>list = new ArrayList<Object>();
 		int len = text.length();
 		for (int i = 0; i < len; i++) {
 			Object entity = null;
@@ -157,8 +157,8 @@ public class EntityMapper {
 	public static Entity getEntityForName(String name) {
 		return (Entity) getForKey(name, nameMap, null);
 	}
-	public static List getEntitiesForSearchText(String searchText) {
-		return (List) getForKey(searchText, searchTextMap, null);
+	public static List<Object> getEntitiesForSearchText(String searchText) {
+		return getForKey(searchText, searchTextMap, null);
 	}
 	public static String replaceUnparseableCharacters(String string, char replaceWithChar) {
 		StringBuilder buf = new StringBuilder();
@@ -178,8 +178,8 @@ public class EntityMapper {
 		}
 		return buf.toString();
 	}
-	private static Object getForKey(Object key, Map map, Object def) {
-		Object o = map.get(key);
+	private static <T> T getForKey(Object key, Map<?, T> map, T def) {
+		T o = map.get(key);
 		if (o == null) {
 			if (def == null) {
 				throw new IllegalArgumentException("No entity found for key (" + key + ")");
@@ -190,15 +190,15 @@ public class EntityMapper {
 			return o;
 		}
 	}
-	public static List getEntities() {
-	    return new ArrayList(nameMap.values());
+	public static List<Object> getEntities() {
+	    return new ArrayList<Object>(nameMap.values());
 	}
-	private static Map numberMap = new HashMap();
-	private static Map nameMap = new HashMap();
+	private static Map<Integer, Object> numberMap = new HashMap<Integer, Object>();
+	private static Map<String, Object> nameMap = new HashMap<String, Object>();
 	/**
 	 * Map<String, List<Entity>>
 	 */
-	private static Map searchTextMap = new HashMap();
+	private static Map<String, List<Object>> searchTextMap = new HashMap<String, List<Object>>();
 		
 	static {
 		addEntity("abrevema", -1, "?", "a", "a with both breve and macron");        // 00-1
@@ -682,9 +682,9 @@ public class EntityMapper {
 		
 		nameMap.put(name, entity);
 		numberMap.put(new Integer(number), entity);
-		List list = (List) searchTextMap.get(searchText);
+		List<Object> list = searchTextMap.get(searchText);
 		if (list == null) {
-			list = new ArrayList();
+			list = new ArrayList<Object>();
 			searchTextMap.put(searchText, list);
 		}
 		list.add(entity);
@@ -694,11 +694,11 @@ public class EntityMapper {
 		nameMap.put(name, e);
 	}
 	private static void cleanSearchTextLists() {
-		List keys = new ArrayList(searchTextMap.keySet());
+		List<Object> keys = new ArrayList<Object>(searchTextMap.keySet());
 		int len = keys.size();
 		for (int i = 0; i < len; i++) {
 			String key = (String) keys.get(i);
-			List list = (List) searchTextMap.get(key);
+			List<Object> list = (List<Object>) searchTextMap.get(key);
 			list = Collections.unmodifiableList(list);
 			searchTextMap.put(key, list);
 		}

@@ -11,7 +11,7 @@ import java.net.URLConnection;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.LogHelper;
 
@@ -19,15 +19,15 @@ public class WikiSpeciesCache {
 
 	public static final WikiSpeciesCache CACHE = new WikiSpeciesCache();
 	
-	private static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
+	public static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
 	public static String DELETED_PAGE = "This page has been deleted.";
 
-	public String readFile(String latinName) throws Exception {
+	public String readFile(String latinName, boolean forceDownload) throws Exception {
 
 		String text = null;
 		
 		// check for expiration
-		if (!isExired(latinName)) {
+		if (!forceDownload && !isExired(latinName)) {
 			// check local cache
 			text = readLocalFile(latinName);
 		}

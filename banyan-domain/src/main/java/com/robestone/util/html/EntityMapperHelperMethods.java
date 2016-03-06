@@ -6,7 +6,7 @@ package com.robestone.util.html;
 import java.io.*;
 import java.util.*;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Jacob Robertson
@@ -19,7 +19,7 @@ public class EntityMapperHelperMethods {
     }
 	public static void outputEntityHtmlHelperPage(Writer out) throws Exception {
 		out.write("<html><body><table border='1'>");
-        List entities = EntityMapper.getEntities();
+        List<Object> entities = EntityMapper.getEntities();
         Collections.sort(entities, new EntityComparator());
         int len = entities.size();
         for (int i = 0; i < len; i++) {
@@ -44,7 +44,7 @@ public class EntityMapperHelperMethods {
 		out.close();
 	}
     public static void dumpAllSymbols() {
-        List entities = null;//EntityMapper.getEntities();
+        List<Object> entities = new ArrayList<Object>(); // null;//EntityMapper.getEntities();
         Collections.sort(entities, new EntityComparator());
         int len = entities.size();
         for (int i = 0; i < len; i++) {
@@ -65,7 +65,7 @@ public class EntityMapperHelperMethods {
           System.out.println(line);
         }
     }
-    public static class EntityComparator implements Comparator {
+    public static class EntityComparator implements Comparator<Object> {
         public int compare(Object o1, Object o2) {
             Entity e1 = (Entity) o1;
             Entity e2 = (Entity) o2;

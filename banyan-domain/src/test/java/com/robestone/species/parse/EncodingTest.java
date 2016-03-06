@@ -1,6 +1,6 @@
 package com.robestone.species.parse;
 
-import org.apache.commons.lang.CharEncoding;
+import org.apache.commons.lang3.CharEncoding;
 
 import junit.framework.TestCase;
 

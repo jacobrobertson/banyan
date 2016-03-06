@@ -4,7 +4,7 @@ import static com.robestone.species.parse.WikipediaTaxoboxParser.W;
 
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 
 /**

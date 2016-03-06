@@ -1,6 +1,8 @@
 package com.robestone.species.parse;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -20,46 +22,46 @@ public class ParseDoneChanger extends AbstractWorker {
 //		pc.setAllAsDone();
 //		pc.createForAllSpecies();
 //		pc.findBadStatuses();
-		pc.changeForNoSpeciesFound();
-		
-//		new WikiSpeciesCrawler().crawlStoredLinks();
-//		new RecentChangesUpdater().runAll();
+		pc.checkSpeciesNeedingWork(true);
+	}
+	public void markNotDoneAndRerunAll() throws Exception {
+		checkSpeciesNeedingWork(true);
+		// run this now, so that when I go to bed, it will get to these instead of me having to run in morning
+		new WikiSpeciesCrawler().crawlStoredLinks();
+		new RecentChangesUpdater().runAll();
 	}
 	
-	public void findBadStatuses() {
-		List<ParseStatus> statuses = this.parseStatusService.findAllDoneNonAuth();
+	public void checkSpeciesNeedingWork(boolean persist) {
+		LogHelper.speciesLogger.info("checkSpeciesNeedingWork>");
+		List<ParseStatus> statuses = this.parseStatusService.findAllNonAuth();
+		Collections.sort(statuses, new NameComp());
+		
 		Collection<String> entries = this.speciesService.findAllLatinNames();
-		Set<String> set = new HashSet<String>(entries);
+		Set<String> entriesSet = new HashSet<String>(entries);
+		Collection<String> redirectList = this.speciesService.findAllRedirectFroms();
+		Set<String> redirectSet = new HashSet<String>(redirectList);
 		int count = 0;
+		LogHelper.speciesLogger.info("checkSpeciesNeedingWork." + statuses.size());
 		for (ParseStatus status: statuses) {
-			if (!set.contains(status.getLatinName())) {
-				LogHelper.speciesLogger.info((count++) + ": " + status.getLatinName());
+			String key = status.getLatinName();
+			if (!entriesSet.contains(key) && !redirectSet.contains(key)) {
+				LogHelper.speciesLogger.info("checkSpeciesNeedingWork." + (count++) + "." + status.getLatinName());
+				if (persist) {
+					status.setStatus(ParseStatus.FOUND);
+					parseStatusService.updateStatus(status);
+				}
 			}
+		}
+	}
+	private class NameComp implements Comparator<ParseStatus> {
+		@Override
+		public int compare(ParseStatus o1, ParseStatus o2) {
+			return o1.getLatinName().compareTo(o2.getLatinName());
 		}
 	}
 
 	public void setAllAsDone() {
 		parseStatusService.setAllAsDone();
-	}
-	public void changeForNoSpeciesFound() {
-		int count = 0;
-		boolean persist = true;
-		List<ParseStatus> statuses = parseStatusService.findAllDoneNonAuth();
-		Set<String> names = new HashSet<String>(speciesService.findAllLatinNames());
-		LogHelper.speciesLogger.info("changeForNoSpeciesFound.all." + statuses.size() + "/" + names.size());
-		for (ParseStatus one: statuses) {
-			if (one.getType() != null) {
-				continue;
-			}
-			if (!names.contains(one.getLatinName())) {
-				LogHelper.speciesLogger.info("changeForNoSpeciesFound." + (count++) + "." + one.getLatinName());
-				one.setStatus(ParseStatus.FOUND);
-				if (persist) {
-					parseStatusService.updateStatus(one);
-				}
-			}
-		}
-		LogHelper.speciesLogger.info("changeForNoSpeciesFound<" + count);
 	}
 	/**
 	 * This will create many many new parses for scientists, etc...

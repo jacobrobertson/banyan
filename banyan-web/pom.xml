@@ -72,16 +72,6 @@
 	</dependencies>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
-					<optimize>true</optimize>
-				</configuration>
-			</plugin>
-
 			<!-- Run the application using "mvn jetty:run" 
 			http://localhost:8080/species-tapestry/search
 			-->
@@ -100,7 +90,7 @@
 					<connectors>
 						<connector
 							implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-							<port>9090</port>
+							<port>8080</port>
 							<maxIdleTime>60000</maxIdleTime>
 						</connector>
 					</connectors>

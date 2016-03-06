@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.util.html.EntityMapper;
 
@@ -306,7 +306,7 @@ public class EntryUtilities {
 		name = urlDecode(name);
 		
 		// remove "." from the end - pretty common
-		name = StringUtils.chomp(name, ".");
+		name = StringUtils.removeEnd(name, ".");
 		
 		name = StringUtils.trimToNull(name);
 		
