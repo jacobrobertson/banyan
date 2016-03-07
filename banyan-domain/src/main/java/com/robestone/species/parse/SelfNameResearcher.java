@@ -1,35 +1,23 @@
 package com.robestone.species.parse;
 
 import java.io.File;
-import java.io.FileInputStream;
 
-import org.apache.commons.io.IOUtils;
+import com.robestone.species.parse.WikiSpeciesProblemsFinder.FileTester;
 
-public class SelfNameResearcher {
+public class SelfNameResearcher implements FileTester {
 
 	public static void main(String[] args) throws Exception {
 		SelfNameResearcher s = new SelfNameResearcher();
-		File file = new File(WikiSpeciesCache.LOCAL_STORAGE_DIR);
-		s.testAll(file);
+		WikiSpeciesProblemsFinder finder = new WikiSpeciesProblemsFinder(s);
+		finder.run();
 	}
 	private int foundCount = 0;
-	public void testAll(File dir) throws Exception {
-		File[] files = dir.listFiles();
-		for (File file: files) {
-			if (file.isDirectory()) {
-				testAll(file);
-			} else {
-				testOneFile(file);
-			}
-		}
-	}
 	
 	/**
 	 * This will fail on names with "/" in it, but that isn't important.
 	 */
-	public void testOneFile(File file) throws Exception {
-		
-		String page = IOUtils.toString(new FileInputStream(file));
+	@Override
+	public void testFile(File file, String page) throws Exception {
 		String fileName = file.getName();
 		int pos = fileName.lastIndexOf('.');
 		String latinName = fileName.substring(0, pos);

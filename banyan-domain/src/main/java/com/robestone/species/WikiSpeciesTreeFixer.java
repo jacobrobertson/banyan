@@ -19,6 +19,7 @@ public class WikiSpeciesTreeFixer {
 
 	private Map<String, String> replacedBy = new HashMap<String, String>(); {
 		replacedBy.put("Eutheria", "Placentalia");
+		replacedBy.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
 //	private String[] boring = {

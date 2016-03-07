@@ -25,7 +25,31 @@ public class WikiSpeciesParser {
 //	private Pattern depictedPattern = Pattern.compile("<div class=\"thumbcaption\">\\s*<div class=\"magnify\">\\s*<a href=\"/wiki/File:.*?\" class=\"internal\" title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<i><a href=\"/wiki/.*?\" title=\"(.*?)\">");
 	private Pattern depictedPattern = Pattern.compile("title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<a href=\"/w.*?/.*?\" (?:class=\".*?\"\\s*)?title=\".*?\">(.*?)<");
 //	                                                                                                                                                <a href="/w/index.php?title=Onniella&amp;action=edit&amp;redlink=1" class="new" title="Onniella (page does not exist)">Onniella</a></i></div>
-	private Pattern imageLinkPattern = Pattern.compile("//upload.wikimedia.org/wikipedia/commons/(.*?)\"");
+	/*
+	// GOOD IMAGE
+	// <div class="thumbinner" style="width:252px;"><a href="/wiki/File:Moeritherium.jpg" class="image">
+	 * <img alt="" src="//upload.wikimedia.org/wikipedia/commons/thumb/9/97/Moeritherium.jpg/250px-Moeritherium.jpg" 
+	 * width="250" height="157" 
+	 * class="thumbimage" 
+	 * srcset="//upload.wikimedia.org/wikipedia/commons/thumb/9/97/Moeritherium.jpg/375px-Moeritherium.jpg 1.5x, 
+	 * //upload.wikimedia.org/wikipedia/commons/thumb/9/97/Moeritherium.jpg/500px-Moeritherium.jpg 2x" 
+	 * data-file-width="672" data-file-height="421" /></a>
+	// STUB IMAGE - TO REMOVE
+	// <td><a href="/wiki/File:Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG" class="image">
+	 * <img alt="Eristalis tenax auf Tragopogon pratensis 01.JPG" 
+	 * src="//upload.wikimedia.org/wikipedia/commons/thumb/3/36/Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG/120px-Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG" 
+	 * width="120" height="90" 
+	 * srcset="//upload.wikimedia.org/wikipedia/commons/thumb/3/36/Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG/180px-Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG 1.5x, 
+	 * //upload.wikimedia.org/wikipedia/commons/thumb/3/36/Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG/240px-Eristalis_tenax_auf_Tragopogon_pratensis_01.JPG 2x" 
+	 * data-file-width="4208" data-file-height="3156" />
+	 * </a></td>
+	 * 
+	 */
+	private Pattern imageLinkPattern = Pattern.compile("<img.*?//upload.wikimedia.org/wikipedia/commons/(.*?)\".*?>");
+	private String[] imageLinkStubHints = {
+			"width=\"120\" height=\"90\"",
+			"Eristalis_tenax_auf_Tragopogon_pratensis", // I can include this because that image isn't used for that species
+	};
 	
 	private static String getRanksPatternPart(boolean nonCapture) {
 		StringBuilder buf = new StringBuilder();
@@ -404,10 +428,21 @@ public class WikiSpeciesParser {
 		}
 		return null;
 	}
-	
+	private boolean isStubImage(String text) {
+		for (String test: imageLinkStubHints) {
+			if (text.contains(test)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	private String getImage(String page) {
 		Matcher matcher = imageLinkPattern.matcher(page);
 		while (matcher.find()) {
+			String match = matcher.group();
+			if (isStubImage(match)) {
+				continue;
+			}
 			String imageLink = matcher.group(1);
 			if (imageLink.indexOf("-logo.svg") > 0) {
 				continue;

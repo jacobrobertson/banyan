@@ -94,7 +94,24 @@
 							<maxIdleTime>60000</maxIdleTime>
 						</connector>
 					</connectors>
-
+						<!-- Images are being kept at D:/banyan-images, and "banyan-images" is the context root
+							Need to make this cleaner probably
+					<resourceBases>
+						<resourceBase>src/main/webapp</resourceBase>
+						<resourceBase>D:/</resourceBase>
+					</resourceBases>
+						-->
+					<webApp>
+						<contextPath>/banyan</contextPath>
+                    	<war>${basedir}/target/species.war</war>
+					</webApp>
+					<contextHandlers>
+						<contextHandler implementation="org.mortbay.jetty.handler.ContextHandler">
+                    		<contextPath>/banyan-images</contextPath>
+                    		<resourceBase>D:/banyan-images</resourceBase>
+                    		<handler implementation="org.mortbay.jetty.handler.ResourceHandler" />
+                		</contextHandler>
+                	</contextHandlers>
 				</configuration>
 			</plugin>
 

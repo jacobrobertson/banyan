@@ -309,6 +309,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testMoeritherium() throws IOException {
 		doTest("Moeritherium", null, "Moeritheriidae", "thumb/9/97/Moeritherium.jpg/250px-Moeritherium.jpg", Rank.Genus);
 	}
+	public void testTinodon() throws IOException {
+		doTest("Tinodon", null, "Tinodontidae", null, Rank.Genus);
+	}
 	
 	private void doTest(String latin, String common, String parent, String image,
 			Rank rank) throws IOException {
