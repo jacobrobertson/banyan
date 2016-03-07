@@ -390,9 +390,8 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuth("Fedor Bogdanovich Schmidt");
 		doTestAuth("Richard Van der Laan");
 	}
-	// TODO this "unit test" relies on downloding the file from URL or being cached - better to put into resources!!
 	public void doTestAuth(String name) throws Exception {
-		String page = WikiSpeciesCache.CACHE.readFile(name, false);
+		String page = getPage(name);
 		String type = WikiSpeciesCrawler.getType(name, page);
 		assertEquals(ParseStatus.AUTHORITY, type);
 	}
