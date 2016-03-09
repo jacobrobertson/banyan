@@ -7,23 +7,49 @@ import java.util.Set;
 import org.apache.log4j.Level;
 
 import com.robestone.species.LogHelper;
-import com.robestone.species.WikiSpeciesTreeFixer;
 
 public class RecentChangesUpdater extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		
 		RecentChangesUpdater recent = new RecentChangesUpdater();
+
+		boolean crawlNewLinks = true;
+		boolean crawlOldLinks = false;
+		boolean runMaintenance = true;
 		
 		if (args != null && args.length > 0) {
-			recent.maxChanges = Integer.parseInt(args[0]);
+			recent.maxOldLinks = 0;
+			recent.maxChanges = 0;
+			recent.maxDays = 0;
+			LogHelper.speciesLogger.info("RecentChangesUpdater.args");
+			// maxOldLinks=10 maxChanges=2 maxDays=1 runMaintenance=false
+			for (int i = 0; i < args.length; i++) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.args." + i + "." + args[i]);
+				String[] p = args[i].split("=");
+				if (p[0].equals("maxOldLinks")) {
+					recent.maxOldLinks = Integer.parseInt(p[1]);
+				}
+				if (p[0].equals("maxChanges")) {
+					recent.maxChanges = Integer.parseInt(p[1]);
+				}
+				if (p[0].equals("maxDays")) {
+					recent.maxDays = Integer.parseInt(p[1]);
+				}
+				if (p[0].equals("runMaintenance")) {
+					runMaintenance = Boolean.parseBoolean(p[1]);
+				}
+			}
+			crawlNewLinks = recent.maxChanges > 0;
+			crawlOldLinks = recent.maxOldLinks > 0;
 		}
 		
-		boolean crawlNewLinks = true;
-		boolean runMaintenance = true;
 		
 		if (crawlNewLinks) {
 			recent.crawlNewLinks();
+		}
+		if (crawlOldLinks) {
+			recent.crawlOldLinks();
 		}
 		if (runMaintenance) {
 			recent.runMaintenance();

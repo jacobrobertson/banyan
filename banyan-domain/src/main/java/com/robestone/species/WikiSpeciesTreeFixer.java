@@ -28,6 +28,7 @@ public class WikiSpeciesTreeFixer {
 	
 	private Map<String, String> assignParent = new HashMap<String, String>(); {
 		assignParent.put("Aves", "Avialae");
+		assignParent.put("Virus", null);
 	}
 	
 	private SpeciesService speciesService;

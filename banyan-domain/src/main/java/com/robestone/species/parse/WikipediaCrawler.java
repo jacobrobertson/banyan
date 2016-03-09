@@ -1,5 +1,7 @@
 package com.robestone.species.parse;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.robestone.species.LogHelper;
 
 
@@ -38,13 +40,13 @@ public class WikipediaCrawler {
 	}
 	private String toLink(String key) {
 		key = key.replace(" ", "_");
-		return "http://en.wikipedia.org/w/index.php?title=" + key + "&action=edit";
+		return "https://en.wikipedia.org/w/index.php?title=" + key + "&action=edit";
 	}
 	private String getWikipediaPage(String latinName) {
 		String link = toLink(latinName);
 		String redirect = "#Redirect [[";
 		String page = WikiSpeciesCache.getPageForUrl(link);
-		int pos = page.indexOf(redirect);
+		int pos = StringUtils.indexOfIgnoreCase(page, redirect);
 		if (pos < 0) {
 			return page;
 		}

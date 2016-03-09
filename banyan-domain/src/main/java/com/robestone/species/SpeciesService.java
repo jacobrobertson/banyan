@@ -15,10 +15,11 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
@@ -147,6 +148,15 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 					e.getId());
 		}
 	}
+	public List<Integer> findIdsForParentIds(Collection<Integer> parentIds) {
+		MapSqlParameterSource parameters = new MapSqlParameterSource();
+		parameters.addValue("ids", parentIds);		
+		String sql = "select id from species where parent_id in (:ids)";
+		
+		return template.query(
+				sql, 
+				new ParameterizedSingleColumnRowMapper<Integer>(), parameters);
+	}
 	public void updateFromBoringWorkMarkBoring(Collection<CompleteEntry> boring) {
 		int count = 0;
 		logger.info(">updateFromBoringWork.boring." + boring.size());
@@ -175,6 +185,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		}
 		logger.info("<updateFromBoringWork");
 	}
+	/**
+	 * TODO replace with Map Sql thing
+	 */
 	private String getPlaceholders(int size) {
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < size; i++) {
@@ -299,7 +312,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 
 	public Collection<CompleteEntry> findEntriesWithInvalidParent() {
 		return template.query(
-				"select latin_name, parent_latin_name from species where parent_id is null", 
+				"select id, latin_name, parent_latin_name from species where parent_id is null", 
 				this);
 	}
 	public Collection<String> findAllUnmatchedParentNames() {
@@ -605,6 +618,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			return entry;
 		}
 		throw new IncorrectResultSizeDataAccessException(latinName, 1, found.size());
+	}
+	public List<String> findChildNamesByParentLatinName(String parentLatinName) {
+		return template.query(
+				"select latin_name from species where parent_latin_name = ?",
+				new EntityMapperRowMapper(), parentLatinName);
 	}
 	
 	public void fixBoringCommonNames() {
