@@ -24,6 +24,9 @@ public class Tree {
 	public List<CompleteEntry> getEntries() {
 		return new ArrayList<CompleteEntry>(map.values());
 	}
+	public Map<Integer, CompleteEntry> getEntriesMap() {
+		return map;
+	}
 	public int size() {
 		return map.size();
 	}

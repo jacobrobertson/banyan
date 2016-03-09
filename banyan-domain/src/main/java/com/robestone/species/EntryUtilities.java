@@ -4,8 +4,10 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -413,4 +415,39 @@ public class EntryUtilities {
 		}
 		return isAncestorExtinct(p);
 	}
+	
+	public static List<Tree> findDisconnectedTrees(Tree tree) {
+		List<Tree> trees = new ArrayList<Tree>();
+		CompleteEntry root = tree.getRoot();
+		Set<Integer> rootIds = new HashSet<Integer>();
+		rootIds.add(root.getId());
+		Map<Integer, CompleteEntry> map = tree.getEntriesMap();
+		for (Integer id: map.keySet()) {
+			CompleteEntry e = map.get(id);
+			CompleteEntry p = getRoot(e);
+			if (!rootIds.contains(p.getId())) {
+				Tree t = buildTree(p);
+				trees.add(t);
+				rootIds.add(p.getId());
+			}
+		}
+		
+		Collections.sort(trees, new Comparator<Tree>() {
+				@Override
+				public int compare(Tree o1, Tree o2) {
+					return o2.size() - o1.size();
+				}
+		});
+		
+		return trees;
+	}
+	private static CompleteEntry getRoot(CompleteEntry e) {
+		CompleteEntry parent = null;
+		while (e != null) {
+			parent = e;
+			e = e.getParent();
+		}
+		return parent;
+	}
+	
 }
