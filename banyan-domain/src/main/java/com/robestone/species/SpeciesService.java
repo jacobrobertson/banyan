@@ -315,6 +315,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				"select id, latin_name, parent_latin_name from species where parent_id is null", 
 				this);
 	}
+	public Collection<CompleteEntry> findEntriesForTreeReport() {
+		return template.query(
+				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id from species", 
+				this);
+	}
 	public Collection<String> findAllUnmatchedParentNames() {
 		List<String> unmatchedParents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
 				new EntityMapperRowMapper());

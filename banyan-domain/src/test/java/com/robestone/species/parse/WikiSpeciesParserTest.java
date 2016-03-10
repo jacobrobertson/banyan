@@ -312,6 +312,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testTinodon() throws IOException {
 		doTest("Tinodon", null, "Tinodontidae", null, Rank.Genus);
 	}
+	public void testPlecoptera() throws IOException {
+		doTest("Plecoptera", "Stonefly", "Plecopterida incertae sedis", null, Rank.Ordo);
+	}
+	
 	
 	private void doTest(String latin, String common, String parent, String image,
 			Rank rank) throws IOException {

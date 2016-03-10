@@ -80,10 +80,14 @@ public enum Rank {
 	Supercohors(310, "Supercohort"),
 	Cohors(320, "+Cohort"),
 	Subcohors(330, "*Sub-cohort", "Subcohort"),
+	Infracohors(331, "+Infracohort"),
+	
+	Stem(335),
 	
 	Superordo(340, "*Super-order", "Superorder", "Magnordo"), // magnordo - ??
+	Mirordo(345),
 	Ordo(350, "+Order", "Ordines", "Ordine"),
-	Hyperordo(360, "Hyperorder"),
+	Hyperordo(360, "Hyperorder", "Hypordo"),
 	Subordo(370, "*Sub-order", "Subordines", "Suborder", "Subordine"),
 	Infraordo(380, "*Sub-order", "Infraordines", "Infraorder"),
 	

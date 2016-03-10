@@ -419,16 +419,32 @@ public class EntryUtilities {
 	public static List<Tree> findDisconnectedTrees(Tree tree) {
 		List<Tree> trees = new ArrayList<Tree>();
 		CompleteEntry root = tree.getRoot();
-		Set<Integer> rootIds = new HashSet<Integer>();
-		rootIds.add(root.getId());
+		Set<String> rootNames = new HashSet<String>();
+		rootNames.add(root.getLatinName());
+		int count = 0;
+		int logEvery = 5000;
 		Map<Integer, CompleteEntry> map = tree.getEntriesMap();
 		for (Integer id: map.keySet()) {
+			count++;
 			CompleteEntry e = map.get(id);
 			CompleteEntry p = getRoot(e);
-			if (!rootIds.contains(p.getId())) {
+			if (count++ % logEvery == 0) {
+				LogHelper.speciesLogger.debug(
+						"findDisconnectedTrees.log." + count + "." + 
+						e.getLatinName() + "." + e.getId() + "." + e.getParentId());
+			}
+			if (p == null) {
+				LogHelper.speciesLogger.debug(
+						"findDisconnectedTrees.loop." + e.getLatinName() + "." + e.getId());
+				continue;
+			}
+			String rootKey = p.getParentLatinName();
+			if (!rootNames.contains(rootKey)) {
 				Tree t = buildTree(p);
+//				LogHelper.speciesLogger.debug(
+//						"findDisconnectedTrees.tree." + p.getLatinName() + "." + p.getId() + "/" + t.size());
+				rootNames.add(rootKey);
 				trees.add(t);
-				rootIds.add(p.getId());
 			}
 		}
 		
@@ -442,9 +458,15 @@ public class EntryUtilities {
 		return trees;
 	}
 	private static CompleteEntry getRoot(CompleteEntry e) {
+		// need a way to check that I don't get in a loop
+		Set<Integer> ids = new HashSet<Integer>();
 		CompleteEntry parent = null;
 		while (e != null) {
+			if (ids.contains(e.getId())) {
+				return null;
+			}
 			parent = e;
+			ids.add(e.getId());
 			e = e.getParent();
 		}
 		return parent;

@@ -1,6 +1,12 @@
 package com.robestone.species.parse;
 
+import java.util.Collection;
+import java.util.List;
+
 import com.robestone.species.BoringPruner;
+import com.robestone.species.CompleteEntry;
+import com.robestone.species.EntryUtilities;
+import com.robestone.species.LogHelper;
 import com.robestone.species.Tree;
 
 
@@ -13,7 +19,7 @@ import com.robestone.species.Tree;
 public class MiscWorker extends AbstractWorker {
 
 	public static void main(String[] args) {
-		new MiscWorker().run();
+		new MiscWorker().runTreeReport();
 	}
 	
 	
@@ -34,6 +40,33 @@ public class MiscWorker extends AbstractWorker {
 		
 		speciesService.updateFromBoringWorkMarkBoring(pruner.getBoring());
 		
+	}
+	
+	public void runTreeReport() {
+		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport");
+		Collection<CompleteEntry> entries = speciesService.findEntriesForTreeReport();
+		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport." + entries.size());
+		
+		for (CompleteEntry e: entries) {
+			if (e.getInterestingParentId() != null) {
+				e.setParentId(e.getInterestingParentId());
+			}
+		}
+		
+		LogHelper.speciesLogger.debug("runTreeReport.buildTree");
+		Tree tree = EntryUtilities.buildTree(entries);
+		LogHelper.speciesLogger.debug("runTreeReport.buildTree." + tree.size());
+		LogHelper.speciesLogger.debug("runTreeReport.findDisconnectedTrees");
+		List<Tree> trees = EntryUtilities.findDisconnectedTrees(tree);
+		int minInteresting = 100;
+		for (Tree t: trees) {
+			if (t.size() < minInteresting) {
+				continue;
+			}
+			CompleteEntry root = t.getRoot();
+			LogHelper.speciesLogger.debug("runTreeReport.tree." + 
+					root.getLatinName() + "." + root.getId() + "/" + t.size());
+		}
 	}
 	
 }
