@@ -51,7 +51,16 @@ public class WikiSpeciesParser {
 			"Eristalis_tenax_auf_Tragopogon_pratensis", // I can include this because that image isn't used for that species
 	};
 	
+	private static String ranksPatternPartCapture = doGetRanksPatternPart(false);
+	private static String ranksPatternPartNonCapture = doGetRanksPatternPart(true);
 	private static String getRanksPatternPart(boolean nonCapture) {
+		if (nonCapture) {
+			return ranksPatternPartNonCapture;
+		} else {
+			return ranksPatternPartCapture;
+		}
+	}
+	private static String doGetRanksPatternPart(boolean nonCapture) {
 		StringBuilder buf = new StringBuilder();
 		Rank[] ranks = Rank.values();
 		for (Rank rank: ranks) {
@@ -153,7 +162,15 @@ public class WikiSpeciesParser {
 				}
 			}
 		}
-		
+
+		// handle "Cossina Cossina"
+		if (entry == null) {
+			String[] split = name.split(" ");
+			if (split.length == 2 && split[0].equals(split[1])) {
+				entry = parse(name, split[0], text, true);
+			}
+		}
+
 		return entry;
 	}
 	private String[] getNamesNoParens(String name) {
@@ -199,7 +216,9 @@ public class WikiSpeciesParser {
 		text = preProcessCleanOther(text);
 		text = getSmallerPage(text);
 		text = getSimplifiedPage(text);
+		text = preProcessEmptyRanks(text);
 		text = cleanPage(text);
+		text = preProcessDoubleRanks(text);
 		
 		selfLinkName = StringUtils.replace(selfLinkName, "_", " ");
 	
@@ -490,18 +509,19 @@ public class WikiSpeciesParser {
 //		p = p.replaceAll("</?[a-z0-9]{1,6}( ?/)?>", "");
 		// Ordo: not divided<br />
 		p = p.replaceAll("\\p{L}+:\\s*not divided<br ?/?>", "");
-		p = removeEmptyRanks(p);
 		return p;
 	}
-	private String removeEmptyRanksPattern = getRanksPatternPart(false) + "\\s*:\\s*(\\-|none|not divided|unassigned)?\\s*<br\\s*/>";
 	/**
+	 * Cladus: Unidentata Episquamata</p>
 	 * Familia: -<br />
 	 * Familia:<br />
 	 * Genus: unassigned<br />
 	 * Subgenus: <i>none</i><br />
 	 * --- but I can ignore the <i> because that's already been cleaned
 	 */
-	private String removeEmptyRanks(String p) {
+	private String removeEmptyRanksPattern = getRanksPatternPart(false) + 
+			"\\s*:\\s*(\\-|none|not divided|unassigned|Unidentata[a-zA-Z ]*)?\\s*(?:<br\\s*/>|</p>)";
+	private String preProcessEmptyRanks(String p) {
 		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;
 	}
@@ -576,5 +596,22 @@ public class WikiSpeciesParser {
 			page = StringUtils.replace(page, other, "");
 		}
 		return page;
+	}
+	private static Pattern doubleRanksPattern = Pattern.compile(
+			ranksPatternPartCapture + "\\s*/\\s*" + ranksPatternPartCapture + "\\s*:"
+			);
+	/**
+	 * Some pages have ranks like "Megaclassis/Superclassis".
+	 * I don't want to try and get that solved in the regex.
+	 */
+	private static String preProcessDoubleRanks(String page) {
+		String fixedPage = page;
+		Matcher m = doubleRanksPattern.matcher(page);
+		while (m.find()) {
+			String toReplace = m.group();
+			String replaceWith = m.group(1) + ":";
+			fixedPage = fixedPage.replace(toReplace, replaceWith);
+		}
+		return fixedPage;
 	}
 }

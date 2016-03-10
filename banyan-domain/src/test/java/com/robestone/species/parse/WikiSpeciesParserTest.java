@@ -315,6 +315,15 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testPlecoptera() throws IOException {
 		doTest("Plecoptera", "Stonefly", "Plecopterida incertae sedis", null, Rank.Ordo);
 	}
+	public void testCossinaCossina() throws IOException {
+		doTest("Cossina Cossina", null, "Cossina", null, Rank.Subsectio);
+	}
+	public void testActinopteri() throws IOException {
+		doTest("Actinopteri", null, "Actinopterygii", null, Rank.Classis);
+	}
+	public void testLacertoidea() throws IOException {
+		doTest("Lacertoidea", null, "Squamata", null, Rank.Subordo);
+	}
 	
 	
 	private void doTest(String latin, String common, String parent, String image,
