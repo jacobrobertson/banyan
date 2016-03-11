@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.robestone.species.BoringPruner;
 import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Tree;
@@ -18,13 +19,17 @@ import com.robestone.species.Tree;
  */
 public class MiscWorker extends AbstractWorker {
 
-	public static void main(String[] args) {
-		new MiscWorker().runTreeReport();
+	public static void main(String[] args) throws Exception {
+		new MiscWorker().
+		runTreeReport
+//		run
+		();
 	}
 	
 	
-	public void run() {
-		speciesService.assignParentIdsForNullOrMissingId();
+	public void run() throws Exception {
+		new RecentChangesUpdater().crawlParseStatus();
+//		speciesService.assignParentIdsForNullOrMissingId();
 //		new WikiSpeciesTreeFixer(speciesService).run();
 	}
 	
@@ -58,15 +63,27 @@ public class MiscWorker extends AbstractWorker {
 		LogHelper.speciesLogger.debug("runTreeReport.buildTree." + tree.size());
 		LogHelper.speciesLogger.debug("runTreeReport.findDisconnectedTrees");
 		List<Tree> trees = EntryUtilities.findDisconnectedTrees(tree);
-		int minInteresting = 100;
+		int minInteresting = 10;
 		for (Tree t: trees) {
-			if (t.size() < minInteresting) {
+			int countInteresting = countInteresting(t);
+			if (countInteresting < minInteresting) {
 				continue;
 			}
 			CompleteEntry root = t.getRoot();
-			LogHelper.speciesLogger.debug("runTreeReport.tree." + 
-					root.getLatinName() + "." + root.getId() + "/" + t.size());
+			System.out.println(root.getLatinName() + "." + t.size() + "/" + countInteresting);
 		}
 	}
-	
+	private int countInteresting(Tree tree) {
+		int count = 0;
+		for (CompleteEntry e: tree.getEntries()) {
+			if (isInteresting(e)) {
+				count++;
+			}
+		}
+		return count;
+	}
+	private boolean isInteresting(Entry entry) {
+		return entry.getImageLink() != null || entry.getCommonName() != null;
+	}
+
 }

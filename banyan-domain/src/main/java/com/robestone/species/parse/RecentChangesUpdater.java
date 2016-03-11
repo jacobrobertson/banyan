@@ -46,6 +46,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		
 		if (crawlNewLinks) {
+			recent.crawlParseStatus();
 			recent.crawlNewLinks();
 		}
 		if (crawlOldLinks) {
@@ -109,7 +110,16 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// download the images - has to be last due to "System.exit"
 		new ImagesCreater().downloadAll(true);
 	}
-
+	public void crawlParseStatus() throws Exception {
+		// prior to running new links, also reset all broken links - the list should be getting pretty short
+		// TODO validate if I really want to do this or not
+		new ParseDoneChanger().checkSpeciesNeedingWork(true);
+		
+		// now run it in cached mode so it won't take much time
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(false);
+		crawler.crawlStoredLinks();
+	}
 	public void crawlNewLinks() throws Exception {
 		Set<String> allLinks = new HashSet<String>();
 
@@ -129,6 +139,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		crawler.pushStoredLinks(allLinks, true);
 		crawler.crawl();
 	}
+	
 	public void crawlOldLinks() throws Exception {
 		Collection<String> oldestLinks = parseStatusService.findOldestLinks(maxOldLinks);
 		LogHelper.speciesLogger.info("oldestLinks." + oldestLinks.size());

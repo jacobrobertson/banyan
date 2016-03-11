@@ -317,7 +317,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public Collection<CompleteEntry> findEntriesForTreeReport() {
 		return template.query(
-				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id from species", 
+				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id, common_name, image_link from species", 
 				this);
 	}
 	public Collection<String> findAllUnmatchedParentNames() {

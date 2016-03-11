@@ -28,7 +28,7 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String DETAIL = "detail";
 	
 	private static final int TINY_LENGTH = 20;
-	static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
+	public static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
 
 	public static void main(String[] args) throws IOException {
 //		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
@@ -102,9 +102,11 @@ public class ImagesCreater extends AbstractWorker {
 		return new File(path).exists();
 	}
 	public static final String getImageFilePath(Entry e, String type) {
-		String l = e.getImageLink();
-		String fileExtension = getExtensionFromLink(l);
-		String path = getFilePath(e.getLatinName(), type, fileExtension);
+		return getImageFilePath(e.getImageLink(), e.getLatinName(), type);
+	}
+	public static final String getImageFilePath(String link, String latinName, String type) {
+		String fileExtension = getExtensionFromLink(link);
+		String path = getFilePath(latinName, type, fileExtension);
 		return path;
 	}
 	public static String parseFileName(String link) {

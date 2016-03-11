@@ -22,7 +22,7 @@ public class ParseDoneChanger extends AbstractWorker {
 //		pc.setAllAsDone();
 //		pc.createForAllSpecies();
 //		pc.findBadStatuses();
-		pc.checkSpeciesNeedingWork(true);
+		pc.checkSpeciesNeedingWork(false);
 	}
 	public void markNotDoneAndRerunAll() throws Exception {
 		checkSpeciesNeedingWork(true);

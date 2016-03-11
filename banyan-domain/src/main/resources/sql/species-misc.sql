@@ -10,7 +10,10 @@ SELECT count(*) FROM species.species where parent_id is null;
 
 select * from species.species where id = parent_id limit 1000;
 select * from species.species where image_link is not null limit 1000;
-select * from species.species where latin_name = 'Plecoptera';
+select * from species.species where latin_name = 'Actinopteri';
+select * from species.species where (latin_name like '%virus%' or latin_name like '%Virus%') and image_link is not null;
+select * from species.species where (latin_name like '%virus%' or latin_name like '%Virus%') and common_name is not null;
+select count(*) from species.species where (latin_name like '%virus%' or latin_name like '%Virus%');
 select * from species.species where common_name_clean like '%OWLS%';
 select * from species.species where parent_latin_name = 'Scytinium';
 select * from species.species where boring_final <> 0 limit 100;

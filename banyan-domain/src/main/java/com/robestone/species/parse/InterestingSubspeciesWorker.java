@@ -21,9 +21,18 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 	public static void main(String[] args) {
 		InterestingSubspeciesWorker w = new InterestingSubspeciesWorker();
 		if (args.length == 0) {
+			int count = 0;
+			int max = 100000;
 			Tree tree = w.speciesService.findInterestingTreeFromPersistence();
-			Entry entry = tree.get(18650);
-			w.assignInterestingSubspecies(entry);
+			for (Entry e: tree.getEntries()) {
+				if (e.getInterestingCrunchedIds() != null && e.getInterestingCrunchedIds().getCrunchedIds().length() > 0) {
+					w.assignInterestingSubspecies(e);
+					count++;
+					if (count >= max) {
+						break;
+					}
+				}
+			}
 		} else {
 			w.run();
 		}
@@ -88,8 +97,19 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 			ids = new CrunchedIds(interesting, EntryUtilities.CRUNCHER);
 			logger.debug("assignInterestingSubspecies." + entry.getId() + "." + entry.getLatinName() + "." + ids);
 		}
-		entry.setInterestingCrunchedIds(ids);
-		speciesService.updateInterestingCrunchedIds(entry);
+		String oldIds = null;
+		if (entry.getInterestingCrunchedIds() != null) {
+			oldIds = entry.getInterestingCrunchedIds().getCrunchedIds();
+		}
+		String newIds = null;
+		if (ids != null) {
+			newIds = ids.getCrunchedIds();
+		}
+		// can save a lot of performance if we check this first
+		if ((newIds == null && oldIds != null) || (newIds != null && oldIds == null) || !newIds.equals(oldIds)) {
+			entry.setInterestingCrunchedIds(ids);
+			speciesService.updateInterestingCrunchedIds(entry);
+		}
 	}
 	/**
 	 * @return the next set of children to check

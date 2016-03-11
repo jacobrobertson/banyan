@@ -324,7 +324,15 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testLacertoidea() throws IOException {
 		doTest("Lacertoidea", null, "Squamata", null, Rank.Subordo);
 	}
+	public void testRhododendronsectPontica() throws IOException {
+		doTest("Rhododendron sect. Pontica", null, "Rhododendron subg. Hymenanthes", null, Rank.Sectio);
+	}
+	public void testRhododendronsubgHymenanthes() throws IOException {
+		doTest("Rhododendron subg. Hymenanthes", null, "Rhododendron", "thumb/3/35/Georgian_Snow_Rose.jpg/250px-Georgian_Snow_Rose.jpg", Rank.Subgenus);
+	}
 	
+	
+	// ----------------------------------
 	
 	private void doTest(String latin, String common, String parent, String image,
 			Rank rank) throws IOException {
