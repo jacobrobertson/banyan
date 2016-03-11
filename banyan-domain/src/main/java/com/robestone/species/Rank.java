@@ -50,6 +50,7 @@ public enum Rank {
 	Subdivisio(200, "*Sub-division", "Subdivision", "Subdivisione"),
 	
 	Claudius(210), // TODO this is a species???+
+	Megaclassis(218),
 	Superclassis(220, "*Super-class"),
 	Classis(230, "+Class", "Classes"),
 	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),

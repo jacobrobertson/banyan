@@ -330,7 +330,15 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testRhododendronsubgHymenanthes() throws IOException {
 		doTest("Rhododendron subg. Hymenanthes", null, "Rhododendron", "thumb/3/35/Georgian_Snow_Rose.jpg/250px-Georgian_Snow_Rose.jpg", Rank.Subgenus);
 	}
-	
+	public void testSpineremaeus_smithi() throws IOException {
+		doTest("Spineremaeus smithi", null, "Spineremaeus", null, Rank.Species);
+	}
+	public void testPaederusAnomalopaederus() throws IOException {
+		doTest("Paederus (Anomalopaederus)", null, "Paederus", null, Rank.Subgenus);
+	}
+	public void testOsteichthyes() throws IOException {
+		doTest("Osteichthyes", "Bony fish", "Gnathostomata (Vertebrata)", "thumb/6/6f/Mullus_surmuletus.jpg/250px-Mullus_surmuletus.jpg", Rank.Megaclassis);
+	}
 	
 	// ----------------------------------
 	

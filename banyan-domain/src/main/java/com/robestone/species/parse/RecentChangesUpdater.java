@@ -7,6 +7,7 @@ import java.util.Set;
 import org.apache.log4j.Level;
 
 import com.robestone.species.LogHelper;
+import com.robestone.species.WikiSpeciesTreeFixer;
 
 public class RecentChangesUpdater extends AbstractWorker {
 
@@ -14,7 +15,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		RecentChangesUpdater recent = new RecentChangesUpdater();
 
-		boolean crawlNewLinks = true;
+		boolean crawlNewLinks = false;
 		boolean crawlOldLinks = false;
 		boolean runMaintenance = true;
 		
@@ -71,8 +72,6 @@ public class RecentChangesUpdater extends AbstractWorker {
 	public void runMaintenance() throws Exception {
 		LogHelper.speciesLogger.info("RecentChangesUpdater.runMaintenance");
 		
-		/*
-		
 		// sets AUTH so we don't try and parse those again
 		new AuthWorker().setStatusForRedirect();
 		
@@ -89,11 +88,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// TODO - I don't know what purpose this accomplishes unless I've updated the naming logic, but maybe there's another reason for this
 //		speciesService.recreateCleanNames();
 
-		//*/
-
 		// run full boring suite
 		new BoringWorker().runBoringPrunerWorker();
-		
 		
 		// create new interesting crunched ids
 		InterestingSubspeciesWorker.logger.setLevel(Level.INFO);

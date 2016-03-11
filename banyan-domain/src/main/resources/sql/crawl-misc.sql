@@ -17,7 +17,7 @@ delete  FROM species.crawl where link = 'Fibuloides cyanopsis' and status_date =
 
 SELECT link, count(link) as cnt FROM species.crawl GROUP BY link HAVING cnt > 1;
 
-select * from species.crawl where link in ('Carl Linnaeus');
+select * from species.crawl where link in ('Actinopteri');
 
 -- find species that we think were crawled, but never got an entry
 select

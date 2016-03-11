@@ -33,7 +33,7 @@ public class ImagesCreater extends AbstractWorker {
 	public static void main(String[] args) throws IOException {
 //		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
 		new ImagesCreater().
-		downloadTests("Rhinobatidae")
+		downloadTests("Tree of Life")
 //		downloadAll(true)
 		;
 		

@@ -40,7 +40,7 @@ null,
 0,
 0,
 null,
-'thumb/7/7f/31-Velvet_Worm.JPG/250px-31-Velvet_Worm.JPG', -- TODO, one possibility is Ficus racemosa once that gets crawled - maybe for now just put whatever
+'thumb/5/53/Ficus4.jpg/250px-Ficus4.jpg',
 null,
 null,
 null,

@@ -142,11 +142,12 @@ public class WikiSpeciesParser {
 		if (entry == null) {
 			String[] names = getNamesNoParens(name);
 			if (names != null) {
+				// Centropogon (Campanulaceae) => Centropogon
 				entry = parse(name, names[0], text, true);
-				// for now, don't check the name in parens until we have an actual test case for it
-//				if (entry == null) {
-//					entry = parse(name, names[1], text, true);
-//				}
+				// Paederus (Anomalopaederus) => Anomalopaederus 
+				if (entry == null) {
+					entry = parse(name, names[1], text, true);
+				}
 			}
 		}
 		
@@ -217,6 +218,7 @@ public class WikiSpeciesParser {
 		text = getSmallerPage(text);
 		text = getSimplifiedPage(text);
 		text = preProcessEmptyRanks(text);
+		text = preProcessNumberedRanks(text);
 		text = cleanPage(text);
 		text = preProcessDoubleRanks(text);
 		
@@ -524,6 +526,21 @@ public class WikiSpeciesParser {
 	private String preProcessEmptyRanks(String p) {
 		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;
+	}
+	/**
+	 * Cladus (2): ...
+	 */
+	private static final Pattern preProcessNumberedRanksPattern = Pattern.compile(
+			getRanksPatternPart(false) + "\\s*\\([0-9]+\\)\\s*:");
+	private String preProcessNumberedRanks(String page) {
+		String fixedPage = page;
+		Matcher m = preProcessNumberedRanksPattern.matcher(page);
+		while (m.find()) {
+			String toReplace = m.group();
+			String replaceWith = m.group(1) + ":";
+			fixedPage = fixedPage.replace(toReplace, replaceWith);
+		}
+		return fixedPage;
 	}
 	private void cleanNameCharacters(CompleteEntry e) {
 		if (e == null) {

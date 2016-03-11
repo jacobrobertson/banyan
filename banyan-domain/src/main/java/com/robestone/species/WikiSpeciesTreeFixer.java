@@ -22,10 +22,6 @@ public class WikiSpeciesTreeFixer {
 		replacedBy.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
-//	private String[] boring = {
-////		"Eutheria"	 
-//	};
-	
 	private Map<String, String> assignParent = new HashMap<String, String>(); {
 		assignParent.put("Aves", "Avialae");
 		assignParent.put("Virus", null);
@@ -39,7 +35,6 @@ public class WikiSpeciesTreeFixer {
 
 	public void run() {
 		fixReplacedBy();
-		fixByMakingBoring();
 		fixAssignParent();
 	}
 	
@@ -82,16 +77,6 @@ public class WikiSpeciesTreeFixer {
 				entry.getLatinName() + "(" + entry.getId() + ")." +
 				entry.getParentLatinName() + " => " + newParent);
 		speciesService.updateParentLatinName(entry);
-	}
-	
-	/**
-	 * These are species that I don't know exactly what to do with, so I just override
-	 * their boring flag.
-	 */
-	public void fixByMakingBoring() {
-//		for (String one: boring) {
-//			
-//		}
 	}
 	
 }

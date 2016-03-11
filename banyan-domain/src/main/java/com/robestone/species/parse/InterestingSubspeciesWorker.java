@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.robestone.species.CrunchedIds;
@@ -105,8 +106,9 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 		if (ids != null) {
 			newIds = ids.getCrunchedIds();
 		}
+		
 		// can save a lot of performance if we check this first
-		if ((newIds == null && oldIds != null) || (newIds != null && oldIds == null) || !newIds.equals(oldIds)) {
+		if (!StringUtils.equals(newIds, oldIds)) {
 			entry.setInterestingCrunchedIds(ids);
 			speciesService.updateInterestingCrunchedIds(entry);
 		}
