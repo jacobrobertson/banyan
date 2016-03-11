@@ -165,11 +165,18 @@ public class WikiSpeciesParser {
 		}
 
 		// handle "Cossina Cossina"
-		if (entry == null) {
+		if (entry == null && name.indexOf(' ') > 0) {
 			String[] split = name.split(" ");
 			if (split.length == 2 && split[0].equals(split[1])) {
 				entry = parse(name, split[0], text, true);
 			}
+		}
+		
+		// special hybrid "x" \u00d7
+		if (entry == null && name.indexOf('\u00d7') >= 0) {
+			String newName = name.replace("\u00d7", " x ");
+			newName = newName.replace("  ", " ");
+			entry = parse(name, newName, text, true);
 		}
 
 		return entry;

@@ -339,6 +339,11 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testOsteichthyes() throws IOException {
 		doTest("Osteichthyes", "Bony fish", "Gnathostomata (Vertebrata)", "thumb/6/6f/Mullus_surmuletus.jpg/250px-Mullus_surmuletus.jpg", Rank.Megaclassis);
 	}
+	public void testNepenthes_xkinabaluensis() throws IOException {
+		doTest("Nepenthes \u00d7kinabaluensis", "Kinabalu Pitcher Plant", "Nepenthes", "thumb/8/87/Kinabalu_N._%C3%97_kinabaluensis_6.JPG/220px-Kinabalu_N._%C3%97_kinabaluensis_6.JPG", Rank.Hybrid);
+	}
+	
+	
 	
 	// ----------------------------------
 	
@@ -418,6 +423,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuth("Wan-Peng_Chen");
 		doTestAuth("Fedor Bogdanovich Schmidt");
 		doTestAuth("Richard Van der Laan");
+		doTestAuth("Ji\u0159\u00ed_Ml\u00edkovsk\u00fd");
 	}
 	public void doTestAuth(String name) throws Exception {
 		String page = getPage(name);
