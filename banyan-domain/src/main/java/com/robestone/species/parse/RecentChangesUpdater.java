@@ -23,6 +23,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 			recent.maxOldLinks = 0;
 			recent.maxChanges = 0;
 			recent.maxDays = 0;
+			runMaintenance = false;
 			LogHelper.speciesLogger.info("RecentChangesUpdater.args");
 			// maxOldLinks=10 maxChanges=2 maxDays=1 runMaintenance=false
 			for (int i = 0; i < args.length; i++) {
