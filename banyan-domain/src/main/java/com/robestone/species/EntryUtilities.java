@@ -457,7 +457,7 @@ public class EntryUtilities {
 		
 		return trees;
 	}
-	private static CompleteEntry getRoot(CompleteEntry e) {
+	public static CompleteEntry getRoot(CompleteEntry e) {
 		// need a way to check that I don't get in a loop
 		Set<Integer> ids = new HashSet<Integer>();
 		CompleteEntry parent = null;

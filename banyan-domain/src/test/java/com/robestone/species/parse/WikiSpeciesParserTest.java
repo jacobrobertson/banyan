@@ -339,6 +339,24 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testOsteichthyes() throws IOException {
 		doTest("Osteichthyes", "Bony fish", "Gnathostomata (Vertebrata)", "thumb/6/6f/Mullus_surmuletus.jpg/250px-Mullus_surmuletus.jpg", Rank.Megaclassis);
 	}
+	public void testNepenthes_xkinabaluensis() throws IOException {
+		doTest("Nepenthes \u00d7kinabaluensis", "Kinabalu Pitcher Plant", "Nepenthes", "thumb/8/87/Kinabalu_N._%C3%97_kinabaluensis_6.JPG/220px-Kinabalu_N._%C3%97_kinabaluensis_6.JPG", Rank.Hybrid);
+	}
+	public void testRanunculus() throws IOException {
+		doTest("Ranunculus", "Buttercup", "Ranunculeae", "thumb/f/f9/20130424Hahnenfuss_Hockenheim2.jpg/250px-20130424Hahnenfuss_Hockenheim2.jpg", Rank.Genus);
+	}
+	
+	// can't parse because parse name is longer than page name
+//	public void testPterourus() throws IOException {
+//		doTest("Pterourus", null, "Papilio", null, Rank.Subgenus);
+//	}
+	public void testCohortDictyoptera() throws IOException {
+		doTest("Cohort Dictyoptera", null, "Polyneoptera", "thumb/3/31/Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg/220px-Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg", Rank.Cohors);
+	}
+	public void testChaunacidae() throws IOException {
+		doTest("Chaunacidae", "Sea toad", "Chaunacioidea", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Familia);
+	}
+	
 	
 	// ----------------------------------
 	
@@ -425,10 +443,11 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		assertEquals(ParseStatus.AUTHORITY, type);
 	}
 	public void testRedirectSelfLinks() throws Exception {
-		String page = getPage("Euphaedra kakamegae");
+		String name = "Euphaedra kakamegae";
+		String page = getPage(name);
 		int pos = page.indexOf("<strong class=\"selflink\">");
 		assertEquals(-1, pos);
-		page = WikiSpeciesParser.preProcessRedirectSelfLinks(page);
+		page = WikiSpeciesParser.preProcessRedirectSelfLinks("Euphaedra (Euphaedrana) kakamegae", page);
 		pos = page.indexOf("<strong class=\"selflink\">");
 		assertTrue(pos > 0);
 	}

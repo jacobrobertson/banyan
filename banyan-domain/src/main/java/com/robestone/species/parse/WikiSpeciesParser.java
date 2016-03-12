@@ -165,14 +165,44 @@ public class WikiSpeciesParser {
 		}
 
 		// handle "Cossina Cossina"
-		if (entry == null) {
+		if (entry == null && name.indexOf(' ') > 0) {
 			String[] split = name.split(" ");
 			if (split.length == 2 && split[0].equals(split[1])) {
 				entry = parse(name, split[0], text, true);
 			}
 		}
+		
+		// special hybrid "x" \u00d7
+		if (entry == null && name.indexOf('\u00d7') >= 0) {
+			String newName = name.replace("\u00d7", " x ");
+			newName = newName.replace("  ", " ");
+			entry = parse(name, newName, text, true);
+		}
+
+		// handle "Cohort Dictyoptera"
+		if (entry == null) {
+			String newName = removeRankFromFront(name);
+			if (newName != null) {
+				entry = parse(name, newName, text, true);
+			}
+		}
 
 		return entry;
+	}
+	
+	private String removeRankFromFront(String name) {
+		int pos = name.indexOf(' ');
+		if (pos > 0) {
+			String left = name.substring(0, pos);
+			try {
+				Rank.valueOfWithAlternates(left);
+				return name.substring(pos + 1);
+			} catch (IllegalArgumentException e) {
+				return null;
+			}
+		}
+		return null;
+		
 	}
 	private String[] getNamesNoParens(String name) {
 		int pos = name.indexOf("(");
@@ -212,7 +242,7 @@ public class WikiSpeciesParser {
 	}
 	public CompleteEntry parse(String pageNameLatin, String selfLinkName, String text, boolean checkVernacularParser) {
 		String fullText = text;
-		text = preProcessRedirectSelfLinks(text);
+		text = preProcessRedirectSelfLinks(selfLinkName, text);
 		text = preProcessAbbreviations(text);
 		text = preProcessCleanOther(text);
 		text = getSmallerPage(text);
@@ -552,22 +582,6 @@ public class WikiSpeciesParser {
 	public static String cleanCharacters(String c) {
 		if (c != null) {
 			c = EntryUtilities.urlDecode(c);
-//			try {
-//				c = new String(c.getBytes(), "UTF-8");
-//				e.setCommonName(c);
-//			} catch (UnsupportedEncodingException e1) {
-//				throw new RuntimeException(e1);
-//			}
-			
-			// don't do this anymore - using EntityMapper at the dao layer.
-//			for (int i = 0; i < c.length(); i++) {
-////				LogHelper.speciesLogger.info(c + " => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
-//				int ch = c.charAt(i);
-//				if (ch > 255) {
-//					LogHelper.speciesLogger.info(c + "(" + i + ") => " + c.charAt(i) + " | " + ((int) c.charAt(i)));
-//					c = StringUtils.replaceChars(c, (char) ch, '_');
-//				}
-//			}
 		}
 		return c;
 	}
@@ -577,13 +591,14 @@ public class WikiSpeciesParser {
 	 * replace with
 	 * <i><strong class="selflink">X Y Z</strong></i><br />
 	 */
-	private static final Pattern redirectSelfLinksPattern = Pattern.compile("<i><a href=\"/wiki/(.*?)\" title=\"(.*?)\" class=\"mw-redirect\">(.*?)</a></i></p>");
-	public static String preProcessRedirectSelfLinks(String page) {
+	public static String preProcessRedirectSelfLinks(String name, String page) {
+		String regexName = getEscapedName(name);
+		Pattern pattern = Pattern.compile("<i><a href=\"/wiki/.*?\" title=\"" + regexName + "\" class=\"mw-redirect\">.*?</a></i></p>");
 		String fixedPage = page;
-		Matcher m = redirectSelfLinksPattern.matcher(page);
+		Matcher m = pattern.matcher(page);
 		while (m.find()) {
 			String toReplace = m.group();
-			String replaceWith = "<i><strong class=\"selflink\">" + m.group(2) + "</strong></i><br />";
+			String replaceWith = "<i><strong class=\"selflink\">" + name + "</strong></i><br />";
 			fixedPage = fixedPage.replace(toReplace, replaceWith);
 		}
 		return fixedPage;

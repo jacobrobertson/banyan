@@ -57,7 +57,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		set.add("Eukaryota");
 		set.add("Archaea");
 		set.add("Bacteria");
-		set.add("Virus");
+//		set.add("Virus");
 		return set.contains(latinName);
 	}
 	/**
