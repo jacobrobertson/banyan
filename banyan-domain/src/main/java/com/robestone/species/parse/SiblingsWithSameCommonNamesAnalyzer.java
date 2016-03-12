@@ -29,7 +29,7 @@ public class SiblingsWithSameCommonNamesAnalyzer extends AbstractWorker {
 			if (count > 0) {
 				found.add(key);
 				i++;
-				LogHelper.speciesLogger.info(i + ". " + key + " (" + count + ")");
+				LogHelper.speciesLogger.info("siblings." + i + ". " + key + " (" + count + ")");
 			}
 		}
 	}

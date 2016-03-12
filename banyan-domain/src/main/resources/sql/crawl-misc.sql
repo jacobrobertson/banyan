@@ -10,14 +10,16 @@ select count(*) from species.crawl where status = 'DONE' and (type <> 'AUTH' or 
 SELECT count(*) FROM species.crawl where (status <> 'DONE' or status is null);
 SELECT count(*) FROM species.crawl where status = 'DONE';
 SELECT count(*) FROM species.crawl where status = 'AUTH';
-SELECT * FROM species.crawl where link like 'Michal Tko%';
+SELECT * FROM species.crawl where link like 'Group%NA%';
 delete  FROM species.crawl where link = 'Fibuloides cyanopsis' and status_date = '2016-02-23 06:31:29';
+
+-- delete FROM species.crawl where link like '%Pirocydonia%' and link <> 'Pirocydonia';
 
 -- delete FROM species.crawl where link like ' %';
 
 SELECT link, count(link) as cnt FROM species.crawl GROUP BY link HAVING cnt > 1;
 
-select * from species.crawl where link in ('Actinopteri');
+select * from species.crawl where link in ('Mononegavirales');
 
 -- find species that we think were crawled, but never got an entry
 select

@@ -27,6 +27,7 @@ public enum Rank {
 	// these two are general place-holders that can go anywhere
 	Cladus(10, "*Branch", "Clade", "Cladi"), 
 	Taxon(20, "*Taxon", "Taxa"),
+	Subtaxon(25),
 	
 	// similar... usually means "no good parent"
 	Alliance(15),
@@ -41,7 +42,7 @@ public enum Rank {
 	Domain(146, "*Domain"),
 	
 	Superphylum(150, "*Super-division"),
-	Phylum(160, "*Division"),
+	Phylum(160, "*Division", "Divisio (Phylum)"),
 	Subphylum(170, "*Sub-division", "Subphyla"),
 	Infraphylum(180, "*Sub-division"),
 	

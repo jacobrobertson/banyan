@@ -1,20 +1,23 @@
 package com.robestone.species.parse;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
+import com.robestone.species.SpeciesService;
 import com.robestone.species.Tree;
 
 public class TreeReporter extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		new TreeReporter().
-//		runTreeReport
-		loopReport
+		runTreeReport
+//		loopReport
 		();
 	}
 
@@ -34,14 +37,28 @@ public class TreeReporter extends AbstractWorker {
 		LogHelper.speciesLogger.debug("runTreeReport.buildTree." + tree.size());
 		LogHelper.speciesLogger.debug("runTreeReport.findDisconnectedTrees");
 		List<Tree> trees = EntryUtilities.findDisconnectedTrees(tree);
-		int minInteresting = 10;
+		Collections.sort(trees, new TreeComp());
+		int minInteresting = 1;
 		for (Tree t: trees) {
+			if (SpeciesService.isTopLevelRank(t.getRoot().getLatinName())) {
+				continue;
+			}
 			int countInteresting = countInteresting(t);
 			if (countInteresting < minInteresting) {
 				continue;
 			}
 			CompleteEntry root = t.getRoot();
 			System.out.println(root.getLatinName() + "." + t.size() + "/" + countInteresting);
+		}
+	}
+	private class TreeComp implements Comparator<Tree> {
+		@Override
+		public int compare(Tree o1, Tree o2) {
+			int comp = countInteresting(o2) - countInteresting(o1);
+			if (comp != 0) {
+				return comp;
+			}
+			return o2.size() - o1.size();
 		}
 	}
 	private int countInteresting(Tree tree) {

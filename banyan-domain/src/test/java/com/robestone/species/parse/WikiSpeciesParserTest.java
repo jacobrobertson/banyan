@@ -356,6 +356,30 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testChaunacidae() throws IOException {
 		doTest("Chaunacidae", "Sea toad", "Chaunacioidea", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Familia);
 	}
+	public void testLepanthopsis() throws IOException {
+		doTest("Lepanthopsis", null, "Pleurothallidinae", "thumb/4/40/Lepanthopsis_comet-halleyi.jpg/250px-Lepanthopsis_comet-halleyi.jpg", Rank.Genus);
+	}
+	public void testUnassignedCalliptaminae() throws IOException {
+		doTest("Unassigned Calliptaminae", null, "Calliptaminae", null, Rank.Tribus);
+	}
+	public void testAnamorphicfungi() throws IOException {
+		doTest("Anamorphic fungi", "Deuteromycota", "Fungi", null, Rank.Phylum);
+	}
+	public void testChaunacioidea() throws IOException {
+		doTest("Chaunacioidea", null, "Ogcocephalioidei", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Superfamilia);
+	}
+	public void testAconitumsubgAconitum() throws IOException {
+		doTest("Aconitum subg. Aconitum", null, "Aconitum", null, Rank.Subgenus);
+	}
+	public void testGroup_V_ssRNA() throws IOException {
+		doTestWithFileName("Group_V_ssRNA(-)", "Group V: ssRNA(-)", null, "Virus", null, Rank.Group, false, null, null);
+	}
+	public void testMononegavirales() throws IOException {
+		doTest("Mononegavirales", "Mononegavirales", "Group V: ssRNA(-)", null, Rank.Ordo);
+	}
+	public void testAptinuspyranaeus() throws IOException {
+		doTest("Aptinus pyranaeus", null, "Aptinus (Aptinus)", null, Rank.Species);
+	}
 	
 	// ----------------------------------
 	
@@ -374,7 +398,11 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	private void doTest(String latin, String common, String parent, String image,
 			Rank rank, boolean extinct, Rank parentRank, String depicted) throws IOException {
-		String page = getPage(latin);
+		doTestWithFileName(latin, latin, common, parent, image, rank, extinct, parentRank, depicted);
+	}
+	private void doTestWithFileName(String fileName, String latin, String common, String parent, String image,
+			Rank rank, boolean extinct, Rank parentRank, String depicted) throws IOException {
+		String page = getPage(fileName);
 		CompleteEntry results = parser.parse(latin, page);
 		
 		if (rank == null) {
@@ -451,5 +479,64 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		pos = page.indexOf("<strong class=\"selflink\">");
 		assertTrue(pos > 0);
 	}
-	
+	public void testVirusGroupPreProcess() {
+		/*
+		 * Group_I:_dsDNA
+		 * Group_II:_ssDNA
+		 * Group_III:_dsRNA
+		 * Group_IV:_ssRNA(+)
+		 * Group_V:_ssRNA(-)
+		 * Group_VI:_ssRNA(RT)
+		 * Group_VII:_dsDNA(RT)
+		 */
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_I:_dsDNA\" title=\"Group_I:_dsDNA\">Group_I:_dsDNA</a><br />", 
+	            "Group: <a href=\"/wiki/Group_I:_dsDNA\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_II:_ssDNA\" title=\"Group_II:_ssDNA\">Group_II:_ssDNA</a><br />", 
+	            "Group: <a href=\"/wiki/Group_II:_ssDNA\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_III:_dsRNA\" title=\"Group_III:_dsRNA\">Group_III:_dsRNA</a><br />", 
+	            "Group: <a href=\"/wiki/Group_III:_dsRNA\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_IV:_ssRNA(+)\" title=\"Group_IV:_ssRNA(+)\">Group_IV:_ssRNA(+)</a><br />", 
+	            "Group: <a href=\"/wiki/Group_IV:_ssRNA(+)\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_V:_ssRNA(-)\" title=\"Group_V:_ssRNA(-)\">Group_V:_ssRNA(-)</a><br />", 
+	            "Group: <a href=\"/wiki/Group_V:_ssRNA(-)\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_VI:_ssRNA(RT)\" title=\"Group_VI:_ssRNA(RT)\">Group_VI:_ssRNA(RT)</a><br />", 
+	            "Group: <a href=\"/wiki/Group_VI:_ssRNA(RT)\" >VIRUSGROUP</a><br />");
+		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_VII:_dsDNA(RT)\" title=\"Group_VII:_dsDNA(RT)\">Group_VII:_dsDNA(RT)</a><br />", 
+	            "Group: <a href=\"/wiki/Group_VII:_dsDNA(RT)\" >VIRUSGROUP</a><br />");
+
+		
+		doTestVirusGroupPreProcess("<other junk>...????</a><a href=\"/wiki/Group_V:_ssRNA(-)\" title=\"Group V: ssRNA(-)\">Group V: ssRNA(-)</a><br /><more?junk><br\n", 
+				"<other junk>...????</a>Group: <a href=\"/wiki/Group_V:_ssRNA(-)\" >VIRUSGROUP</a><br /><more?junk><br\n");
+	}
+	private void doTestVirusGroupPreProcess(String in, String expectOut) {
+		String found = VirusUtilities.preProcessVirusGroups(in);
+		assertEquals(expectOut, found);
+	}
+	public void testVirusParentParse() {
+		// test that the test is valid
+		doTestVirusParentParse("Familia: <a href=\"/wiki/Pedinellaceae\" title=\"Pedinellaceae\">Pedinellaceae</a>", true);
+		doTestVirusParentParse("Group: <a href=\"/wiki/Pedinellaceae\" title=\"Pedinellaceae\">Pedinellaceae</a>", true);
+		// try increasingly hard patterns to see where I go wrong
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_I:_dsDNA\" title=\"Pedinellaceae\">Pedinellaceae</a>", true);
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_II:_ssDNA\" title=\"Pedinellaceae\">Pedinellaceae</a>", true);
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_IV:_ssRNA(+)\" title=\"Pedinellaceae\">Pedinellaceae</a>", true);
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_IV:_ssRNA(+)\">Pedinellaceae</a>", false);
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_IV:_ssRNA(+)\" >Pedinellaceae</a>", true);
+		// fails when I add it to title, etc.
+		doTestVirusParentParse("Group: <a href=\"/wiki/Group_IV:_ssRNA(+)\" title=\"Group VI: ssRNA(RT)\">Group VI: ssRNA(RT)</a>", false);
+		
+		// try the preprocess
+		String test = VirusUtilities.preProcessVirusGroups("<a href=\"/wiki/Group_IV:_ssRNA(+)\" title=\"Group VI: ssRNA(RT)\">Group VI: ssRNA(RT)</a>");
+		doTestVirusParentParse(test, true);
+	}
+	private void doTestVirusParentParse(String testLine, boolean expectMatch) {
+		String childRank = "Ordo";
+		String childLatin = "Myvirus";
+		String test = testLine + "<br />\r\n" +
+				childRank + 
+				": <i><strong class=\"selflink\">"
+				+ childLatin + "</strong></i></p>";
+		Pattern p = WikiSpeciesParser.getParentPattern(childRank, childLatin, true);
+		assertEquals(expectMatch, p.matcher(test).find());
+	}
 }

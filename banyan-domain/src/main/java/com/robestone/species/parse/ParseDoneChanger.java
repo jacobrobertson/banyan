@@ -22,13 +22,12 @@ public class ParseDoneChanger extends AbstractWorker {
 //		pc.setAllAsDone();
 //		pc.createForAllSpecies();
 //		pc.findBadStatuses();
-		pc.checkSpeciesNeedingWork(false);
+//		pc.checkSpeciesNeedingWork(true);
+		pc.reCrawlAllUnparsed();
 	}
-	public void markNotDoneAndRerunAll() throws Exception {
+	public void reCrawlAllUnparsed() throws Exception {
 		checkSpeciesNeedingWork(true);
-		// run this now, so that when I go to bed, it will get to these instead of me having to run in morning
 		new WikiSpeciesCrawler().crawlStoredLinks();
-		new RecentChangesUpdater().runAll();
 	}
 	
 	public void checkSpeciesNeedingWork(boolean persist) {

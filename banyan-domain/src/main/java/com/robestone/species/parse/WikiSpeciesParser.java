@@ -86,6 +86,7 @@ public class WikiSpeciesParser {
 		t = t.replaceAll("\\)", "\\\\)");
 		t = t.replaceAll("\\?", "\\\\?");
 		t = t.replaceAll("\\.", "\\\\.");
+		t = t.replaceAll("\\+", "\\\\+");
 		return t;
 	}
 	private String getSmallerPage(String text) {
@@ -186,6 +187,20 @@ public class WikiSpeciesParser {
 				entry = parse(name, newName, text, true);
 			}
 		}
+		
+		// "Unassigned Calliptaminae"
+		if (entry == null && name.startsWith("Unassigned ")) {
+			entry = parse(name, "Unassigned", text, true);
+		}
+		
+		// Aptinus pyranaeus => Aptinus (Aptinus) pyranaeus
+		int pos;
+		if (entry == null && (pos = name.indexOf(' ')) > 0) {
+			String left = name.substring(0, pos);
+			String right = name.substring(pos + 1);
+			String newName = left + " (" + left + ") " + right;
+			entry = parse(name, newName, text, true);
+		}
 
 		return entry;
 	}
@@ -251,14 +266,11 @@ public class WikiSpeciesParser {
 		text = preProcessNumberedRanks(text);
 		text = cleanPage(text);
 		text = preProcessDoubleRanks(text);
+		text = VirusUtilities.preProcessVirusGroups(pageNameLatin, text);
 		
 		selfLinkName = StringUtils.replace(selfLinkName, "_", " ");
 	
-		// took the self link check out because of C. latrans
-		String latinName = selfLinkName; //getGroup(selfLinkPattern, text, 1);
-//		if (!name.equals(latinName)) {
-//			return null;
-//		}
+		String latinName = selfLinkName;
 		String rank = getRank(latinName, text);
 		if (rank == null) {
 			return null;
@@ -403,30 +415,8 @@ public class WikiSpeciesParser {
 		}
 		return all;
 	}
-		/*
-		String[] split = latin.split(" ");
-		if (split.length == 1) {
-			return null;
-		}
-		List<String> names = new ArrayList<String>();
-		StringBuilder buf = new StringBuilder();
-		for (int i = 0; i < split.length; i++) {
-			if (i > 0) {
-				buf.append(" ");
-			}
-			if (i == split.length - 1) {
-				buf.append(split[i]);
-			} else {
-				buf.append(split[i].charAt(0));
-				buf.append('.');
-			}
-		}
-		return buf.toString();
-	}
-		*/
-
-	private Pattern getParentPattern(String childRank, String childLatin, boolean normal) {
-		String w = "(?:[\\p{L}\\(\\)_\\. \\&%#0-9;'\\/\\-]|</?i>)+"; // &#160;
+	public static Pattern getParentPattern(String childRank, String childLatin, boolean normal) {
+		String w = "(?:[\\p{L}\\(\\)_\\. \\&%#0-9;'\\/\\-\\+\\:]|</?i>)+"; // &#160;
 		String preName;
 		String postName;
 		if (normal) {
@@ -557,6 +547,7 @@ public class WikiSpeciesParser {
 		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;
 	}
+	
 	/**
 	 * Cladus (2): ...
 	 */
@@ -579,8 +570,19 @@ public class WikiSpeciesParser {
 		e.setLatinName(cleanCharacters(e.getLatinName()));
 		e.setCommonName(cleanCharacters(e.getCommonName()));
 	}
+	/**
+	 * This was breaking the virus name that needs a + in the name "Group ... (+)"
+	 */
 	public static String cleanCharacters(String c) {
-		if (c != null) {
+		if (c == null) {
+			return null;
+		}
+		int pos;
+		if ((pos = c.indexOf('+')) > 0) {
+			String left = c.substring(0, pos);
+			String right = c.substring(pos + 1);
+			return cleanCharacters(left) + '+' + cleanCharacters(right);
+		} else {
 			c = EntryUtilities.urlDecode(c);
 		}
 		return c;
@@ -634,7 +636,7 @@ public class WikiSpeciesParser {
 			);
 	/**
 	 * Some pages have ranks like "Megaclassis/Superclassis".
-	 * I don't want to try and get that solved in the regex.
+	 * I don't want to try and solve that in the regex.
 	 */
 	private static String preProcessDoubleRanks(String page) {
 		String fixedPage = page;
