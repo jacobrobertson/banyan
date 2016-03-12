@@ -357,7 +357,6 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Chaunacidae", "Sea toad", "Chaunacioidea", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Familia);
 	}
 	
-	
 	// ----------------------------------
 	
 	private void doTest(String latin, String common, String parent, String image,
@@ -436,6 +435,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuth("Wan-Peng_Chen");
 		doTestAuth("Fedor Bogdanovich Schmidt");
 		doTestAuth("Richard Van der Laan");
+		doTestAuth("Ji\u0159\u00ed_Ml\u00edkovsk\u00fd");
 	}
 	public void doTestAuth(String name) throws Exception {
 		String page = getPage(name);
