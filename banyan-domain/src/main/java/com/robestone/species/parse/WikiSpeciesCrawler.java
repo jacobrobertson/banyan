@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
-import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 import com.robestone.util.html.EntityMapper;
 
