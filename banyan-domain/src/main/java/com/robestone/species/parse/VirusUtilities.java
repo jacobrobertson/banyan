@@ -34,6 +34,10 @@ public class VirusUtilities {
 	private static Pattern preProcessVirusGroupsPattern = Pattern.compile(
 			"<a href=\"/wiki/(" + n + ")\" title=\".*?\">.*?<"	);
 	public static String preProcessVirusGroups(String page) {
+		
+		// just for "+" need to fix that
+		page = page.replaceAll("\\(%2B\\)", "(+)");
+		
 		Matcher m = preProcessVirusGroupsPattern.matcher(page);
 		String fixedPage = page;
 		while (m.find()) {

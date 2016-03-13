@@ -5,9 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -76,6 +78,13 @@ public class WikiSpeciesCache {
 	}
 	public static String getPage(String link) {
 		link = StringUtils.replace(link, " ", "_");
+		
+		try {
+			link = URLEncoder.encode(link, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+		
 		link = "https://species.wikimedia.org/wiki/" + link + "?redirect=no";
 		return getPageForUrl(link);
 	}

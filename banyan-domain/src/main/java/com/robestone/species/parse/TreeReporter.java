@@ -38,9 +38,9 @@ public class TreeReporter extends AbstractWorker {
 		LogHelper.speciesLogger.debug("runTreeReport.findDisconnectedTrees");
 		List<Tree> trees = EntryUtilities.findDisconnectedTrees(tree);
 		Collections.sort(trees, new TreeComp());
-		int minInteresting = 1;
+		int minInteresting = 3;
 		for (Tree t: trees) {
-			if (SpeciesService.isTopLevelRank(t.getRoot().getLatinName())) {
+			if (SpeciesService.TREE_OF_LIFE_ID.equals(t.getRoot().getId())) {
 				continue;
 			}
 			int countInteresting = countInteresting(t);

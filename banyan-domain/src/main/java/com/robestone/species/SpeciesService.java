@@ -734,7 +734,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 						CompleteEntry linkedEntry = 
 							getLinkedImageEntry(entry, entry, null, treeDepths, imageCounts);
 						if (linkedEntry != null) {
-							logger.debug("updateLinkedImageIds." + entry.getId() + "->" + linkedEntry.getId());
+//							logger.debug("updateLinkedImageIds." + entry.getId() + "->" + linkedEntry.getId());
 							increaseImageCount(imageCounts, linkedEntry.getImageLink());
 							batchUpdates.add(new Object[] {linkedEntry.getId(), entry.getId()});
 						}

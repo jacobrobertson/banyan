@@ -383,6 +383,24 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testTaraMolina() throws IOException {
 		doTest("Tara Molina", null, "Caesalpinieae", null, Rank.Genus);
 	}
+	public void testRetroviridae() throws IOException {
+		doTest("Retroviridae", "Retroviruses", "Group VI: ssRNA(RT)", "thumb/9/97/Phylogeny_of_Retroviruses.svg/350px-Phylogeny_of_Retroviruses.svg.png", Rank.Familia);
+	}
+	public void testFlaviviridae() throws IOException {
+		doTest("Flaviviridae", "Flavivirus group", "Group IV: ssRNA(+)", null, Rank.Familia);
+	}
+	public void testZygomyiasubmarginataHarrison() throws IOException {
+		doTest("Zygomyia submarginata Harrison", null, "Zygomyia", null, Rank.Species);
+	}
+	public void testXerophyllumMichx() throws IOException {
+		doTest("Xerophyllum Michx.", null, "Xerophylleae", "thumb/5/5b/Xerophyllum_tenax_1309.JPG/250px-Xerophyllum_tenax_1309.JPG", Rank.Genus);
+	}
+	public void testMonophyllusLeach() throws IOException {
+		doTest("Monophyllus (Leach)", "Single Leaf Bats", "Glossophagini", null, Rank.Genus);
+	}
+	public void testSedumserCepaea() throws IOException {
+		doTest("Sedum ser. Cepaea", null, "Sedum sect. Sedum", null, Rank.Series);
+	}
 	
 	// ----------------------------------
 	

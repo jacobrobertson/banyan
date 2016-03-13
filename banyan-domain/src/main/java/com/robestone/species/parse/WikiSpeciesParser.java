@@ -202,7 +202,7 @@ public class WikiSpeciesParser {
 			entry = parse(name, newName, text, true);
 		}
 
-		// Author names in species page name - Tara Molina
+		// Author names in species page name
 		if (entry == null) {
 			String[] split = splitAuthorNameFromSpeciesPageName(name);
 			if (split != null) {
@@ -210,13 +210,27 @@ public class WikiSpeciesParser {
 			}
 		}
 		
+		// " ser. " - Sedum ser. Cepaea => Cepaea
+		if (entry == null) {
+			pos = name.indexOf(" ser. ");
+			if (pos > 0) {
+				String newName = name.substring(pos + 6);
+				entry = parse(name, newName, text, true);
+			}
+		}
+		
 		return entry;
 	}
 	
-	private static Pattern splitAuthorPattern = Pattern.compile("[A-Z][a-z]+(-[A-Z][a-z]+)?");
+	/**
+	 * Tara Molina
+	 * Zygomyia submarginata Harrison
+	 * Xerophyllum Michx.
+	 */
+	private static Pattern splitAuthorPattern = Pattern.compile("[A-Z][a-z]+(-[A-Z][a-z]+)?\\.?");
 	public static String[] splitAuthorNameFromSpeciesPageName(String name) {
 		int pos;
-		if ((pos = name.indexOf(' ')) > 0) {
+		if ((pos = name.lastIndexOf(' ')) > 0) {
 			String left = name.substring(0, pos);
 			String right = name.substring(pos + 1);
 			if (splitAuthorPattern.matcher(right).matches()) {

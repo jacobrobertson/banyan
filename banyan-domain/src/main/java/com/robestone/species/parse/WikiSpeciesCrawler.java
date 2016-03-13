@@ -27,7 +27,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"+Pirocydonia",
+				"Modest Mikha\u012Dlovich Iljin", 
 
 				
 		};
