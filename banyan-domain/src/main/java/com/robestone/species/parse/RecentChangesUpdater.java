@@ -115,7 +115,6 @@ public class RecentChangesUpdater extends AbstractWorker {
 	}
 	public void crawlParseStatus() throws Exception {
 		// prior to running new links, also reset all broken links - the list should be getting pretty short
-		// TODO validate if I really want to do this or not
 		new ParseDoneChanger().checkSpeciesNeedingWork(true);
 		
 		// now run it in cached mode so it won't take much time
@@ -139,7 +138,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 			
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(true);
-		crawler.pushStoredLinks(allLinks, true);
+		crawler.pushStoredLinks(allLinks, false);
 		crawler.crawl();
 	}
 	
