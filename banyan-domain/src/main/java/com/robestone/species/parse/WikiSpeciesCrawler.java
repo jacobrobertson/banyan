@@ -134,6 +134,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		// search for the right patterns, ie <a href="/wiki/Biciliata"
 		Set<String> links = parseLinks(page);
 		for (String link: links) {
+			link = link.trim(); // "+Pirocydonia" is still busting my hump 
 			ParseStatus status = new ParseStatus();
 			status.setUrl(link);
 			status.setStatus(ParseStatus.FOUND);
@@ -162,7 +163,6 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			// save the links
 			String link = matcher.group(1);
 			link = StringUtils.replace(link, "_", " ");
-			link = EntryUtilities.urlDecode(link);
 			link = WikiSpeciesParser.cleanCharacters(link); 
 			if (!isSkippableLink(link)) {
 				links.add(link);
