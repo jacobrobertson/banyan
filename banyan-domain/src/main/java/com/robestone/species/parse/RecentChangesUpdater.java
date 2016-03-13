@@ -18,12 +18,14 @@ public class RecentChangesUpdater extends AbstractWorker {
 		boolean crawlNewLinks = false;
 		boolean crawlOldLinks = false;
 		boolean runMaintenance = true;
+		boolean crawlParseStatus = true;
 		
 		if (args != null && args.length > 0) {
 			recent.maxOldLinks = 0;
 			recent.maxChanges = 0;
 			recent.maxDays = 0;
 			runMaintenance = false;
+			crawlParseStatus = false;
 			LogHelper.speciesLogger.info("RecentChangesUpdater.args");
 			// maxOldLinks=10 maxChanges=2 maxDays=1 runMaintenance=false
 			for (int i = 0; i < args.length; i++) {
@@ -41,14 +43,18 @@ public class RecentChangesUpdater extends AbstractWorker {
 				if (p[0].equals("runMaintenance")) {
 					runMaintenance = Boolean.parseBoolean(p[1]);
 				}
+				if (p[0].equals("crawlParseStatus")) {
+					crawlParseStatus = Boolean.parseBoolean(p[1]);
+				}
 			}
 			crawlNewLinks = recent.maxChanges > 0;
 			crawlOldLinks = recent.maxOldLinks > 0;
 		}
 		
-		
-		if (crawlNewLinks) {
+		if (crawlParseStatus) {
 			recent.crawlParseStatus();
+		}
+		if (crawlNewLinks) {
 			recent.crawlNewLinks();
 		}
 		if (crawlOldLinks) {
