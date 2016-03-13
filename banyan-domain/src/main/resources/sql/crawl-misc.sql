@@ -10,7 +10,7 @@ select count(*) from species.crawl where status = 'DONE' and (type <> 'AUTH' or 
 SELECT count(*) FROM species.crawl where (status <> 'DONE' or status is null);
 SELECT count(*) FROM species.crawl where status = 'DONE';
 SELECT count(*) FROM species.crawl where status = 'AUTH';
-SELECT * FROM species.crawl where link like 'Group%NA%';
+SELECT * FROM species.crawl where link like '%Pirocydonia%';
 delete  FROM species.crawl where link = 'Fibuloides cyanopsis' and status_date = '2016-02-23 06:31:29';
 
 -- delete FROM species.crawl where link like '%Pirocydonia%' and link <> 'Pirocydonia';

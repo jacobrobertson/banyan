@@ -28,17 +28,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Herpesviridae",
-				"Myoviridae",
-				"Orthoretrovirinae",
-				"Flavivirus",
-				"Filoviridae",
-				"Mesoniviridae",
-				"Polyomavirus",
-				"Alphaturrivirus",
-				"Mimivirus",
-				"Rubivirus",
-				"Gammapartitivirus",
+				"+Pirocydonia",
 
 				
 		};

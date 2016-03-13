@@ -380,6 +380,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testAptinuspyranaeus() throws IOException {
 		doTest("Aptinus pyranaeus", null, "Aptinus (Aptinus)", null, Rank.Species);
 	}
+	public void testTaraMolina() throws IOException {
+		doTest("Tara Molina", null, "Caesalpinieae", null, Rank.Genus);
+	}
 	
 	// ----------------------------------
 	
@@ -469,6 +472,25 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		String page = getPage(name);
 		String type = WikiSpeciesCrawler.getType(name, page);
 		assertEquals(ParseStatus.AUTHORITY, type);
+	}
+	public void testAuthSplit() {
+		doTestAuthSplit("Anything");
+		doTestAuthSplit("Anything two");
+		doTestAuthSplit("Anything Two", "Anything", "Two");
+		doTestAuthSplit("Anything Two-Three", "Anything", "Two-Three");
+		doTestAuthSplit("Anything Two-three");
+		doTestAuthSplit("Anything two-three");
+		doTestAuthSplit("Anything Two three");
+	}
+	private void doTestAuthSplit(String name, String... split) {
+		String[] found = WikiSpeciesParser.splitAuthorNameFromSpeciesPageName(name);
+		if (split.length == 0) {
+			assertNull(found);
+		} else {
+			assertEquals(2, found.length);
+			assertEquals(split[0], found[0]);
+			assertEquals(split[1], found[1]);
+		}
 	}
 	public void testRedirectSelfLinks() throws Exception {
 		String name = "Euphaedra kakamegae";

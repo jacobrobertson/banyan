@@ -202,7 +202,28 @@ public class WikiSpeciesParser {
 			entry = parse(name, newName, text, true);
 		}
 
+		// Author names in species page name - Tara Molina
+		if (entry == null) {
+			String[] split = splitAuthorNameFromSpeciesPageName(name);
+			if (split != null) {
+				entry = parse(name, split[0], text, true);
+			}
+		}
+		
 		return entry;
+	}
+	
+	private static Pattern splitAuthorPattern = Pattern.compile("[A-Z][a-z]+(-[A-Z][a-z]+)?");
+	public static String[] splitAuthorNameFromSpeciesPageName(String name) {
+		int pos;
+		if ((pos = name.indexOf(' ')) > 0) {
+			String left = name.substring(0, pos);
+			String right = name.substring(pos + 1);
+			if (splitAuthorPattern.matcher(right).matches()) {
+				return new String[] {left, right};
+			}
+		}
+		return null;
 	}
 	
 	private String removeRankFromFront(String name) {
