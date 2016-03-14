@@ -53,7 +53,7 @@ public class WikiSpeciesParser {
 	
 	private static String ranksPatternPartCapture = doGetRanksPatternPart(false);
 	private static String ranksPatternPartNonCapture = doGetRanksPatternPart(true);
-	private static String getRanksPatternPart(boolean nonCapture) {
+	public static String getRanksPatternPart(boolean nonCapture) {
 		if (nonCapture) {
 			return ranksPatternPartNonCapture;
 		} else {

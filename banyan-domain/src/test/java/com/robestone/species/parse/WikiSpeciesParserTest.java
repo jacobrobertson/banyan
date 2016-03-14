@@ -488,8 +488,8 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	public void doTestAuth(String name) throws Exception {
 		String page = getPage(name);
-		String type = WikiSpeciesCrawler.getType(name, page);
-		assertEquals(ParseStatus.AUTHORITY, type);
+		boolean isAuth = AuthorityUtilities.isAuthorityPage(name, page);
+		assertTrue(isAuth);
 	}
 	public void testAuthSplit() {
 		doTestAuthSplit("Anything");

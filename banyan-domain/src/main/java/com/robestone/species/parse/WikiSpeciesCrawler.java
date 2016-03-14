@@ -27,7 +27,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Modest Mikha\u012Dlovich Iljin", 
+				"Paul E. Olsen", 
 
 				
 		};
@@ -183,10 +183,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public void visitPage(ParseStatus link, String page) {
-		String type = getType(link.getLatinName(), page);
-		if (type != null) {
-			LogHelper.speciesLogger.info("type." + link.getLatinName() + "." + type);
-			link.setType(type);
+		boolean isAuth = AuthorityUtilities.isAuthorityPage(link.getLatinName(), page);
+		if (isAuth) {
+			LogHelper.speciesLogger.info("type." + link.getLatinName() + ".AUTH");
+			link.setType(ParseStatus.AUTHORITY);
 			return;
 		}
 		boolean isDeleted = isDeleted(page);
@@ -275,67 +275,6 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private static Pattern chinese = Pattern.compile(".*[a-zA-Z]{2,}.*");
 	private static boolean isDeleted(String page) {
 		return page.contains(WikiSpeciesCache.DELETED_PAGE);
-	}
-	private static Pattern[] authTypes = getAuthTypes();
-	public static Pattern[] getAuthTypes() {
-		String[] authTypes = {
-				"([A-Za-z]+_)?Taxon_Authorities", "Repositories", "Sources",
-//				"Entomologists", "Botanists", "Lichenologists",	"Palaeontologists", "Paleobotanists", "Ichthyologists",
-				"[A-Za-z_]+ists",
-				"ISSN"};
-		Pattern[] patterns = new Pattern[authTypes.length];
-		for (int i = 0; i < authTypes.length; i++) {
-			patterns[i] = Pattern.compile("<a href=\"/wiki/Category\\:" + authTypes[i]);
-		}
-		return patterns;
-	}
-	private static String[] authHints = {
-			"<span class=\"mw-headline\" id=\"Authored_taxa\">Authored taxa</span>",
-			"<span class=\"mw-headline\" id=\"Described_taxa\">Described taxa</span>",
-			"<span class=\"mw-headline\" id=\"works_include\">works include</span>",
-			"<span class=\"mw-headline\" id=\"work_include\">works include</span>",
-			"<span class=\"mw-headline\" id=\"work_include\">work include</span>",
-			"<span class=\"mw-headline\" id=\"works_including\">works including</span>",
-	};
-	public static String getType(String latinName, String page) {
-		if (latinName.startsWith("ISSN")) {
-			return ParseStatus.AUTHORITY;
-		}
-		for (Pattern authType: authTypes) {
-			Matcher m = authType.matcher(page);
-			if (m.find()) {
-				return ParseStatus.AUTHORITY;
-			}
-		}
-		for (String hint: authHints) {
-			int find = StringUtils.indexOfIgnoreCase(page, hint);
-			if (find > 0) {
-				return ParseStatus.AUTHORITY;
-			}
-		}
-		
-		// because some hints might not be conclusive, we only check them if there is also no taxobox
-		boolean hasTaxoBox = page.contains("id=\"Taxonavigation\">Taxonavigation");
-		if (!hasTaxoBox) {
-			String[] authHints2 = {
-					"id=\"Publications\">Publications",
-					"<li><b>Dates:</b>",
-					"<li><b>Dates</b>", // <li><b>Dates</b> 1758-1759, 2 vols. [2: 825-1384]</li>
-			};
-			for (String hint: authHints2) {
-				int find = StringUtils.indexOfIgnoreCase(page, hint);
-				if (find > 0) {
-					return ParseStatus.AUTHORITY;
-				}
-			}
-		}
-		
-		
-		// CAN'T DO -- some good pages are also disambiguation
-//		if (page.contains("<a href=\"/wiki/Category:Disambiguation_pages\"")) {
-//			return true;
-//		}
-		return null;
 	}
 	public void setForceNewDownloadForCache(boolean forceNewDownloadForCache) {
 		this.forceNewDownloadForCache = forceNewDownloadForCache;
