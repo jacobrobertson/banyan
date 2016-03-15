@@ -53,6 +53,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		if (crawlParseStatus) {
 			recent.crawlParseStatus();
+			recent.crawlTreeReport();
 		}
 		if (crawlNewLinks) {
 			recent.crawlNewLinks();
@@ -112,6 +113,13 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		// download the images - has to be last due to "System.exit"
 		new ImagesCreater().downloadAll(true);
+	}
+	public void crawlTreeReport() throws Exception {
+		Set<String> names = new TreeReporter().getLinksToCrawl();
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(false);
+		crawler.pushStoredLinks(names, false);
+		crawler.crawl();
 	}
 	public void crawlParseStatus() throws Exception {
 		// prior to running new links, also reset all broken links - the list should be getting pretty short

@@ -27,8 +27,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Paul E. Olsen", 
-
+				"Monophyllus redmani",
 				
 		};
 		crawlAllStoredLinks = false;
