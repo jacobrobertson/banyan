@@ -27,27 +27,33 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String PREVIEW = "preview";
 	public static final String DETAIL = "detail";
 	
-	private static final int TINY_LENGTH = 20;
+	private static final int TINY_LENGTH = 40;
 	public static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
 
 	public static void main(String[] args) throws IOException {
-//		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
-		new ImagesCreater().
-		downloadTests("Tree of Life")
-//		downloadAll(true)
-		;
 		
+		if (args != null && args.length > 0) {
+			if (args[0].equals("fixTiny")) {
+				new ImagesCreater().downloadAll(false, true);
+			}
+		} else {
+	//		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
+			new ImagesCreater().
+	//		downloadTests("Tree of Life")
+			downloadAll(false, true)
+			;
+		}
 	}
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
 	
-	public void downloadAll(boolean onlyNew) throws IOException {
+	public void downloadAll(boolean onlyNew, boolean onlyTiny) throws IOException {
 		Collection<? extends Entry> links = speciesService.getThumbnails();
 		int size = links.size();
 		int count = 0;
 		for (Entry entry: links) {
 			try {
-				downloadOne(entry, size, count, onlyNew);
+				downloadOne(entry, size, count, onlyNew, onlyTiny);
 			} catch (Exception e) {
 				e.printStackTrace();
 				// I don't want to fail these!  and they fail once in a while!
@@ -57,10 +63,10 @@ public class ImagesCreater extends AbstractWorker {
 	public void downloadTests(String... latinNames) throws IOException {
 		for (String latinName: latinNames) {
 			Entry entry = speciesService.findEntryByLatinName(latinName);
-			downloadOne(entry, 1, 1, false);
+			downloadOne(entry, 1, 1, false, false);
 		}
 	}
-	public void downloadOne(Entry entry, int count, int size, boolean onlyNew) throws IOException {
+	public void downloadOne(Entry entry, int count, int size, boolean onlyNew, boolean onlyTiny) throws IOException {
 		String latinName = entry.getLatinName();
 		String link = entry.getImageLink();
 		
@@ -79,7 +85,7 @@ public class ImagesCreater extends AbstractWorker {
 			System.out.print(latinName + "(" + hashPath + ") " + link + " > ");
 			// create the thumbs
 			try {
-				downloadThumbs(entry, latinName, fileExtension, link);
+				downloadThumbs(entry, latinName, fileExtension, link, onlyTiny);
 			} catch (Exception e) {
 				// fails on some images - haven't figured out why yet
 				e.printStackTrace();
@@ -199,7 +205,7 @@ public class ImagesCreater extends AbstractWorker {
 		return false;
 	}
 	
-	private void downloadThumbs(Entry entry, String latinName, String fileExtension, String link) throws IOException {
+	private void downloadThumbs(Entry entry, String latinName, String fileExtension, String link, boolean onlyTiny) throws IOException {
 		File saved = downloadThumb(latinName, TINY, fileExtension, null, TINY_LENGTH, link, false);
 		if (saved == null) {
 			// in this case, the image was removed
@@ -210,10 +216,12 @@ public class ImagesCreater extends AbstractWorker {
 			downloadThumb(latinName, TINY, fileExtension, null, 
 					getWidthToDownload(TINY_LENGTH, xratio), link, false);
 		}
-		int detailWidth = getWidthToDownload(400, xratio);
-		saved = downloadThumb(latinName, DETAIL, fileExtension, null, detailWidth, link, true);
-		int previewWidth = getWidthToDownload(250, xratio);
-		downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
+		if (!onlyTiny) {
+			int detailWidth = getWidthToDownload(400, xratio);
+			saved = downloadThumb(latinName, DETAIL, fileExtension, null, detailWidth, link, true);
+			int previewWidth = getWidthToDownload(250, xratio);
+			downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
+		}
 		imagesMeasurer.runOne(entry);
 	}
 	/*

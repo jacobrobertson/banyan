@@ -8,15 +8,15 @@
 <t:navigationbar />
 <t:corners>
 
-	<div class="ExampleTitle"><img src="icons/Focus.gif" />
-	<img src="icons/Focus.gif" alt="star" />
-	<img src="icons/Focus.gif" alt="star" />
+	<div class="ExampleTitle"><img src="icons/star.png" class="star" alt="star" />
+	<img src="icons/star.png" class="star" alt="star" />
+	<img src="icons/star.png" class="star" alt="star" />
 	&nbsp;
 	Click on one of these examples to get started exploring ${message:AppTitle}!
 	&nbsp;
-	<img src="icons/Focus.gif" alt="star" />
-	<img src="icons/Focus.gif" alt="star" />
-	<img src="icons/Focus.gif" alt="star" />
+	<img src="icons/star.png" class="star" alt="star" />
+	<img src="icons/star.png" class="star" alt="star" />
+	<img src="icons/star.png" class="star" alt="star" />
 	</div>
 	<br />
 <table class="ExamplesTable">

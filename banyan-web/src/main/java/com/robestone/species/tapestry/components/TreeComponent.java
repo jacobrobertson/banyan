@@ -13,6 +13,10 @@ import com.robestone.species.UrlIdUtilities;
 
 public class TreeComponent extends AbstractTreeComponent {
 
+	private static enum Button {
+		detail_first, detail_indented, tree_root, menu_more, menu_less
+	}
+	
 	public boolean beginRender(MarkupWriter writer) {
 
 		// TODO this is happening a whole lot...
@@ -210,7 +214,7 @@ public class TreeComponent extends AbstractTreeComponent {
 		if (!isRoot) {
 			writeGotoDetail(writer, entry, isHierarchy);
 		} else {
-			writeButton(writer, entry, "New Tree", "search.navigationbar.startover", "StartOver");
+			writeButton(writer, entry, "New Tree", "search.navigationbar.startover", Button.tree_root);
 		}
 		renderNameImageLink(writer, entry);
 		writeMenuButton(writer, entry);
@@ -240,46 +244,46 @@ public class TreeComponent extends AbstractTreeComponent {
 		return entry;
 	}
 	private void writeGotoDetail(MarkupWriter writer, Entry entry, boolean isHierarchy) {
-		String buttonName = "Detail";
+		Button button = Button.detail_indented;
 		if (!isHierarchy) {
-			buttonName += "1";
+			button = Button.detail_first;
 		}
-		writeButton(writer, entry, "Go to Details", "search.detail", buttonName,
+		writeButton(writer, entry, "Go to Details", "search.detail", button,
 				UrlIdUtilities.getUrlId(entry));
 	}
 	private void writeMenuButton(MarkupWriter writer, Entry entry) {
 		String ids;
-		String image;
+		Button image;
 		boolean isMoreOptionsAvailable = isShowChildrenNeeded(entry) || isShowMoreNeeded(entry);
 		if (isMoreOptionsAvailable) {
 			ids = getCrunchedIdsForShowChildren(entry);
-			image = "MenuMore.png";
+			image = Button.menu_more;
 		} else {
 			ids = EntryUtilities.getCrunchedIdsForClose(getRoot(), entry.getId());;
-			image = "MenuLess.png";
+			image = Button.menu_less;
 		}
 		writer.writeRaw("<a href=\"search.tree/" +
 				ids + "#" + entry.getId() + "\">" +
-				"<img src=\"icons/" + image +
-				"\" name=\"" + entry.getId() +
+				"<img src=\"icons/" + image.name() +
+				".png\" name=\"" + entry.getId() +
 				"\" class=\"opener\" alt=\"menu\" /></a>");
 	}
 	private void writeButton(MarkupWriter writer, Entry entry,
 			String caption,
-			String method, String image) {
+			String method, Button button) {
 		writeButton(
-				writer, entry, caption, method, image, entry.getId() + "#" + entry.getId());
+				writer, entry, caption, method, button, entry.getId() + "#" + entry.getId());
 	}
 	private void writeButton(MarkupWriter writer, Entry entry,
 			String caption,
-			String method, String image, String data) {
+			String method, Button button, String data) {
 		if (entry.getId() > 0) {
 			writer.writeRaw("<a title=\"" +
 					caption + "\" href=\"" +
 					method + "/" +
 					data + "\">" +
 					"<img src=\"icons/" +
-					image + ".gif\" alt=\"" + method + "\" /></a>");
+					button.name() + ".png\" class=\"tree-" + button.name() + "\" alt=\"" + method + "\" /></a>");
 		}
 	}
 	private Element createPreviewElement(MarkupWriter writer, Entry entry) {

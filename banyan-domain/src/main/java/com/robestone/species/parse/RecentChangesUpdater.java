@@ -112,7 +112,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		new ExamplesCruncherWorker().run();
 		
 		// download the images - has to be last due to "System.exit"
-		new ImagesCreater().downloadAll(true);
+		new ImagesCreater().downloadAll(true, false);
 	}
 	public void crawlTreeReport() throws Exception {
 		Set<String> names = new TreeReporter().getLinksToCrawl();

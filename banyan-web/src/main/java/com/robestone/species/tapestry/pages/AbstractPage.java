@@ -2,6 +2,7 @@ package com.robestone.species.tapestry.pages;
 
 import org.apache.tapestry5.annotations.IncludeJavaScriptLibrary;
 import org.apache.tapestry5.annotations.IncludeStylesheet;
+import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
 
@@ -22,6 +23,9 @@ public class AbstractPage {
 	@Inject
 	private ISpeciesService speciesService;
 	
+	@InjectPage
+	private Search searchPage;
+	
 	public ISpeciesService getSpeciesService() {
 		return speciesService;
 	}
@@ -30,12 +34,12 @@ public class AbstractPage {
 	}
 	public Object onSuccess() {
 		LogHelper.speciesLogger.info("AbstractPage.onSuccess");
-		return Search.NAME;
+		return searchPage;
 	}
 	public Object onActionFromTree(String crunchedIds) {
 		LogHelper.speciesLogger.info(getClass().getSimpleName() + ".onActionFromTree." + crunchedIds);
 		getSearchContext().setCrunchedIds(crunchedIds);
-		return Search.NAME;
+		return searchPage;
 	}
 	
 }

@@ -9,36 +9,36 @@
 <t:corners>
 <div class="Star">
 	<div class="Star">
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
 	</div>
-	All Species images are taken from <br /> 
+	All Species images are from <br /> 
 		<a class="CreditLink" href="http://species.wikimedia.org">WikiSpecies</a> <br />
 	and are licensed either under the <br />
 		<a class="CreditLink" href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License">GNU Free Documentation License</a> <br />
 	or a <br />
 		<a class="CreditLink" href="http://creativecommons.org/licenses/by-sa/2.5/">Creative Commons Attribution ShareAlike License</a>.
 	<div class="Star">
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
 	</div>
-	All icons are taken from <br />
-		<a class="CreditLink" href="http://sweetie.sublink.ca/">sweetie.sublink.ca</a> <br />
-	and are licensed under the <br /> 
-		<a class="CreditLink" href="http://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution ShareAlike 3.0 License</a>. <br />
+	All icons are by <br />
+		<a class="CreditLink" href="http://dryicons.com">http://dryicons.com</a> <br />
+	and are licensed under their <br /> 
+		<a class="CreditLink" href="http://dryicons.com/terms/free/">DryIcons Free License Agreement</a>. <br />
 	<div class="Star">
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
 	</div>
 	All other content <br />
 		<a class="CreditLink" href="#">&copy; Jacob Robertson 2009</a>
 	<div class="Star">
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
-		<img src="icons/Focus.gif" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
+		<img src="icons/star.png" class="star" alt="star" />
 	</div>
 </div>
 </t:corners>

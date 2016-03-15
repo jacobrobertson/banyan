@@ -69,8 +69,12 @@ public class ImagesMeasurerWorker extends AbstractWorker {
 			int h = bi.getHeight();
 			int w = bi.getWidth();
 			if (type.equals(ImagesCreater.TINY)) {
-				image.setTinyHeight(h);
-				image.setTinyWidth(w);
+				// even though we are downloading larger, we will scale to a fixed size
+				// for now, just assume we download at "40" and divide here to half
+				int fh = h / 2;
+				int fw = w / 2;
+				image.setTinyHeight(fh);
+				image.setTinyWidth(fw);
 			} else if (type.equals(ImagesCreater.PREVIEW)) {
 				image.setPreviewHeight(h);
 				image.setPreviewWidth(w);

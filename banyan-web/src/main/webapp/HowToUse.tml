@@ -13,28 +13,28 @@
 <t:imagesizes entries="entries" />
 <t:corners>
 	<span class="FaqTitle">What are all the icons for?</span>	<br />
-	<img src="icons/MenuMore.png" /> and <img src="icons/MenuLess.png" /> - <b>Show Menu</b> - Hover over these buttons to show a menu of options.  The green button means there are sub-species available to open up.<br />
-	<img src="icons/Detail.gif" /> and <img src="icons/Detail1.gif" /> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.<br />
-	<img src="icons/Show.gif" /> - <b>Show Children</b> - Will show all direct children of the chosen species.<br />
-	<img src="icons/ShowMore.png" /> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.<br />
-	<img src="icons/Hide.gif" /> - <b>Hide Children</b> - Closes all children of the chosen species.<br />
-	<img src="icons/Focus.gif" /> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.<br />
-	<img src="icons/Close.gif" /> - <b>Close</b> - Closes the chosen species, and all its children.<br />
+	<img src="icons/menu_more.png" class="opener" /> and <img src="icons/menu_less.png" class="opener" /> - <b>Show Menu</b> - Hover over these buttons to show a menu of options.  The green button means there are sub-species available to open up.<br />
+	<img src="icons/goto-details.png" class="faqButton" />, <img src="icons/detail_first.png" class="faqButton-detail_first" /> and <img src="icons/detail_indented.png" class="faqButton-detail_indented" /> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.<br />
+	<img src="icons/open-children.png" class="faqButton" /> - <b>Show Children</b> - Will show all direct children of the chosen species.<br />
+	<img src="icons/show-interesting.png" class="faqButton" /> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.<br />
+	<img src="icons/close-children.png" class="faqButton" /> - <b>Hide Children</b> - Closes all children of the chosen species.<br />
+	<img src="icons/focus.png" class="faqButton" /> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.<br />
+	<img src="icons/close.png" class="faqButton" /> - <b>Close</b> - Closes the chosen species, and all its children.<br />
 	<a class="preview" href="search.detail/Yellow_fronted_Canary_Crithagra_mozambica_328995" name="328995">
-		<img width="20" height="15" class="Thumb" src="/banyan-images/tiny/2c/d/Crithagra mozambica.jpg"/>
+		<img width="20" height="15" class="Thumb" src="/banyan-images/tiny/d/Crithagra mozambica.jpg"/>
 	</a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
 </t:corners>
 
 <br />
 <t:corners>
-	<span class="FaqTitle">What is the difference between <img src="icons/Detail.gif" /> and <img src="icons/Detail1.gif" />?</span>	<br />
-	<img src="icons/Detail.gif" /> - Shows a hierarchy of species<br/>
-	<img src="icons/Detail1.gif" /> - Shows "sibling" species
+	<span class="FaqTitle">What is the difference between <img src="icons/detail_indented.png" class="faqButton-detail_indented" /> and <img src="icons/detail_first.png" class="faqButton-detail_first" />?</span><br />
+	<img src="icons/detail_indented.png" class="faqButton-detail_indented" /> - Shows a hierarchy of species<br/>
+	<img src="icons/detail_first.png" class="faqButton-detail_first" /> - Shows "sibling" species
 </t:corners>
 
 <br />
 <t:corners>
-	<span class="FaqTitle">What does the <span class="HugeCross">†</span> symbol mean?</span> <br />
+	<span class="FaqTitle">What does the <span class="HugeCross">&#08224; </span> symbol mean?</span> <br />
 	It indicates that the given species is extinct, and so are any sub-species.
 </t:corners>
 

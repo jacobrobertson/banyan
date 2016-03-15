@@ -9,15 +9,15 @@ SELECT count(*) FROM species.species where parent_id is null;
 
 select * from species.species where id = parent_id limit 1000;
 select * from species.species where image_link is not null limit 1000;
-select * from species.species where latin_name = 'Mononegavirales';
-select * from species.species where latin_name like 'Group%NA%';
+select * from species.species where latin_name = 'Monophyllus';
+select * from species.species where latin_name like '% ser. %';
 -- delete from species.species where latin_name ='Group IV: ssRNA( )';
 
 select * from species.species where (latin_name like '%virus%' or latin_name like '%Virus%') and image_link is not null;
 select * from species.species where (latin_name like '%virus%' or latin_name like '%Virus%') and common_name is not null;
 select count(*) from species.species where (latin_name like '%virus%' or latin_name like '%Virus%');
 select * from species.species where common_name_clean like '%OWLS%';
-select * from species.species where parent_latin_name like 'Filoviridae';
+select * from species.species where parent_latin_name like 'Monophyllus (Leach)';
 select * from species.species where boring_final <> 0 limit 100;
 
 -- tree scores

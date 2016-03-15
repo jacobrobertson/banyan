@@ -1,5 +1,6 @@
 package com.robestone.species.tapestry.components;
 
+import org.apache.tapestry5.annotations.InjectPage;
 import org.apache.tapestry5.annotations.Parameter;
 import org.apache.tapestry5.annotations.SessionState;
 import org.apache.tapestry5.ioc.annotations.Inject;
@@ -17,6 +18,8 @@ public class NavigationBar {
 	private SearchContext searchContext;
 	@Inject
 	private IExamplesService examplesService;
+	@InjectPage
+	private Search searchPage;
 	
 	@Parameter(required = false, value = "false")
 	private boolean showExamplesCaption;
@@ -41,11 +44,11 @@ public class NavigationBar {
 	public Object onActionFromTree(String crunchedIds) {
 		LogHelper.speciesLogger.info("NavigationBar.onActionFromTree." + crunchedIds);
 		getSearchContext().setCrunchedIds(crunchedIds);
-		return Search.NAME;
+		return searchPage;
 	}
 	public Object onActionFromRandom() {
 		getSearchContext().setRandom();
-		return Search.NAME;
+		return searchPage;
 	}
 	public Object onActionFromStartOver() {
 		LogHelper.speciesLogger.info("onActionFromStartOver");
@@ -54,7 +57,7 @@ public class NavigationBar {
 	}
 
 	public Object onActionFromTree() {
-		return Search.NAME;
+		return searchPage;
 	}
 	public void onActionFromSearch(String search) {
 		LogHelper.speciesLogger.info("onActionFromSearch." + search);
@@ -66,7 +69,7 @@ public class NavigationBar {
 	}
 	public Object onSuccess() {
 		LogHelper.speciesLogger.info("NavigationBar.onSuccess");
-		return Search.NAME;
+		return searchPage;
 	}
 	public String getExampleCaption() {
 		String ids = getSearchContext().getLeavesCrunchedIds();

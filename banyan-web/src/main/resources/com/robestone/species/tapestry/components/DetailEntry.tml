@@ -2,7 +2,7 @@
    "http://www.w3.org/TR/html4/strict.dtd">
 <t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 <a href="detail.detail/${entry.id}" title="Go to Details">
-	<img src="icons/Detail.gif" />
+	<img class="detail-button" src="icons/green_button.png" />
 </a>
 <t:if test="entry.extinct"><a title="Extinct" href="#"><span class="Extinct">†</span></a></t:if>
 <a title="${hoverTitle}" href="detail.detail/${urlId}" class="${entryClass}" name="${entryName}">

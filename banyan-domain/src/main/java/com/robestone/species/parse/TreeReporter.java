@@ -19,8 +19,8 @@ public class TreeReporter extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		new TreeReporter().
-//		runTreeReport
-		loopReport
+		runTreeReport
+//		loopReport
 //		getLinksToCrawl
 		();
 //		new RecentChangesUpdater().crawlTreeReport();
@@ -49,7 +49,7 @@ public class TreeReporter extends AbstractWorker {
 	}
 	
 	public void runTreeReport() {
-		int minInteresting = 3;
+		int minInteresting = 2;
 		runTreeReport(minInteresting, -1);
 	}
 	public List<Tree> runTreeReport(int minInteresting, int maxResults) {
@@ -71,15 +71,15 @@ public class TreeReporter extends AbstractWorker {
 		Collections.sort(trees, new TreeComp());
 		List<Tree> filteredTrees = new ArrayList<Tree>();
 		for (Tree t: trees) {
-			if (SpeciesService.TREE_OF_LIFE_ID.equals(t.getRoot().getId())) {
-				continue;
-			}
 			int countInteresting = countInteresting(t);
 			if (countInteresting < minInteresting) {
 				continue;
 			}
 			CompleteEntry root = t.getRoot();
 			System.out.println(root.getLatinName() + "." + t.size() + "/" + countInteresting);
+			if (SpeciesService.TREE_OF_LIFE_ID.equals(t.getRoot().getId())) {
+				continue;
+			}
 			filteredTrees.add(t);
 			if (maxResults > 0 && filteredTrees.size() > maxResults) {
 				break;

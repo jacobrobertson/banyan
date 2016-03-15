@@ -101,8 +101,8 @@
 							<name>crawl</name>
 						</program>
 						<program>
-							<mainClass>com.robestone.species.parse.ThumbnailDownloader</mainClass>
-							<name>thumbs</name>
+							<mainClass>com.robestone.species.parse.ImagesCreater</mainClass>
+							<name>images</name>
 						</program>
 						<program>
 							<mainClass>com.robestone.species.parse.RecentChangesUpdater</mainClass>
