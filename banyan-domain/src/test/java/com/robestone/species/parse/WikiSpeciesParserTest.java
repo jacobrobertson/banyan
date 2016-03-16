@@ -401,6 +401,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testSedumserCepaea() throws IOException {
 		doTest("Sedum ser. Cepaea", null, "Sedum sect. Sedum", null, Rank.Series);
 	}
+	public void testTilapiabusumana() throws IOException {
+		doTest("Tilapia busumana", null, "Gobiocichlini", null, Rank.Species);
+	}
 	
 	// ----------------------------------
 	

@@ -5,6 +5,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.robestone.species.Rank;
+
 public class AuthorityUtilities {
 	private static Pattern[] authTypes = getAuthTypes();
 	public static Pattern[] getAuthTypes() {
@@ -28,6 +30,18 @@ public class AuthorityUtilities {
 			"<span class=\"mw-headline\" id=\"works_including\">works including</span>",
 	};
 	public static boolean isAuthorityPage(String latinName, String page) {
+		
+		boolean rankFound;
+		try {
+			Rank rank = Rank.valueOfWithAlternates(latinName);
+			rankFound = (rank != null);
+		} catch (Exception e) {
+			rankFound = false;
+		}
+		if (rankFound) {
+			return true;
+		}
+		
 		if (latinName.startsWith("ISSN")) {
 			return true;
 		}

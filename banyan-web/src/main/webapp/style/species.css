@@ -406,3 +406,12 @@ td {
 	padding-top: 5px;
 	padding-right: 4px;
 }
+.question {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding-bottom: 1px;
+	padding-top: 1px;
+	padding-right: 2px;
+}

@@ -27,7 +27,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Monophyllus redmani",
+				"Dactylanthus (ICBN)",
 				
 		};
 		crawlAllStoredLinks = false;
@@ -215,7 +215,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		// try the redirect "from" name(s)
 		List<String> froms = speciesService.findRedirectFrom(name);
 		for (String from: froms) {
-			results = parser.parse(from, page);
+			results = parser.parse(name, from, page, true);
 			if (results != null) {
 				return results;
 			}

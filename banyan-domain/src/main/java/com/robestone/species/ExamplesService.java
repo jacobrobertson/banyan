@@ -105,9 +105,9 @@ public class ExamplesService implements IExamplesService {
 		getYouMightNotKnow().setShowExampleGroupName(true);
 	}
 	private static final int FAMILIES = 0;
-	private static final int OTHER_FAMILIES = 0;
-	private static final int HAVE_YOU_HEARD_OF = 0;
-	private static final int YOU_MIGHT_NOT_KNOW = 0;
+	private static final int OTHER_FAMILIES = 3;
+	private static final int HAVE_YOU_HEARD_OF = 1;
+	private static final int YOU_MIGHT_NOT_KNOW = 2;
 	public ExampleGroup getFamilies() {
 		return getGroups().get(FAMILIES);
 	}

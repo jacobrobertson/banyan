@@ -218,6 +218,17 @@ public class WikiSpeciesParser {
 				entry = parse(name, newName, text, true);
 			}
 		}
+
+		// "Tilapia" busumana or Tilapia "busumana"
+		if (entry == null && (pos = name.indexOf(' ')) > 0) {
+			String left = name.substring(0, pos);
+			String right = name.substring(pos + 1);
+			entry = parse(name, "\"" + left + "\" " + right, text, true);
+			if (entry == null) {
+				entry = parse(name, left + " \"" + right + "\"", text, true);
+			}
+		}
+		
 		
 		return entry;
 	}
@@ -537,6 +548,8 @@ public class WikiSpeciesParser {
 				continue;
 			} else if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
 				continue;
+			} else if (imageLink.indexOf("Status_iucn") >= 0) {
+				continue;
 			} else if (
 					   imageLink.toUpperCase().endsWith(".OGV")
 					|| imageLink.toUpperCase().endsWith(".OGG")
@@ -630,7 +643,7 @@ public class WikiSpeciesParser {
 	 */
 	public static String preProcessRedirectSelfLinks(String name, String page) {
 		String regexName = getEscapedName(name);
-		Pattern pattern = Pattern.compile("<i><a href=\"/wiki/.*?\" title=\"" + regexName + "\" class=\"mw-redirect\">.*?</a></i></p>");
+		Pattern pattern = Pattern.compile("<i><a href=\"/wiki/.*?\" title=\"" + regexName + "\" class=\"mw-redirect\">.*?</a></i>(?:</p>|<br ?/>)");
 		String fixedPage = page;
 		Matcher m = pattern.matcher(page);
 		while (m.find()) {
