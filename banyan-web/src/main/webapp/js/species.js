@@ -186,16 +186,28 @@ this.hideMenu = function() {
 	jQuery("#controlpanel").hide();
 };
 var isMenuActive = false;
-this.checkMenuActive = function() {
-	if (!isMenuActive) {
+var cancelerEvent = null;
+this.checkMenuActive = function(e) {
+	if (!isMenuActive && (cancelerEvent == null || cancelerEvent == e)) {
 		hideMenu();
+	}
+	if (e != null) {
+		e.preventDefault();
+		return false;
 	}
 };
 this.setupMenus = function() {
-	jQuery(".opener").mouseenter(function(e) {
-		showMenu(e, this);
-		setTimeout(checkMenuActive, 500);
-	});
+	jQuery(".opener").bind("click mouseenter", function(e) {
+		cancelerEvent = e;
+		e.preventDefault();
+		var target = this;
+		setTimeout(function() {
+			showMenu(e, target);
+		}, 5);
+		setTimeout(function() {
+			checkMenuActive(e);
+		}, 5000);
+    });
 	jQuery("#controlpanel").mouseenter(function(e) {
 		isMenuActive = true;
 	});

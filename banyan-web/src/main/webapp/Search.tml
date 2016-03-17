@@ -25,7 +25,7 @@
 		<br /> <br />
 		<img src="icons/detail_first.png" class="tree-detail_first" alt="click" />&nbsp;Click on the <t:actionlink t:id="random" id="RandomLink">Random</t:actionlink> link to see a random tree of species
 		<br /> <br />
-		<img src="icons/detail_first.png" class="tree-detail_first" alt="click" />&nbsp;Once you have a tree, explore it by hovering over any of the menu buttons <img src="icons/menu_more.png" class="opener" />
+		<img src="icons/detail_first.png" class="tree-detail_first" alt="click" />&nbsp;Once you have a tree, explore it by hovering over any of the menu buttons <img src="icons/menu_more.png" class="faqButton" />
 		<br />
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;and then find new species with the <img src="icons/open-children.png" class="faqButton" /> and <img src="icons/show-interesting.png" class="faqButton" /> buttons.
 		<br /> <br />

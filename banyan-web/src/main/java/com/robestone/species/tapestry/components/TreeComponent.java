@@ -263,10 +263,9 @@ public class TreeComponent extends AbstractTreeComponent {
 			image = Button.menu_less;
 		}
 		writer.writeRaw("<a href=\"search.tree/" +
-				ids + "#" + entry.getId() + "\">" +
+				ids + "#" + entry.getId() + "\" name=\"" + entry.getId() + "\" class=\"opener\">" +
 				"<img src=\"icons/" + image.name() +
-				".png\" name=\"" + entry.getId() +
-				"\" class=\"opener\" alt=\"menu\" /></a>");
+				".png\" alt=\"menu\" /></a>");
 	}
 	private void writeButton(MarkupWriter writer, Entry entry,
 			String caption,

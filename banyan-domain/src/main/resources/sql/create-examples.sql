@@ -35,7 +35,7 @@ values
 -- YOU_MIGHT_NOT_KNOW (i.e. which is closer ...)
 (401, 401, 4, '... to a hippo - a rhinocerous or a pig?', '#4xY-1w01', '4xY-1w01'),
 (402, 402, 4, '... to a racoon - a cat or a dog?', '#100OYU.3', '100OYU.3'),
--- (403, 403, 4, '', '#', ''),
+(403, 403, 4, '... to a tomatoe - a cucumber or tobacco?', '#3O1NEcp5c02u-', '3O1NEcp5c02u-'), 
 (404, 404, 4, '... to an ant - a wasp or a termite?', '#3bd.5g.6IJ.yL.Ma2cLY.u.r8v', '3bd.5g.6IJ.yL.Ma2cLY.u.r8v')
 
 ;

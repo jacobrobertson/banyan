@@ -9,7 +9,7 @@ SELECT count(*) FROM species.species where parent_id is null;
 
 select * from species.species where id = parent_id limit 1000;
 select * from species.species where image_link is not null limit 1000;
-select * from species.species where latin_name = 'Monophyllus';
+select * from species.species where latin_name = 'Tilapia busumana';
 select * from species.species where latin_name like '% ser. %';
 -- delete from species.species where latin_name ='Group IV: ssRNA( )';
 

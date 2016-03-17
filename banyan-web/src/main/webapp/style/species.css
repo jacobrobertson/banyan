@@ -349,12 +349,15 @@ td {
 	background: #d94;
 	color: black;
 }
-.opener {
+.opener img {
 	cursor: pointer;
 	margin-left: 3px;
 	vertical-align: middle;
-	width: 10px;
-	height: 10px;
+	width: 15px;
+	height: 15px;
+	padding-left: 2px;
+	padding-right: 2px;
+	padding-bottom: 2px;
 }
 .tree-tree_root {
 	margin: 0px;
@@ -377,8 +380,8 @@ td {
 .tree-detail_indented {
 	margin: 0px;
 	vertical-align: middle;
-	width: 13px;
-	height: 13px;
+	width: 11px;
+	height: 11px;
 	padding-bottom: 5px;
 	padding-top: 5px;
 	padding-right: 4px;
