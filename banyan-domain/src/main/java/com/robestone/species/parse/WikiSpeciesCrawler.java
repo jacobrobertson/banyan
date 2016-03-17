@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
+import com.robestone.species.UpdateType;
 import com.robestone.util.html.EntityMapper;
 
 public class WikiSpeciesCrawler extends AbstractWorker {
@@ -224,11 +225,11 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public void parsed(CompleteEntry entry) {
-		boolean updated = speciesService.updateOrInsertEntryMaybe(entry);
-		if (!updated) {
+		UpdateType updated = speciesService.updateOrInsertEntryMaybe(entry);
+		if (updated == UpdateType.NoChange) {
 			return;
 		}
-		System.out.print("> updated." + (updatedCount++) + " > ");
+		System.out.print("> " + updated + "." + (updatedCount++) + " > ");
 		if (entry.getCommonName() != null) {
 			System.out.print(entry.getCommonName());
 		} else {

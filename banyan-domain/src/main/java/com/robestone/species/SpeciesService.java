@@ -532,7 +532,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				entry.getId()
 				);
 	}
-	public boolean updateOrInsertEntryMaybe(CompleteEntry entry) {
+	public UpdateType updateOrInsertEntryMaybe(CompleteEntry entry) {
 		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
 		if (found != null) {
 			// attempt to get updated information
@@ -568,12 +568,13 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 					entry.getImageLink(),
 					found.getId()
 					);
+				return UpdateType.Update;
+			} else {
+				return UpdateType.NoChange;
 			}
-			
-			return better;
 		} else {
 			insertEntry(entry);
-			return true;
+			return UpdateType.Insert;
 		}
 	}
 	
