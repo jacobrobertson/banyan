@@ -1,0 +1,14 @@
+/logs
+/nodes
+/plugins
+/secrets
+/updates
+/userContent
+/users
+/credentials.xml
+/identity.key.enc
+/jenkins.err.log
+/secret.key
+/secret.key.not-so-secret
+/queue.xml.bak
+/.owner
