@@ -12,3 +12,5 @@
 /secret.key.not-so-secret
 /queue.xml.bak
 /.owner
+/jenkins.out.log
+/jenkins.wrapper.log
