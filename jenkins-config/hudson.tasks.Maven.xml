@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<hudson.tasks.Maven_-DescriptorImpl>
+  <installations>
+    <hudson.tasks.Maven_-MavenInstallation>
+      <name>apache-maven-3.3.9</name>
+      <home>C:\Program Files (x86)\apache-maven-3.3.9\</home>
+      <properties/>
+    </hudson.tasks.Maven_-MavenInstallation>
+  </installations>
+</hudson.tasks.Maven_-DescriptorImpl>
