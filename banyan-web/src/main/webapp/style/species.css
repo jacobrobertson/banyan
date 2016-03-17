@@ -244,6 +244,7 @@ td {
 }
 .DetailImageCell {
 	vertical-align: top;
+	width: 50%;
 }
 .DetailImage {
 	padding-top: 3px;
