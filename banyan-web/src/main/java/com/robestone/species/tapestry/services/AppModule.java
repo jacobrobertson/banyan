@@ -12,10 +12,6 @@ import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.RequestFilter;
 import org.apache.tapestry5.services.RequestHandler;
 import org.apache.tapestry5.services.Response;
-import org.apache.tapestry5.urlrewriter.RewriteRuleApplicability;
-import org.apache.tapestry5.urlrewriter.SimpleRequestWrapper;
-import org.apache.tapestry5.urlrewriter.URLRewriteContext;
-import org.apache.tapestry5.urlrewriter.URLRewriterRule;
 import org.slf4j.Logger;
 
 /**
@@ -24,6 +20,7 @@ import org.slf4j.Logger;
  */
 public class AppModule
 {
+	
     public static void bind(ServiceBinder binder)
     {
         // binder.bind(MyServiceInterface.class, MyServiceImpl.class);
@@ -50,9 +47,6 @@ public class AppModule
         // overriding to false is a good idea. In addition, this is often overridden
         // on the command line as -Dtapestry.production-mode=false
         configuration.add(SymbolConstants.PRODUCTION_MODE, "true");
-        
-        
-//        configuration.add(SymbolConstants.SUPPRESS_REDIRECT_FROM_ACTION_REQUESTS, "true");
         
     }
     
@@ -124,56 +118,4 @@ public class AppModule
       configuration.add(ClientInfrastructure.class, new ClientInfrastructureOverride());
     }
     
-    /*
-    public static void contributeURLRewriter(OrderedConfiguration<URLRewriterRule> configuration)
-    {
-         
-        URLRewriterRule rule = new URLRewriterRule() 
-        {
-     
-            public Request process(Request request, URLRewriteContext context)
-            {
-                String path = request.getPath();
-                System.out.println(">>>>>>>>>>> path >>>>>>>>>>> " + path);
-                System.out.println(">>>>>>>>>>> context >>>>>>>>>>> " + request.getContextPath());
-                // /search.tree/icons/banyan-title.png
-                /*
-                int pos = path.indexOf("/icons/");
-                if (pos > 0) {
-                	path = path.substring(pos);
-                	request = new SimpleRequestWrapper(request, path);
-                }
-                */
-/*                
-                path = "doe it matter??? *";
-            	request  = new SimpleRequestWrapper(request, path);
-                
-                if (path.startsWith("/banyan")) {
-                	path = path.substring(7);
-                }
-                
-                int pos;
-                Request origRequest = request;
-                while ((pos = path.indexOf("/search.tree/search.tree/")) >= 0) {
-                	String left = path.substring(0, pos + 13);
-                	String right = path.substring(pos + 25);
-                	path = left + right;
-                	request  = new SimpleRequestWrapper(origRequest, path);
-                }
-                 
-                System.out.println(">>>>>>>>>>> path2 >>>>>>>>>>> " + request.getPath());
-                return request;
-                 
-            }
-     
-            public RewriteRuleApplicability applicability()
-            {
-                return RewriteRuleApplicability.OUTBOUND;
-            }
-             
-        };
-         
-        configuration.add("myrule", rule);
-    }
-  */  
 }

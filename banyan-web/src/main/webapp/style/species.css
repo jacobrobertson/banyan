@@ -43,7 +43,6 @@ body {height:90%;}
 	border:1px solid #ffc;
 	text-align: center;
 }
-
 .NodeButtons { width: 12px; }
 .NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
 .NodeButtons img { margin: 0px; padding: 0px; border: 0px;}
@@ -62,6 +61,11 @@ body {height:90%;}
 .Boring {
 	font-style: italic;
 	color: #828282;
+}
+.preview:focus {
+	outline: 0;
+	font-weight: bold;
+	text-decoration: underline;
 }
 .Extinct {
 	font-size: 70%;

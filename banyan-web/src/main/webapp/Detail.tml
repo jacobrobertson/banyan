@@ -19,11 +19,11 @@
 		<td>
 <div class="Queries">
 	<a href="http://www.google.com/images?q=${query}">
-		<img class="detail-button-search" src="icons/globe_search.png" alt="search" />
+		<img class="detail-button-search" src="${context:icons/globe_search.png}" alt="search" />
 		Lookup <span class="SearchTerm">${entryQueryTitlePart}</span> on <span class="SearchSite">Google Images</span>
 	</a><br/>
 	<a href="http://www.google.com/search?q=${query}">
-		<img class="detail-button-search" src="icons/globe_search.png" alt="search" />
+		<img class="detail-button-search" src="${context:icons/globe_search.png}" alt="search" />
 		Lookup <span class="SearchTerm">${entryQueryTitlePart}</span> on <span class="SearchSite">Google (Web Search)</span>
 	</a>
 </div>
@@ -66,7 +66,7 @@
 </table>
 <br />
 <div class="Return">
-	<a href="search.tree/${crunchedIds}"><img class="detail-button-back" src="icons/back.png"/>View your current Tree of Life</a>
+	<a href="search.tree/${crunchedIds}"><img class="detail-button-back" src="${context:icons/back.png}"/>View your current Tree of Life</a>
 </div>
 </t:corners>
 

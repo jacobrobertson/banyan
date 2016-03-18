@@ -89,8 +89,8 @@ public class SearchContext {
 		focusOnSearch = false;
 	}
 	public String getLeavesCrunchedIds() {
-		if (root == null) {
-			return "";
+		if (root == null || root.getChildren() == null || root.getChildren().isEmpty()) {
+			return null;
 		}
 		Collection<Integer> ids = EntryUtilities.getLeavesIds(root);
 		String crunchedIds = cruncher.toString(ids);

@@ -85,5 +85,11 @@ public class Search extends AbstractPage implements ExceptionReporter {
 	public void setSearch(String search) {
 		this.search = search;
 	}
+	public void onActivate(String crunchedIds) {
+		getSearchContext().setCrunchedIds(crunchedIds);
+	}
+	public String onPassivate() {
+		return getSearchContext().getLeavesCrunchedIds();
+	}
 
 }

@@ -28,7 +28,11 @@ public class NavigationBar {
 		return searchContext;
 	}
 	public String getCrunchedIds() {
-		return getSearchContext().getLeavesCrunchedIds();
+		String ids = getSearchContext().getLeavesCrunchedIds();
+		if (ids == null) {
+			ids = "";
+		}
+		return ids;
 	}
 	public boolean isFocusOnSearch() {
 		return getSearchContext().isFocusOnSearch();

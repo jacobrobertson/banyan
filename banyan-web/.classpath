@@ -2,6 +2,7 @@
 <classpath>
 	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
 	<classpathentry excluding="**/*.java" kind="src" path="src/main/resources"/>
+	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4.jar" sourcepath="M2_REPO/javax/servlet/servlet-api/2.4/servlet-api-2.4-sources.jar"/>
 	<classpathentry kind="var" path="M2_REPO/org/antlr/antlr-runtime/3.1.1/antlr-runtime-3.1.1.jar" sourcepath="M2_REPO/org/antlr/antlr-runtime/3.1.1/antlr-runtime-3.1.1-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>

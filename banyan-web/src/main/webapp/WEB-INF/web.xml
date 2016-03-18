@@ -17,6 +17,26 @@
   		<param-value>classpath:com/robestone/species/parse/SpeciesServices.spring.xml</param-value>
 	</context-param>
     <filter>
+    	<filter-name>PathFixerFilter</filter-name>
+    	<filter-class>com.robestone.species.tapestry.services.PathFixerFilter</filter-class>
+  	</filter>
+    <filter-mapping>
+        <filter-name>PathFixerFilter</filter-name>
+        <url-pattern>/search/icons/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>PathFixerFilter</filter-name>
+        <url-pattern>/search/search.detail/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>PathFixerFilter</filter-name>
+        <url-pattern>/search/search.tree/*</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>PathFixerFilter</filter-name>
+        <url-pattern>/search.tree/search.tree/*</url-pattern>
+    </filter-mapping>
+    <filter>
     	<filter-name>app</filter-name>
     	<filter-class>org.apache.tapestry5.spring.TapestrySpringFilter</filter-class>
   	</filter>

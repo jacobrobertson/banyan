@@ -18,7 +18,7 @@
   	<t:pagelink page="HowToUse" class="Link">FAQ</t:pagelink>
   	<span class="Spacer">|</span>
   	<t:pagelink page="Credits" class="Link">Credits</t:pagelink>
-  	<span class="Logo"><img src="icons/banyan-logo.png" alt="Banyan"/></span>
+  	<span class="Logo"><img src="${context:icons/banyan-logo.png}" alt="Banyan"/></span>
   	</div>
 </t:corners>
 <div class="Quote"><t:if test="showExampleCaptions">${exampleCaption}<t:parameter name="else">"${message:Motto}"</t:parameter></t:if></div>
