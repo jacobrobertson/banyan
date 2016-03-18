@@ -2,6 +2,7 @@ SELECT count(*) FROM species.species;
 
 select count(*) from species where parent_latin_name is null; -- self-links! only 4
 
+select * from species.species where boring_final = 0 and image_link is null and interesting_child_count = 0;
 SELECT count(*) FROM species.species where parent_latin_name is not null and image_link is not null;
 
 SELECT count(*) FROM species.species where parent_id is null or parent_id = 0;

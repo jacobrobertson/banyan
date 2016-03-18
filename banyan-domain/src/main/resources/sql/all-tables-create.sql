@@ -27,11 +27,12 @@ CREATE TABLE `images` (
   `detail_width` int(11) DEFAULT NULL,
   `detail_height` int(11) DEFAULT NULL,
   UNIQUE KEY `idx_entry_id` (`entry_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=326666 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=434957 DEFAULT CHARSET=utf8;
 CREATE TABLE `redirect` (
   `redirect_from` char(255) NOT NULL,
   `redirect_to` char(255) DEFAULT NULL,
-  PRIMARY KEY (`redirect_from`)
+  PRIMARY KEY (`redirect_from`),
+  KEY `idx_redirect_redirect_to` (`redirect_to`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE TABLE `species` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -47,10 +48,10 @@ CREATE TABLE `species` (
   `parent_latin_name` char(255) DEFAULT NULL,
   `depicted_latin_name` char(255) DEFAULT NULL,
   `rank` int(11) DEFAULT NULL,
-  `extinct` char(1) DEFAULT NULL,
-  `boring` char(1) DEFAULT NULL,
-  `boring_final` char(1) DEFAULT NULL,
-  `shares_sibling_name` char(1) DEFAULT NULL,
+  `extinct` char(1) DEFAULT '0',
+  `boring` char(1) DEFAULT '0',
+  `boring_final` char(1) DEFAULT '0',
+  `shares_sibling_name` char(1) DEFAULT '0',
   `image_link` text,
   `child_count` int(11) DEFAULT NULL,
   `interesting_child_count` int(11) DEFAULT NULL,
@@ -61,5 +62,9 @@ CREATE TABLE `species` (
   KEY `idx_species_parent_latin_name` (`parent_latin_name`),
   KEY `idx_species_depicted_latin_name` (`depicted_latin_name`),
   KEY `idx_species_latin_name` (`latin_name`),
-  KEY `idx_species_parent_id` (`parent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=346337 DEFAULT CHARSET=utf8;
+  KEY `idx_species_parent_id` (`parent_id`),
+  KEY `idx_species_extinct` (`extinct`),
+  KEY `idx_species_parent_id_extinct` (`parent_id`,`extinct`),
+  KEY `idx_species_boring_final` (`boring_final`),
+  KEY `idx_species_interesting_parent_id_boring_final` (`interesting_parent_id`,`boring_final`)
+) ENGINE=InnoDB AUTO_INCREMENT=435233 DEFAULT CHARSET=utf8;
