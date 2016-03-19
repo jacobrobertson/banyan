@@ -26,6 +26,10 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>PathFixerFilter</filter-name>
+        <url-pattern>/</url-pattern>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>PathFixerFilter</filter-name>
         <url-pattern>/search/search.detail/*</url-pattern>
     </filter-mapping>
     <filter-mapping>

@@ -75,6 +75,28 @@
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>jetty-windows</id>
+			<activation>
+				<os><name>windows</name></os>
+			</activation>
+			<properties>
+				<banyan-images-resourceBase>D:/banyan-images</banyan-images-resourceBase>
+			</properties>
+		</profile>
+		<profile>
+			<id>jetty-linux</id>
+			<activation>
+				<os><name>linux</name></os>
+			</activation>
+			<properties>
+				<banyan-images-resourceBase>/home/public/banyan-images</banyan-images-resourceBase>
+			</properties>
+		</profile>
+	</profiles>
+	
 	<build>
 		<plugins>
 			<!-- Run the application using "mvn jetty:run" 
@@ -113,7 +135,7 @@
 					<contextHandlers>
 						<contextHandler implementation="org.mortbay.jetty.handler.ContextHandler">
                     		<contextPath>/banyan-images</contextPath>
-                    		<resourceBase>D:/banyan-images</resourceBase>
+                    		<resourceBase>${banyan-images-resourceBase}</resourceBase>
                     		<handler implementation="org.mortbay.jetty.handler.ResourceHandler" />
                 		</contextHandler>
                 	</contextHandlers>

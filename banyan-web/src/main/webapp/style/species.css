@@ -62,9 +62,10 @@ body {height:90%;}
 	font-style: italic;
 	color: #828282;
 }
-.preview:focus {
+.preview:focus, .preview:focus .Boring, .preview:focus i {
 	outline: 0;
 	font-weight: bold;
+	color: #228282;
 	text-decoration: underline;
 }
 .Extinct {
@@ -390,6 +391,7 @@ td {
 	padding-bottom: 5px;
 	padding-top: 5px;
 	padding-right: 4px;
+	padding-left: 5px;
 }
 .faqButton-detail_indented {
 	margin: 0px;
