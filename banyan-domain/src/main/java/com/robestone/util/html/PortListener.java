@@ -1,6 +1,7 @@
 package com.robestone.util.html;
 
 import java.io.BufferedReader;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -51,32 +52,27 @@ public class PortListener {
          * and sending back the capitalized version of the string.
          */
         public void run() {
-        	System.out.println("run()");
             try {
-
+            	FileOutputStream logOut = new FileOutputStream("./portlistener.log");
                 // Decorate the streams so we can send characters
                 // and not just bytes.  Ensure output is flushed
                 // after every newline.
                 BufferedReader in = new BufferedReader(
                         new InputStreamReader(socket.getInputStream()));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+                PrintWriter logger = new PrintWriter(logOut);
 
                 // Send a welcome message to the client.
-                out.println("Hello, you are client #" + clientNumber + ".");
-                out.println("Enter a line with only a period to quit\n");
-                out.flush();
+                log("Hello, you are client #" + clientNumber + ".", out, logger);
                 // Get messages from the client, line by line; return them
                 // capitalized
                 while (true) {
                     String input = in.readLine();
-                	System.out.println("while.(" + input + ")");
                     if (input == null || input.equals(".") || input.length() == 0) {
                         break;
                     }
-                    out.println(input.toUpperCase());
-                    out.flush();
+                    log(input.toUpperCase(), out, logger);
                 }
-                System.out.println("while.end");
             } catch (IOException e) {
                 log("Error handling client# " + clientNumber + ": " + e);
             } finally {
@@ -96,5 +92,12 @@ public class PortListener {
         private void log(String message) {
             System.out.println(message);
         }
+        private void log(String message, PrintWriter... writers) {
+        	for (PrintWriter writer: writers) {
+        		writer.println(message);
+                writer.flush();
+        	}
+        }
     }
+    
 }

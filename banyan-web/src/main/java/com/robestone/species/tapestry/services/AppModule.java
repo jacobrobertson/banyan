@@ -12,6 +12,7 @@ import org.apache.tapestry5.services.Request;
 import org.apache.tapestry5.services.RequestFilter;
 import org.apache.tapestry5.services.RequestHandler;
 import org.apache.tapestry5.services.Response;
+import org.apache.tapestry5.urlrewriter.URLRewriterRule;
 import org.slf4j.Logger;
 
 /**
@@ -20,6 +21,10 @@ import org.slf4j.Logger;
  */
 public class AppModule
 {
+	
+    public static void contributeURLRewriter(OrderedConfiguration<URLRewriterRule> configuration) {
+    	configuration.add("NfsnContextURLRewriterRule", new NfsnContextURLRewriterRule());
+    }
 	
     public static void bind(ServiceBinder binder)
     {

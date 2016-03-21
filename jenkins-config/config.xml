@@ -48,7 +48,7 @@
           <string>ITEM_ROOTDIR</string>
           <string>D:\banyan-jenkins</string>
           <string>PATH</string>
-          <string>C:\windows\syswow64;$PATH</string>
+          <string>C:\cygwin64;C:\cygwin64\bin;C:\windows\syswow64;$PATH</string>
         </tree-map>
       </envVars>
     </hudson.slaves.EnvironmentVariablesNodeProperty>

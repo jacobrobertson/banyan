@@ -201,12 +201,16 @@ this.setupMenus = function() {
 		cancelerEvent = e;
 		e.preventDefault();
 		var target = this;
+		var timeout = 5000;
+		if (e.type == "mouseenter") {
+			timeout = 50;
+		}
 		setTimeout(function() {
 			showMenu(e, target);
 		}, 5);
 		setTimeout(function() {
 			checkMenuActive(e);
-		}, 5000);
+		}, timeout);
     });
 	jQuery("#controlpanel").mouseenter(function(e) {
 		isMenuActive = true;

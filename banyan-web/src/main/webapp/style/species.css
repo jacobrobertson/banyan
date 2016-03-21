@@ -425,3 +425,7 @@ td {
 	padding-top: 1px;
 	padding-right: 2px;
 }
+.HugeCross {
+	color: red;
+	font-size: 150%;
+}

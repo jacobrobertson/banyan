@@ -33,10 +33,27 @@ public class PathFixerFilter implements Filter {
 		*/
 		HttpServletRequest hreq = (HttpServletRequest) request;
 		String path = hreq.getServletPath();
+		String origPath = path;
+
+		if (path.equals("/")) {
+			path = "/search";
+		}
+
+        if (path.startsWith("/banyan")) {
+        	path = path.substring(7);
+        }
 
 		// /search/search.tree/icons/open-children.png
         if (!path.startsWith("/assets")) {
             int pos = path.indexOf("/icons/");
+            if (pos > 0) {
+            	path = path.substring(pos);
+            }
+            pos = path.indexOf("/style/");
+            if (pos > 0) {
+            	path = path.substring(pos);
+            }
+            pos = path.indexOf("/js/");
             if (pos > 0) {
             	path = path.substring(pos);
             }
@@ -50,7 +67,9 @@ public class PathFixerFilter implements Filter {
         	path = path.substring(12);
         }
         
-    	request = new RequestWrapper((HttpServletRequest) request, path);
+		if (origPath != path) {
+			request = new RequestWrapper((HttpServletRequest) request, path);
+		}
 		chain.doFilter(request, response);
 	}
 

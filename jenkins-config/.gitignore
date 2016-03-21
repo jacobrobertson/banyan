@@ -16,3 +16,6 @@
 /jenkins.wrapper.log
 /nodeMonitors.xml
 /hudson.model.UpdateCenter.xml
+/hudson.maven.MavenModuleSet.xml
+/hudson.plugins.git.GitSCM.xml
+/hudson.scm.SubversionSCM.xml

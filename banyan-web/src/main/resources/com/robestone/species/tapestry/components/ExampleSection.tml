@@ -3,7 +3,7 @@
 <t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 <div class="ExampleTitle"><img src="icons/question.png" class="question" alt="question" />&nbsp;${group.caption}</div>
 <t:loop source="group.examples" value="example">
-	&nbsp;<a href="search.tree/${example.crunchedIds}">
+	&nbsp;<a href="/banyan/search.tree/${example.crunchedIds}">
 		<img src="icons/detail_indented.png" class="tree-detail_indented" />&nbsp;${example.caption}<br/>
 	</a>
 </t:loop>

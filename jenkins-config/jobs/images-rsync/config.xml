@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>C:\cygwin64\bin\rsync.exe -avz -e &quot;ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null&quot; --progress /cygdrive/D/banyan-images/testfile.txt pepblast_jrob@ssh.phx.nearlyfreespeech.net:/baynan-images&#xd;
+&#xd;
+#!/bin/sh&#xd;
+ls ${WORKSPACE}&#xd;
+&#xd;
+#!C:\cygwin64\bin\sh.exe&#xd;
+export PATH=$PATH:/usr/bin&#xd;
+ls&#xd;
+</description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!C:\cygwin64\bin\sh.exe
+export PATH=$PATH:/usr/bin
+rsync -avz -e &quot;ssh -o StrictHostKeyChecking=no -o \
+UserKnownHostsFile=/dev/null&quot; \
+--progress /cygdrive/D/banyan-images/testfile.txt \
+pepblast_jrob@ssh.phx.nearlyfreespeech.net:/baynan-images
+</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
