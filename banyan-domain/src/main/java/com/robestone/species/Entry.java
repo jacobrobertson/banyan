@@ -55,4 +55,14 @@ public interface Entry {
 	
 	boolean isCommonNameSharedWithSiblings();
 	void setCommonNameSharedWithSiblings(boolean shared);
+	
+	boolean isCollapsed();
+	/**
+	 * Meaning how many other entries were collapsed, not counting this one.
+	 */
+	int getCollapsedCount();
+	/**
+	 * @param collapsedCount Meaning how many other entries were collapsed, not counting this one.
+	 */
+	void setCollapsedCount(int collapsedCount);
 }

@@ -24,9 +24,9 @@ INSERT INTO `species`.`species`
 VALUES
 (
 0,
-'Tree of Life',
-'Tree of Life',
-'Tree of Life',
+'Arbor vitae',
+'Arbor vitae',
+'Arbor vitae',
 'Tree of Life',
 'Tree of Life',
 'Tree of Life',

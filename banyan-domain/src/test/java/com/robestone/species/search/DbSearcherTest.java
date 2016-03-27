@@ -27,8 +27,8 @@ public class DbSearcherTest extends TestCase {
 		
 		doTestLuceneSearcherAndDatabase(searcher, "wedgefish", "Taiwanese Wedgefish"); // "Bowmouth Guitarfish, Bowmouth Wedgefish, Shark Ray"); // 84095);
 		doTestLuceneSearcherAndDatabase(searcher, "langurs", "Gray Langurs"); // 91067);
-		doTestLuceneSearcherAndDatabase(searcher, "Arctic Whale", 44769); // , 44769); Bowhead Whale, Bowhead, Arctic Whale, Greenland Right Whale
-//		doTestLuceneSearcherAndDatabase(searcher, "Gigantopithecus", 119818);
+		doTestLuceneSearcherAndDatabase(searcher, "Arctic Whale", 361272); // , 44769); Bowhead Whale, Bowhead, Arctic Whale, Greenland Right Whale
+		doTestLuceneSearcherAndDatabase(searcher, "Gigantopithecus", 199876);
 		doTestLuceneSearcherAndDatabase(searcher, "abcdefghijklmnop", null); // , -1);
 	}
 	private Integer doTestLuceneSearcherAndDatabase(LuceneSearcher searcher, String queryString, Object expected, Integer... ids) throws Exception {

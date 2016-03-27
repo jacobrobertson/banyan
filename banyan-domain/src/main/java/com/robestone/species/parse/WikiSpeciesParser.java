@@ -81,7 +81,7 @@ public class WikiSpeciesParser {
 		buf.append(")");
 		return buf.toString();
 	}
-	private static String getEscapedName(String t) {
+	public static String getEscapedName(String t) {
 		t = t.replaceAll("\\(", "\\\\(");
 		t = t.replaceAll("\\)", "\\\\)");
 		t = t.replaceAll("\\?", "\\\\?");

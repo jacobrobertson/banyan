@@ -25,11 +25,12 @@ public class EntryUtilitiesTest extends TestCase {
 		Tree t = createMockTree();
 		
 		List<Tree> trees = EntryUtilities.findDisconnectedTrees(t);
-		assertEquals(3, trees.size());
+		assertEquals(4, trees.size());
 		
 		assertEquals(7, trees.get(0).getRoot().getId().intValue());
-		assertEquals(9, trees.get(1).getRoot().getId().intValue());
-		assertEquals(5, trees.get(2).getRoot().getId().intValue());
+		assertEquals(0, trees.get(1).getRoot().getId().intValue());
+		assertEquals(9, trees.get(2).getRoot().getId().intValue());
+		assertEquals(5, trees.get(3).getRoot().getId().intValue());
 		
 	}
 	private Tree createMockTree() {
@@ -60,8 +61,58 @@ public class EntryUtilitiesTest extends TestCase {
 	private CompleteEntry addEntry(List<CompleteEntry> list, int c, int p) {
 		CompleteEntry e = new CompleteEntry();
 		e.setId(c);
+		e.setLatinName("latinName" + c);
 		e.setParentId(p);
+		e.setParentLatinName("latinName" + p);
 		list.add(e);
 		return e;
 	}
+	
+	public void testCollapseListToOne() {
+		List<Entry> list = createList("L0", null, "L1", null, "L2", null, "L3", null, "L4", null);
+		
+		Entry e = EntryUtilities.collapseListToOne(list);
+		assertEquals(4, e.getCollapsedCount());
+		
+		assertEquals("L0", e.getLatinName());
+		
+		((CompleteEntry)list.get(3)).setCommonName("L3");
+		e = EntryUtilities.collapseListToOne(list);
+		assertEquals("L3", e.getLatinName());
+		
+		((CompleteEntry)list.get(4)).setCommonName("L4");
+		e = EntryUtilities.collapseListToOne(list);
+		assertEquals("L3", e.getLatinName());
+		
+		((CompleteEntry)list.get(4)).setCommonName("z L 4 a");
+		e = EntryUtilities.collapseListToOne(list);
+		assertEquals("L4", e.getLatinName());
+	}
+	
+	public void testCollapseList() {
+		List<Entry> list = createList("L0", null, "L1", null, "L2", null, "L3", null, "L4", null);
+		List<Entry> collapsed = EntryUtilities.collapseList(list);
+		assertCollapsedList(collapsed, 0, 2, 0);
+	}
+	
+	private void assertCollapsedList(List<Entry> list, int... collapsedCount) {
+		assertEquals(collapsedCount.length, list.size());
+		for (int i = 0; i < collapsedCount.length; i++) {
+			assertEquals(collapsedCount[i], list.get(i).getCollapsedCount());
+		}
+	}
+	private List<Entry> createList(String... names) {
+		List<Entry> entries = new ArrayList<Entry>();
+		for (int i = 0; i < names.length; i += 2) {
+			String latinName = names[i];
+			String commonName = names[i + 1];
+			CompleteEntry e = new CompleteEntry();
+			e.setCommonName(commonName);
+			e.setLatinName(latinName);
+			entries.add(e);
+		}
+		
+		return entries;
+	}
+	
 }

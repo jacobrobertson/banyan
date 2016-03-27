@@ -24,7 +24,7 @@ public class WikiSpeciesTreeFixer {
 	
 	private Map<String, String> assignParent = new HashMap<String, String>(); {
 		assignParent.put("Aves", "Avialae");
-		assignParent.put("Virus", null);
+//		assignParent.put("Virus", null); // this didn't work anyways, and I've fixed virus parsing
 	}
 	
 	private SpeciesService speciesService;
@@ -36,6 +36,11 @@ public class WikiSpeciesTreeFixer {
 	public void run() {
 		fixReplacedBy();
 		fixAssignParent();
+		fixExtinct();
+	}
+	
+	public void fixExtinct() {
+		speciesService.assignExtinctToSpecies();
 	}
 	
 	/**

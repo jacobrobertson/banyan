@@ -2,8 +2,6 @@ package com.robestone.species;
 
 import java.util.List;
 
-
-
 public class EntryProperties {
 	
 	String depictedLatinName;
@@ -43,6 +41,33 @@ public class EntryProperties {
 	public void copyInterestingAttributes() {
 		this.persistedChildCount = this.interestingChildCount;
 		this.parentId = this.interestingParentId;
+	}
+	public EntryProperties() {
+	}
+	public EntryProperties(EntryProperties copy) {
+		this.depictedLatinName = copy.depictedLatinName;
+		this.depictedId = copy.depictedId;
+		this.id = copy.id;
+		this.rank = copy.rank;
+		this.extinct = copy.extinct;
+		this.parentId = copy.parentId;
+		this.commonName = copy.commonName;
+//		this.commonNames = copy.commonNames;
+		this.commonNameBoring = copy.commonNameBoring;
+		this.isBoring = copy.isBoring;
+		this.isCommonNameSharedWithSiblings = copy.isCommonNameSharedWithSiblings;
+		this.latinName = copy.latinName;
+		this.parentLatinName = copy.parentLatinName;
+		this.persistedChildCount = copy.persistedChildCount;
+		this.interestingChildCount = copy.interestingChildCount;
+		this.interestingParentId = copy.interestingParentId;
+		this.commonNameClean = copy.commonNameClean;
+		this.commonNameCleanest = copy.commonNameCleanest;
+		this.latinNameClean = copy.latinNameClean;
+		this.latinNameCleanest = copy.latinNameCleanest;
+		this.image = copy.image;
+		this.linkedImageId = copy.linkedImageId;
+		this.crunchedInterestingIds = copy.crunchedInterestingIds;
 	}
 	
 }

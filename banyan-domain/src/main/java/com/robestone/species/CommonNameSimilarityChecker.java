@@ -110,7 +110,7 @@ public class CommonNameSimilarityChecker {
 	/**
 	 * Only call this if you don't have the clean names available.
 	 */
-	public boolean isCommonNameBoring(Entry entry) {
+	public static boolean isCommonNameBoring(Entry entry) {
 		String cnc = EntryUtilities.getClean(entry.getCommonName(), false);
 		String lnc = EntryUtilities.getClean(entry.getLatinName(), false);
 		boolean boring = isCommonNameCleanBoring(cnc, lnc);

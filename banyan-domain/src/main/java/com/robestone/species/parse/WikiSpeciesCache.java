@@ -103,7 +103,7 @@ public class WikiSpeciesCache {
 			if (status == HttpURLConnection.HTTP_NOT_FOUND) {
 				// 401 means it was deleted
 				// this is a pretty big workaround, but it should work...
-				LogHelper.speciesLogger.info("status." + status + "." + link);
+//				LogHelper.speciesLogger.info("status." + status + "." + link);
 				return DELETED_PAGE;
 			}
 			InputStream in = con.getInputStream();

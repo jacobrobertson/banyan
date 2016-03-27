@@ -471,5 +471,95 @@ public class EntryUtilities {
 		}
 		return parent;
 	}
+	public static List<Entry> collapseList(List<Entry> entries) {
+		return collapseList(entries, true);
+	}
+	public static List<Entry> collapseList(List<Entry> entries, boolean isFirstAndLastInList) {
+		int size = entries.size();
+		if ((isFirstAndLastInList && size < 5) || size < 3) {
+			return entries;
+		}
+		
+		List<Entry> collapsed = new ArrayList<Entry>();
+		int first = 0;
+		int last = size;
+		if (isFirstAndLastInList) {
+			collapsed.add(entries.get(0));
+			first = 1;
+			last--;
+		}
+		
+		List<Entry> sub = new ArrayList<Entry>();
+		// look for any sub-lists we can collapse
+		for (int i = first; i < last; i++) {
+			Entry e = entries.get(i);
+			boolean boring = CommonNameSimilarityChecker.isCommonNameBoring(e);
+			if (!boring) {
+				// add this one to the list, and check if we can crunch the last ones
+				Entry collapsedEntry = collapseListToOne(sub);
+				collapsed.add(collapsedEntry);
+				collapsed.add(e);
+				sub.clear();
+				continue;
+			} else {
+				sub.add(e);
+			}
+		}
+
+		// add any remaining
+		if (!sub.isEmpty()) {
+			Entry collapsedEntry = collapseListToOne(sub);
+			collapsed.add(collapsedEntry);
+		}
+		
+		if (isFirstAndLastInList) {
+			collapsed.add(entries.get(size - 1));
+		}
+		
+		return collapsed;
+	}
+	/**
+	 * Only call this method once you've determine the list should be collapsed to one Entry
+	 * return Entry with correct collapse name
+	 */
+	public static Entry collapseListToOne(List<Entry> entries) {
+		Entry best = null;
+		
+		// look for first non-boring common name
+		for (Entry e: entries) {
+			if (!CommonNameSimilarityChecker.isCommonNameBoring(e)) {
+				best = e;
+				break;
+			}
+		}
+		// next try any common name
+		if (best == null) {
+			for (Entry e: entries) {
+				if (e.getCommonName() != null) {
+					best = e;
+					break;
+				}
+			}
+		}
+		// next get first latin name
+		if (best == null) {
+			best = entries.get(0);
+		}
+		
+		Image image = best.getImage();
+		if (image == null) {
+			for (Entry e: entries) {
+				if (e.getImage() != null) {
+					image = e.getImage();
+				}
+			}
+		}
+		
+		EntryProperties props = new EntryProperties(best.getEntryProperties());
+		props.image = image;
+		CompleteEntry e = new CompleteEntry(props);
+		e.setCollapsedCount(entries.size() - 1);
+		return e;
+	}
 	
 }

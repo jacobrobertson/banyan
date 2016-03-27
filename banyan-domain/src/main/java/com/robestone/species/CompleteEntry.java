@@ -8,6 +8,7 @@ public class CompleteEntry implements Entry {
 	private List<CompleteEntry> children;
 	private CompleteEntry parent;
 	private EntryProperties props;
+	private int collapsedCount;
 	
 	public CompleteEntry() {
 		props = new EntryProperties();
@@ -227,4 +228,17 @@ public class CompleteEntry implements Entry {
 	public void setCommonNameSharedWithSiblings(boolean shared) {
 		props.isCommonNameSharedWithSiblings = shared;
 	}
+	@Override
+	public boolean isCollapsed() {
+		return collapsedCount > 0;
+	}
+	@Override
+	public void setCollapsedCount(int collapsedCount) {
+		this.collapsedCount = collapsedCount;
+	}
+	@Override
+	public int getCollapsedCount() {
+		return collapsedCount;
+	}
+	
 }

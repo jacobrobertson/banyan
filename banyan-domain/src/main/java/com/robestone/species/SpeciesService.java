@@ -260,18 +260,25 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		logger.info(">assignParentIdsForNullOrMissingId");
 		Collection<CompleteEntry> entries = template.query(
 				"select id, parent_id, parent_latin_name, latin_name from species ", this);
+		Map<String, String> redirects = findAllRedirectFromsMap();
+		Map<String, Entry> entriesByLatinName = new HashMap<String, Entry>();
+		Map<Integer, Entry> entriesById = new HashMap<Integer, Entry>();
+		for (CompleteEntry e: entries) {
+			entriesByLatinName.put(e.getLatinName(), e);
+			entriesById.put(e.getId(), e);
+		}
+		
 		logger.info("assignParentIdsForNullOrMissingId.entries." + entries.size());
 		// hook them together
 		int count = 0;
-		Tree tree = EntryUtilities.buildTree(entries);
 		for (CompleteEntry e: entries) {
-			Entry p = tree.get(e.getParentId());
+			Entry p = entriesById.get(e.getParentId());
 			if (p == null) {
 //				logger.debug("missingParent." + e.getId());
 				// see if we have a redirect-to
-				String to = findRedirectTo(e.getParentLatinName());
+				String to = redirects.get(e.getParentLatinName()); // findRedirectTo(e.getParentLatinName());
 				if (to != null) {
-					p = findEntryByLatinName(to);
+					p = entriesByLatinName.get(to);
 					// not all redirect-to pages will be in the db 
 					if (p != null) {
 						logger.info("assignParentIdsForNullOrMissingId.fix." + (count++) + "." + e.getLatinName());
@@ -309,6 +316,16 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				new EntityMapperRowMapper());
 		return found;
 	}
+	public Map<String, String> findAllRedirectFromsMap() {
+		Map<String, String> map = new HashMap<String, String>();
+		List<RedirectPair> found = template.query(
+				"select redirect_to, redirect_from from redirect", 
+				new RedirectPairMapper());
+		for (RedirectPair pair: found) {
+			map.put(pair.from, pair.to);
+		}
+		return map;
+	}
 
 	public Collection<CompleteEntry> findEntriesWithInvalidParent() {
 		return template.query(
@@ -319,6 +336,38 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return template.query(
 				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id, common_name, image_link from species", 
 				this);
+	}
+	public Collection<CompleteEntry> findEntriesForExtinctReport() {
+		Collection<CompleteEntry> entries = template.query(
+				"select latin_name, parent_latin_name from species where extinct = 0 and parent_latin_name is not null", 
+				this);
+		
+		// filter out from extinct table - could do this as sql, but not really necessary
+		List<String> extinctNamesList = template.query(
+				"select latin_name from extinct_assigned where extinct = 1", 
+				new EntityMapperRowMapper());
+		Set<String> set = new HashSet<String>(extinctNamesList);
+		Collection<CompleteEntry> filtered = new ArrayList<CompleteEntry>();
+		for (CompleteEntry e: entries) {
+			if (!set.contains(e.getLatinName())) {
+				filtered.add(e);
+			}
+		}
+		return filtered;
+	}
+	public void assignExtinct(String latinName) {
+		int updated = template.update("update extinct_assigned set extinct = 1 where latin_name = ?", latinName);
+		if (updated == 0) {
+			template.update("insert into extinct_assigned (latin_name, extinct) values (?, 1)", latinName);
+		}
+	}
+	public void assignExtinctToSpecies() {
+		List<String> extinctNamesList = template.query(
+				"select latin_name from extinct_assigned where extinct = 1", 
+				new EntityMapperRowMapper());
+		for (String name: extinctNamesList) {
+			template.update("update species set extinct = 1 where latin_name = ?", name);
+		}
 	}
 	public Collection<String> findAllUnmatchedParentNames() {
 		List<String> unmatchedParents = template.query("select distinct(parent_latin_name) from species where (parent_id = 0 or parent_id is null)", 
@@ -834,24 +883,43 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		fixSelfParentIds();
 		logger.info("<fixParents");
 	}
+	
 	private void assignParentIdsByParentLatinName() {
 		int showEvery = 10000;
 		logger.info(">assignParentIdsByParentLatinName");
-		List<CompleteEntry> found = template.query("select id, latin_name from species", this);
+		List<CompleteEntry> found = template.query("select id, parent_id, latin_name, parent_latin_name, depicted_latin_name from species", this);
 		logger.info(">assignParentIdsByParentLatinName." + found.size());
+
+		// build some helpful maps
+		Set<String> depictedSet = new HashSet<String>();
+		Map<String, Entry> entriesLatinNameMap = new HashMap<String, Entry>();
+		for (CompleteEntry one: found) {
+			if (one.getDepictedLatinName() != null) {
+				depictedSet.add(one.getDepictedLatinName());
+			}
+			entriesLatinNameMap.put(one.getLatinName(), one);
+		}
+		// assign a new parent wherever it isn't already correct
+		for (CompleteEntry one: found) {
+			Entry parent = entriesLatinNameMap.get(one.getParentLatinName());
+			if (parent != null && !parent.getId().equals(one.getParentId())) {
+				template.update(
+						"update species set parent_id = ? where id = ?", 
+						parent.getId(), one.getId());
+			}
+		}
+		
 		int count = 0;
 		for (CompleteEntry one: found) {
 			count++;
 			if (count % showEvery == 0) {
-				logger.debug(">assignParentIdsByParentLatinName(" + count + ")." + one.getId() + "." + one.getLatinName());
+				logger.debug(">assignParentIdsByParentLatinName.depicted(" + count + ")." + one.getId() + "." + one.getLatinName());
 			}
-			template.update(
-					"update species set parent_id = ? where parent_latin_name = ?", 
-					one.getId(), one.getLatinName());
-//			logger.debug(">assignParentIdsByParentLatinName.depicted." + one.getId() + "." + one.getLatinName());
-			template.update(
-					"update species set depicted_id = ? where depicted_latin_name = ?", 
-					one.getId(), one.getLatinName());
+			if (depictedSet.contains(one.getLatinName())) {
+				template.update(
+						"update species set depicted_id = ? where depicted_latin_name = ?", 
+						one.getId(), one.getLatinName());
+			}
 		}
 		logger.info("<assignParentIdsByParentLatinName." + found.size());
 	}
@@ -969,4 +1037,19 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	public void setCache(Cache cache) {
 		this.cache = cache;
 	}
+	
+	private class RedirectPair {
+		String from;
+		String to;
+	}
+	private class RedirectPairMapper implements ParameterizedRowMapper<RedirectPair> {
+		@Override
+		public RedirectPair mapRow(ResultSet rs, int rowNum) throws SQLException {
+			RedirectPair p = new RedirectPair();
+			p.from = rs.getString("redirect_from");
+			p.to = rs.getString("redirect_to");
+			return p;
+		}
+	}
+	
 }
