@@ -17,12 +17,19 @@ import java.util.Map;
  */
 public class WikiSpeciesTreeFixer {
 
+	/**
+	 * Reassigns all parent latin names.
+	 */
 	private Map<String, String> replacedBy = new HashMap<String, String>(); {
 		replacedBy.put("Eutheria", "Placentalia");
 		replacedBy.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
+	/**
+	 * Reassigns the parent latin names for the given child latin names.
+	 */
 	private Map<String, String> assignParent = new HashMap<String, String>(); {
+		assignParent.put("Placentalia", "Theria");
 		assignParent.put("Aves", "Avialae");
 //		assignParent.put("Virus", null); // this didn't work anyways, and I've fixed virus parsing
 	}
@@ -34,8 +41,9 @@ public class WikiSpeciesTreeFixer {
 	}
 
 	public void run() {
-		fixReplacedBy();
+		// have to assign parent first, at least for Placentalia
 		fixAssignParent();
+		fixReplacedBy();
 		fixExtinct();
 	}
 	
