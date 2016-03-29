@@ -679,6 +679,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				"select latin_name from species where parent_latin_name = ?",
 				new EntityMapperRowMapper(), parentLatinName);
 	}
+	public List<CompleteEntry> findEntriesByParentLatinName(String parentLatinName) {
+		return template.query(
+				"select id, latin_name, parent_id from species where parent_latin_name = ?",
+				this, parentLatinName);
+	}
 	
 	public void fixBoringCommonNames() {
 		logger.info(">fixBoringCommonNames");
@@ -906,6 +911,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				template.update(
 						"update species set parent_id = ? where id = ?", 
 						parent.getId(), one.getId());
+				logger.debug(">assignParentIdsByParentLatinName.update." + one.getId() + "." + one.getLatinName() + " > " + parent.getId());
 			}
 		}
 		

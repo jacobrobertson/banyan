@@ -25,7 +25,7 @@ import com.robestone.species.parse.ImagesCreater;
  */
 public class BoringPruner {
 
-	public Logger logger = Logger.getLogger(BoringPruner.class);
+	public Logger logger = LogHelper.speciesLogger;
 	
 	private Set<CompleteEntry> detached = new HashSet<CompleteEntry>();
 	private Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
@@ -148,14 +148,11 @@ public class BoringPruner {
 	 */
 	private void normalizeImageNames() {
 		logger.debug("normalizeImageNames > " + entries.size());
-		int count = 0;
 		for (CompleteEntry e: entries) {
 			if (e.getImageLink() != null) {
 				String name = ImagesCreater.parseFileName(e.getImageLink());
 				if (!name.equals(e.getImageLink())) {
-					logger.debug("normalizeImageNames." + e.getImageLink() + " > " + name + " > " + count);
 					e.setImageLink(name);
-					count++;
 				}
 			}
 		}

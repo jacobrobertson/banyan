@@ -20,9 +20,9 @@ public class WikiSpeciesTreeFixer {
 	/**
 	 * Reassigns all parent latin names.
 	 */
-	private Map<String, String> replacedBy = new HashMap<String, String>(); {
-		replacedBy.put("Eutheria", "Placentalia");
-		replacedBy.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
+	private Map<String, String> replacedParentLatinNames = new HashMap<String, String>(); {
+		replacedParentLatinNames.put("Eutheria", "Placentalia");
+		replacedParentLatinNames.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
 	/**
@@ -43,7 +43,7 @@ public class WikiSpeciesTreeFixer {
 	public void run() {
 		// have to assign parent first, at least for Placentalia
 		fixAssignParent();
-		fixReplacedBy();
+		fixReplaceAllParentLatinNames();
 		fixExtinct();
 	}
 	
@@ -58,23 +58,20 @@ public class WikiSpeciesTreeFixer {
 	 * TODO where in the workflow should this take place?  it will change the parent latin name only.
 	 * 		the rest (including parent id) all need to be updated by the workflow.
 	 */
-	public void fixReplacedBy() {
-		for (String toReplace: replacedBy.keySet()) {
-			String replaceWith = replacedBy.get(toReplace);
-			fixReplacedBy(toReplace, replaceWith);
+	public void fixReplaceAllParentLatinNames() {
+		for (String toReplace: replacedParentLatinNames.keySet()) {
+			String replaceWith = replacedParentLatinNames.get(toReplace);
+			fixReplaceAllParentLatinNames(toReplace, replaceWith);
 		}
 	}
-	public void fixReplacedBy(String toReplace, String replaceWith) {
-		// this is a very inefficient way of doing this, but it's a very low-volume operation
-		Entry parent = speciesService.findEntryByLatinName(toReplace, true);
-		List<CompleteEntry> children = speciesService.findChildren(parent.getId());
-		for (CompleteEntry child: children) {
-			LogHelper.speciesLogger.info("fixReplacedBy." + 
-					child.getLatinName() + "(" + child.getId() + ")." +
-					child.getParentLatinName() + " => " + replaceWith);
-			// does not change parent latin id - has to be handled elsewhere
-			child.setParentLatinName(replaceWith);
-			speciesService.updateParentLatinName(child);
+	public void fixReplaceAllParentLatinNames(String toReplace, String replaceWith) {
+		List<CompleteEntry> entries = speciesService.findEntriesByParentLatinName(toReplace);
+		for (CompleteEntry entry: entries) {
+			entry.setParentLatinName(replaceWith);
+			LogHelper.speciesLogger.info("fixReplaceAllParentLatinNames." + 
+					entry.getLatinName() + "(" + entry.getId() + ")." +
+					entry.getParentLatinName() + " => " + replaceWith);
+			speciesService.updateParentLatinName(entry);
 		}
 	}
 	public void fixAssignParent() {
@@ -85,11 +82,13 @@ public class WikiSpeciesTreeFixer {
 	}
 	public void fixAssignParent(String child, String newParent) {
 		CompleteEntry entry = speciesService.findEntryByLatinName(child, true);
-		entry.setParentLatinName(newParent);
-		LogHelper.speciesLogger.info("fixAssignParent." + 
-				entry.getLatinName() + "(" + entry.getId() + ")." +
-				entry.getParentLatinName() + " => " + newParent);
-		speciesService.updateParentLatinName(entry);
+		if (!newParent.equals(entry.getParentLatinName())) {
+			entry.setParentLatinName(newParent);
+			LogHelper.speciesLogger.info("fixAssignParent." + 
+					entry.getLatinName() + "(" + entry.getId() + ")." +
+					entry.getParentLatinName() + " => " + newParent);
+			speciesService.updateParentLatinName(entry);
+		}
 	}
 	
 }
