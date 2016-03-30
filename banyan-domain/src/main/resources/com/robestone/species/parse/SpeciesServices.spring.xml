@@ -25,13 +25,9 @@
 
     <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp.BasicDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://99.198.168.89:3306/species"/>
-        <!--
-        <property name="url" value="jdbc:mysql://localhost:3306/species"/>
-        <property name="url" value="jdbc:mysql://192.168.1.101:3306/species"/>
-        -->
+        <property name="url" value="jdbc:mysql://${database.ip}:3306/species"/>
         <property name="username" value="species-db"/>
-        <property name="password" value="species-!@#$"/>
+        <property name="password" value="${database.password}"/>
         <property name="testOnBorrow" value="true" />
         <property name="validationQuery" value="SELECT 1" />
     </bean>
