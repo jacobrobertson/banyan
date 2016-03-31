@@ -184,10 +184,8 @@
 		</plugins>
 	</build>
 
+<!-- 
 	<reporting>
-
-		<!-- Adds a report detailing the components, mixins and base classes defined 
-			by this module. -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.tapestry</groupId>
@@ -199,7 +197,7 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
+-->
 	<repositories>
 		<!-- This can be commented out when the tapestry-release-version is a not 
 			a snapshot. The non-snapshot Tapestry artifacts are distributed through the 
