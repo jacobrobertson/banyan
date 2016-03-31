@@ -83,6 +83,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// sets AUTH so we don't try and parse those again
 		new AuthWorker().setStatusForRedirect();
 		
+		new VirusWorker().makeVirusesInteresting();
+		
 		// any changes that "fix" what the crawling found
 		new WikiSpeciesTreeFixer(speciesService).run();
 		
