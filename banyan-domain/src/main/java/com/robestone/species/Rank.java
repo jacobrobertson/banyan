@@ -150,6 +150,7 @@ public enum Rank {
 	
 	// Viruses
 	Strain(675),
+	Subtype(676),
 	Serotype(678),
 	
 	Synonym(680, "?Synonym", "Synonym?"),
@@ -166,7 +167,8 @@ public enum Rank {
 	Ichnogenus(820),
 	Ichnospecies(840),
 	
-	Empty(0); // i.e. no real class in this position for this species
+	Error(-1), // used to represent rank not found
+	Empty(0); // i.e. no real class in this position for this species - not sure I need this at all?
 	
 	private int rankIndex;
 	private Set<String> names;

@@ -24,11 +24,11 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			args = new String[] { };
 		}
 		boolean forceNewDownloadForCache = true;
-		boolean crawlAllStoredLinks = false;
-		//*
+		boolean crawlAllStoredLinks = true;
+		/*
 		args = new String[] {
 
-				"Halothamnus Jaubert & Spach",
+				"Etayoa trypethelii",
 				
 		};
 		crawlAllStoredLinks = false;
@@ -200,8 +200,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		if (results == null) {
 			visitUnparseablePage(link, page);
 		} else {
-			// checking for rank is a temp fix for over-zealous recursion on this
-			while (results != null && results.getRank() != null) {
+			// need to ensure we don't get into a loop, which happens quite a bit
+			Set<CompleteEntry> parsed = new HashSet<CompleteEntry>();
+			while (results != null && !parsed.contains(results)) {
+				parsed.add(results);
 				parsed(results);
 				results = results.getParent();
 			}

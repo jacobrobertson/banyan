@@ -338,10 +338,7 @@ public class WikiSpeciesParser {
 	
 		String latinName = selfLinkName;
 		String rank = getRank(latinName, text);
-		if (rank == null) {
-			return null;
-		}
-		
+
 		String extinct = getGroup(extinctPattern, text, 1);
 		if (extinct == null) {
 			extinct = getGroup(extinctPattern, text, 2);
@@ -351,11 +348,10 @@ public class WikiSpeciesParser {
 		CompleteEntry parent;
 		if (SpeciesService.isTopLevelRank(latinName)) {
 			parent = new CompleteEntry(null, null, "Tree of Life");
-		} else {
+		} else if (rank != null) {
 			parent = getParent(text, latinName, rank);
-			if (parent == null) {
-				return null;
-			}
+		} else {
+			parent = null;
 		}
 				
 		String commonName = getGroup(commonNamePattern, text);
@@ -374,7 +370,11 @@ public class WikiSpeciesParser {
 		String depictedImage = getGroup(depictedPattern, text);
 		
 		CompleteEntry results = new CompleteEntry();
-		results.setRank(Rank.valueOfWithAlternates(rank));
+		if (rank != null) {
+			results.setRank(Rank.valueOfWithAlternates(rank));
+		} else {
+			results.setRank(Rank.Error);
+		}
 		results.setCommonName(commonName);
 		results.setLatinName(pageNameLatin);
 		results.setParent(parent);
@@ -423,14 +423,18 @@ public class WikiSpeciesParser {
 						"(:| )\\s*<a href=\"/w/index.php\\?title=" + ename);
 				String parentRankString = getGroup(parentRankPattern, text, 1);
 //				LogHelper.speciesLogger.info("parent rank." + parentRankString);
+				Rank parentRank;
 				if (parentRankString != null) {
-					Rank parentRank = Rank.valueOfWithAlternates(parentRankString);
+					parentRank = Rank.valueOfWithAlternates(parentRankString);
 					parent.setRank(parentRank);
 					// Keep going as long as we find "red" parents
 					CompleteEntry gparent = getParent(text, parentLatinName, parentRankString);
 					parent.setParent(gparent);
 				}
 			}
+		}
+		if (parent != null && parent.getRank() == null) {
+			parent.setRank(Rank.Error);
 		}
 		cleanNameCharacters(parent);
 		return parent;
