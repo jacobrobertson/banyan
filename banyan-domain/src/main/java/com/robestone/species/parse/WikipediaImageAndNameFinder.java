@@ -17,8 +17,8 @@ import com.robestone.species.LogHelper;
 public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
-//		new WikipediaImageAndNameFinder().run();
-		new WikipediaImageAndNameFinder().runOne("Rattus exulans");
+		new WikipediaImageAndNameFinder().run();
+//		new WikipediaImageAndNameFinder().runOne("Gymnobucco calvus");
 		
 	}
 	private WikipediaCrawler crawler = new WikipediaCrawler();
@@ -89,7 +89,8 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 			OutputStreamWriter outWriter = new OutputStreamWriter(fout, Charset.forName("UTF-8"));
 			String entry = formatter.toJsPageEntry(box, isNamesInteresting);
 			String key = String.valueOf(System.currentTimeMillis());
-			String line = "pages['" + key + "'] = {id:'" +key + "'," + entry + "};\n";
+//			String line = "pages['" + key + "'] = {id:'" +key + "'," + entry + "};\n";
+			String line = "{\"id\":\"" +key + "\"," + entry + "}\n";
 			outWriter.write(line);
 			outWriter.flush();
 			outWriter.close();

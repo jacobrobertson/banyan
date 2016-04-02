@@ -31,6 +31,9 @@ public class WikipediaCrawler {
 	}
 	public Taxobox toTaxobox(String latinName) {
 		String page = getWikipediaPage(latinName);
+		if (page == null) {
+			return null;
+		}
 		Taxobox box = parser.parseHtmlPage(latinName, page);
 		return box;
 	}

@@ -28,7 +28,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Dactylanthus (ICBN)",
+				"Cyornis omissus",
 				
 		};
 		crawlAllStoredLinks = false;

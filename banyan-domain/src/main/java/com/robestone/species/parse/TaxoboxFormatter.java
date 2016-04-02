@@ -22,14 +22,14 @@ public class TaxoboxFormatter {
 		StringBuilder buf = new StringBuilder();
 		List<String> entries = new ArrayList<String>();
 		String image = formatImage(box);
-		entries.add("latin:'" + box.getLatinNameFormatted() + "'");
+		entries.add("\"latin\":\"" + box.getLatinNameFormatted() + "\"");
 		if (!StringUtils.isEmpty(image)) {
-			entries.add("image:\"" + image.trim() + "\"");
+			entries.add("\"image\":\"" + image.trim() + "\"");
 		}
 		if (isNamesInteresting) {
 			String common = box.getCommonName();
 			if (!StringUtils.isEmpty(common)) {
-				entries.add("common:'" + common.replace("'", "\\'") + "'");
+				entries.add("\"common\":\"" + common.replace("'", "\\'") + "\"");
 			}
 		}
 		for (int i = 0; i < entries.size(); i++) {

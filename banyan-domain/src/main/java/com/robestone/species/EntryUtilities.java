@@ -471,6 +471,38 @@ public class EntryUtilities {
 		}
 		return parent;
 	}
+	public static boolean isEntryRecursable(Entry entry) {
+		return (
+			entry.getLoadedChildrenSize() == 1
+		);		
+	}
+
+	/**
+	 * Given a branch of the tree, gather as much of it into a chain, until you hit the last node that can't be chained.
+	 * a
+	 *  b
+	 *   c
+	 *    d
+	 *     e
+	 *      f
+	 *       g
+	 *       h
+	 *  In this example, we can chain a-f, but because f has 2 children we have to stop
+	 */
+	public static List<Entry> toChain(Entry branch) {
+		List<Entry> chain = new ArrayList<Entry>();
+		Entry next = branch;
+		while (true) {
+			chain.add(next);
+			if (isEntryRecursable(next)) {
+				next = next.getChildren().get(0);
+			} else {
+				break;
+			}
+		}
+		return chain;
+	}
+	
 	public static List<Entry> collapseList(List<Entry> entries) {
 		return collapseList(entries, true);
 	}
@@ -496,10 +528,12 @@ public class EntryUtilities {
 			boolean boring = CommonNameSimilarityChecker.isCommonNameBoring(e);
 			if (!boring) {
 				// add this one to the list, and check if we can crunch the last ones
-				Entry collapsedEntry = collapseListToOne(sub);
-				collapsed.add(collapsedEntry);
+				if (!sub.isEmpty()) {
+					Entry collapsedEntry = collapseListToOne(sub);
+					collapsed.add(collapsedEntry);
+					sub.clear();
+				}
 				collapsed.add(e);
-				sub.clear();
 				continue;
 			} else {
 				sub.add(e);
