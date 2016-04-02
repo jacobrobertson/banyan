@@ -385,6 +385,10 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return template.query("select latin_name from species", 
 				new EntityMapperRowMapper());
 	}
+	public Collection<String> findLatinNamesForParseDoneChangerToIgnore() {
+		return template.query("select latin_name from species where rank > 0 and parent_latin_name is not null", 
+				new EntityMapperRowMapper());
+	}
 	public Collection<CompleteEntry> findBoringEntries(boolean bothBoring) {
 		String andOr;
 		if (bothBoring) {

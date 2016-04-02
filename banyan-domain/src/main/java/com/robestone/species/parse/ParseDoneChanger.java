@@ -35,15 +35,15 @@ public class ParseDoneChanger extends AbstractWorker {
 		List<ParseStatus> statuses = this.parseStatusService.findAllNonAuth();
 		Collections.sort(statuses, new NameComp());
 		
-		Collection<String> entries = this.speciesService.findAllLatinNames();
-		Set<String> entriesSet = new HashSet<String>(entries);
+		Collection<String> namesToIgnore = this.speciesService.findLatinNamesForParseDoneChangerToIgnore();
+		Set<String> namesToIgnoreSet = new HashSet<String>(namesToIgnore);
 		Collection<String> redirectList = this.speciesService.findAllRedirectFroms();
 		Set<String> redirectSet = new HashSet<String>(redirectList);
 		int count = 0;
 		LogHelper.speciesLogger.info("checkSpeciesNeedingWork." + statuses.size());
 		for (ParseStatus status: statuses) {
 			String key = status.getLatinName();
-			if (!entriesSet.contains(key) && !redirectSet.contains(key)) {
+			if (!namesToIgnoreSet.contains(key) && !redirectSet.contains(key)) {
 				LogHelper.speciesLogger.info("checkSpeciesNeedingWork." + (count++) + "." + status.getLatinName());
 				if (persist) {
 					status.setStatus(ParseStatus.FOUND);
