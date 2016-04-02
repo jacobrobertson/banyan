@@ -152,6 +152,7 @@ public enum Rank {
 	Strain(675),
 	Subtype(676),
 	Serotype(678),
+	Virus(679),
 	
 	Synonym(680, "?Synonym", "Synonym?"),
 	InvalidCombination(681, "+Invalid combination", "Invalid combinations"),
