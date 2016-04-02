@@ -117,11 +117,23 @@ public class WikiSpeciesParser {
 		
 		return text;
 	}
+	private boolean isEntryOkay(CompleteEntry e) {
+		if (e == null) {
+			return false;
+		}
+		if (e.getRank() == null || e.getRank() == Rank.Error) {
+			return false;
+		}
+		if (e.getParentLatinName() == null && e.getParent() == null) {
+			return false;
+		}
+		return true;
+	}
 	public CompleteEntry parse(String name, String text) {
 		CompleteEntry entry = parse(name, name, text, true);
 		
 		// incertae sedis
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			String newName = getNameNoIncertaeSedis(name);
 			if (newName != null) {
 				// in this section, handle these cases
@@ -130,35 +142,35 @@ public class WikiSpeciesParser {
 				//    Incertae sedis
 				// TODO there might be other patterns
 				entry = parse(name, INCERTAE_SEDIS, text, true);
-				if (entry == null) {
+				if (!isEntryOkay(entry)) {
 					entry = parse(name, INCERTAE_SEDIS.toLowerCase(), text, true);
 				}
-				if (entry == null) {
+				if (!isEntryOkay(entry)) {
 					entry = parse(name, newName, text, true);
 				}
 			}
 		}
 		
 		// cases like Centropogon (Campanulaceae)
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			String[] names = getNamesNoParens(name);
 			if (names != null) {
 				// Centropogon (Campanulaceae) => Centropogon
 				entry = parse(name, names[0], text, true);
 				// Paederus (Anomalopaederus) => Anomalopaederus 
-				if (entry == null) {
+				if (!isEntryOkay(entry)) {
 					entry = parse(name, names[1], text, true);
 				}
 			}
 		}
 		
 		// handle abbreviated names
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			List<String> newNames = getLatinAbbreviations(name);
 			if (newNames != null) {
 				for (String newName: newNames) {
 					entry = parse(name, newName, text, true);
-					if (entry != null) {
+					if (isEntryOkay(entry)) {
 						break;
 					}
 				}
@@ -166,7 +178,7 @@ public class WikiSpeciesParser {
 		}
 
 		// handle "Cossina Cossina"
-		if (entry == null && name.indexOf(' ') > 0) {
+		if (!isEntryOkay(entry) && name.indexOf(' ') > 0) {
 			String[] split = name.split(" ");
 			if (split.length == 2 && split[0].equals(split[1])) {
 				entry = parse(name, split[0], text, true);
@@ -174,14 +186,14 @@ public class WikiSpeciesParser {
 		}
 		
 		// special hybrid "x" \u00d7
-		if (entry == null && name.indexOf('\u00d7') >= 0) {
+		if (!isEntryOkay(entry) && name.indexOf('\u00d7') >= 0) {
 			String newName = name.replace("\u00d7", " x ");
 			newName = newName.replace("  ", " ");
 			entry = parse(name, newName, text, true);
 		}
 
 		// handle "Cohort Dictyoptera"
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			String newName = removeRankFromFront(name);
 			if (newName != null) {
 				entry = parse(name, newName, text, true);
@@ -189,13 +201,13 @@ public class WikiSpeciesParser {
 		}
 		
 		// "Unassigned Calliptaminae"
-		if (entry == null && name.startsWith("Unassigned ")) {
+		if (!isEntryOkay(entry) && name.startsWith("Unassigned ")) {
 			entry = parse(name, "Unassigned", text, true);
 		}
 		
 		// Aptinus pyranaeus => Aptinus (Aptinus) pyranaeus
 		int pos;
-		if (entry == null && (pos = name.indexOf(' ')) > 0) {
+		if (!isEntryOkay(entry) && (pos = name.indexOf(' ')) > 0) {
 			String left = name.substring(0, pos);
 			String right = name.substring(pos + 1);
 			String newName = left + " (" + left + ") " + right;
@@ -203,7 +215,7 @@ public class WikiSpeciesParser {
 		}
 
 		// Author names in species page name
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			List<String[]> list = splitAuthorNameFromSpeciesPageName(name);
 			for (String[] split: list) {
 				entry = parse(name, split[0], text, true);
@@ -211,7 +223,7 @@ public class WikiSpeciesParser {
 		}
 		
 		// " ser. " - Sedum ser. Cepaea => Cepaea
-		if (entry == null) {
+		if (!isEntryOkay(entry)) {
 			pos = name.indexOf(" ser. ");
 			if (pos > 0) {
 				String newName = name.substring(pos + 6);
@@ -220,11 +232,11 @@ public class WikiSpeciesParser {
 		}
 
 		// "Tilapia" busumana or Tilapia "busumana"
-		if (entry == null && (pos = name.indexOf(' ')) > 0) {
+		if (!isEntryOkay(entry) && (pos = name.indexOf(' ')) > 0) {
 			String left = name.substring(0, pos);
 			String right = name.substring(pos + 1);
 			entry = parse(name, "\"" + left + "\" " + right, text, true);
-			if (entry == null) {
+			if (!isEntryOkay(entry)) {
 				entry = parse(name, left + " \"" + right + "\"", text, true);
 			}
 		}
@@ -423,9 +435,8 @@ public class WikiSpeciesParser {
 						"(:| )\\s*<a href=\"/w/index.php\\?title=" + ename);
 				String parentRankString = getGroup(parentRankPattern, text, 1);
 //				LogHelper.speciesLogger.info("parent rank." + parentRankString);
-				Rank parentRank;
 				if (parentRankString != null) {
-					parentRank = Rank.valueOfWithAlternates(parentRankString);
+					Rank parentRank = Rank.valueOfWithAlternates(parentRankString);
 					parent.setRank(parentRank);
 					// Keep going as long as we find "red" parents
 					CompleteEntry gparent = getParent(text, parentLatinName, parentRankString);
@@ -455,6 +466,9 @@ public class WikiSpeciesParser {
 	 * Also
 	 * Sciacharis (Sciacharis) antennalis
 	 * S. (S.) antennalis
+	 * 
+	 * Mus musculus
+	 * Mus (M.) musculus
 	 */
 	public static List<String> getLatinAbbreviations(String latin) {
 		int pos = latin.indexOf(' ');
@@ -482,6 +496,9 @@ public class WikiSpeciesParser {
 			for (String rightAbbrev: rightAbbreviations) {
 				all.add(abbrev + rightAbbrev);
 			}
+		}
+		if (!parens) {
+			all.add(left + " (" + abbrev.trim() + ") " + right);
 		}
 		return all;
 	}

@@ -408,6 +408,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testHalothamnusJauberSpach() throws IOException {
 		doTest("Halothamnus Jaubert & Spach", null, "Salsoleae", "thumb/e/e5/Halothamnus_subaphyllus_ssp_charifii.JPG/250px-Halothamnus_subaphyllus_ssp_charifii.JPG", Rank.Genus);
 	}
+	public void testMus_musculus() throws IOException {
+		doTest("Mus musculus", "House Mouse", "Mus (Mus)", "thumb/a/ab/House_mouse.jpg/250px-House_mouse.jpg", Rank.Species);
+	}
 	
 	// ----------------------------------
 	
@@ -430,6 +433,12 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	private void doTestWithFileName(String fileName, String latin, String common, String parent, String image,
 			Rank rank, boolean extinct, Rank parentRank, String depicted) throws IOException {
+		if (rank == null) {
+			rank = Rank.Error;
+		}
+		if (parentRank == null) {
+			parentRank = Rank.Error;
+		}
 		String page = getPage(fileName);
 		CompleteEntry results = parser.parse(latin, page);
 		
@@ -478,9 +487,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	*/
 	public void testLatinAbbreviations() {
 		doTestLatinAbbreviation("Anything", "null");
-		doTestLatinAbbreviation("Anything goes", "[A. goes]");
-		doTestLatinAbbreviation("Anything will do", "[A. will do, A. w. do]");
-		doTestLatinAbbreviation("This (one) too", "[T. (one) too, T. (o.) too]");
+		doTestLatinAbbreviation("Anything goes", "[A. goes, Anything (A.) goes]");
+		doTestLatinAbbreviation("Anything will do", "[A. will do, A. w. do, A. will (w.) do, Anything (A.) will do]");
+		doTestLatinAbbreviation("This (one) too", "[T. (one) too, T. (o.) too, This (T.) (one) too]");
+		doTestLatinAbbreviation("Mus musculus", "[M. musculus, Mus (M.) musculus]");
 	}
 	public void doTestLatinAbbreviation(String latin, String expect) {
 		Object found = WikiSpeciesParser.getLatinAbbreviations(latin);
