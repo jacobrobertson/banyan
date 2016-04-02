@@ -2,7 +2,7 @@
    "http://www.w3.org/TR/html4/strict.dtd">
 <t:container xmlns:t="http://tapestry.apache.org/schema/tapestry_5_0_0.xsd">
 	<div id="controlpanel">
-		<a href="#cp4" id="cpShow" class="cpButton"><div class="MenuRow"><img src="icons/open-children.png" alt="show" />&nbsp;<span id="cpShowChildrenCaption">Show Children</span></div></a>
+		<a href="#cp4" id="cpShow" class="cpButton"><div class="MenuRow"><img src="icons/open_children.png" alt="show" />&nbsp;<span id="cpShowChildrenCaption">Show Children</span></div></a>
 		<a href="#cp5" id="cpShowMore" class="cpButton"><div class="MenuRow"><img src="icons/show-interesting.png" alt="show-more" />&nbsp;<span id="cpShowMoreCaption">Show More Species</span></div></a>
 		<a href="#cp1" id="cpHide" class="cpButton"><div class="MenuRow"><img src="icons/close-children.png" alt="hide" />&nbsp;Hide Children</div></a>
 		<a href="#cp3" id="cpClose" class="cpButton"><div class="MenuRow"><img src="icons/close.png" alt="close" />&nbsp;Close</div></a>

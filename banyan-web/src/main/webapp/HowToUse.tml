@@ -14,7 +14,7 @@
 	<span class="FaqTitle">What are all the icons for?</span>	<br />
 	<img src="icons/menu_more.png" class="faqButton-detail_first" /> and <img src="icons/menu_less.png" class="faqButton-detail_first" /> - <b>Show Menu</b> - Hover over these buttons to show a menu of options.  The button looks like <img src="icons/menu_less.png" class="faqButton-detail_first" /> when there are no sub-species available to open up.<br />
 	<img src="icons/goto-details.png" class="faqButton" /> and <img src="icons/detail_first.png" class="faqButton-detail_first" /> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.<br />
-	<img src="icons/open-children.png" class="faqButton" /> - <b>Show Children</b> - Will show all direct children of the chosen species.<br />
+	<img src="icons/open_children.png" class="faqButton" /> - <b>Show Children</b> - Will show all direct children of the chosen species.<br />
 	<img src="icons/show-interesting.png" class="faqButton" /> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.<br />
 	<img src="icons/close-children.png" class="faqButton" /> - <b>Hide Children</b> - Closes all children of the chosen species.<br />
 	<img src="icons/focus.png" class="faqButton" /> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.<br />

@@ -43,7 +43,7 @@ public class PathFixerFilter implements Filter {
         	path = path.substring(7);
         }
 
-		// /search/search.tree/icons/open-children.png
+		// /search/search.tree/icons/open_children.png
         if (!path.startsWith("/assets")) {
             int pos = path.indexOf("/icons/");
             if (pos > 0) {
