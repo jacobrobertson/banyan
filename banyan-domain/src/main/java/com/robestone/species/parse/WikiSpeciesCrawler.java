@@ -28,7 +28,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		//*
 		args = new String[] {
 
-				"Cyornis omissus",
+				"Halothamnus Jaubert & Spach",
 				
 		};
 		crawlAllStoredLinks = false;

@@ -204,8 +204,8 @@ public class WikiSpeciesParser {
 
 		// Author names in species page name
 		if (entry == null) {
-			String[] split = splitAuthorNameFromSpeciesPageName(name);
-			if (split != null) {
+			List<String[]> list = splitAuthorNameFromSpeciesPageName(name);
+			for (String[] split: list) {
 				entry = parse(name, split[0], text, true);
 			}
 		}
@@ -237,16 +237,36 @@ public class WikiSpeciesParser {
 	 * Tara Molina
 	 * Zygomyia submarginata Harrison
 	 * Xerophyllum Michx.
+	 * Halothamnus Jaubert & Spach
 	 */
-	private static Pattern splitAuthorPattern = Pattern.compile("[A-Z][a-z]+(-[A-Z][a-z]+)?\\.?");
-	public static String[] splitAuthorNameFromSpeciesPageName(String name) {
+	private static Pattern splitAuthorPattern = Pattern.compile(
+			"[A-Z][a-z]+(-[A-Z][a-z]+)?\\.?" +
+			// second name only if "x & y"
+			"( & [A-Z][a-z]+(-[A-Z][a-z]+)?\\.?)?"
+			);
+	public static List<String[]> splitAuthorNameFromSpeciesPageName(String name) {
+		List<String[]> list = new ArrayList<String[]>();
+		String[] result = null;
 		int pos;
 		if ((pos = name.lastIndexOf(' ')) > 0) {
-			String left = name.substring(0, pos);
-			String right = name.substring(pos + 1);
-			if (splitAuthorPattern.matcher(right).matches()) {
-				return new String[] {left, right};
+			result = doSplitAuthorNameFromSpeciesPageName(name, pos);
+			if (result != null) {
+				list.add(result);
 			}
+		}
+		if ((pos = name.indexOf(' ')) > 0) {
+			result = doSplitAuthorNameFromSpeciesPageName(name, pos);
+			if (result != null) {
+				list.add(result);
+			}
+		}
+		return list;
+	}
+	private static String[] doSplitAuthorNameFromSpeciesPageName(String name, int pos) {
+		String left = name.substring(0, pos);
+		String right = name.substring(pos + 1);
+		if (splitAuthorPattern.matcher(right).matches()) {
+			return new String[] {left, right};
 		}
 		return null;
 	}

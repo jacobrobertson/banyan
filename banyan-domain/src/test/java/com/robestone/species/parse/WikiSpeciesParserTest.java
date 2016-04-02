@@ -2,6 +2,7 @@ package com.robestone.species.parse;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import junit.framework.TestCase;
@@ -404,6 +405,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testTilapiabusumana() throws IOException {
 		doTest("Tilapia busumana", null, "Gobiocichlini", null, Rank.Species);
 	}
+	public void testHalothamnusJauberSpach() throws IOException {
+		doTest("Halothamnus Jaubert & Spach", null, "Salsoleae", "thumb/e/e5/Halothamnus_subaphyllus_ssp_charifii.JPG/250px-Halothamnus_subaphyllus_ssp_charifii.JPG", Rank.Genus);
+	}
 	
 	// ----------------------------------
 	
@@ -504,13 +508,13 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuthSplit("Anything Two three");
 	}
 	private void doTestAuthSplit(String name, String... split) {
-		String[] found = WikiSpeciesParser.splitAuthorNameFromSpeciesPageName(name);
+		List<String[]> found = WikiSpeciesParser.splitAuthorNameFromSpeciesPageName(name);
 		if (split.length == 0) {
-			assertNull(found);
+			assertEquals(0, found.size());
 		} else {
-			assertEquals(2, found.length);
-			assertEquals(split[0], found[0]);
-			assertEquals(split[1], found[1]);
+			assertEquals(2, found.get(0).length);
+			assertEquals(split[0], found.get(0)[0]);
+			assertEquals(split[1], found.get(0)[1]);
 		}
 	}
 	public void testRedirectSelfLinks() throws Exception {
