@@ -29,6 +29,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
 	public static final Integer TREE_OF_LIFE_ID = 141817;
+	public static final CompleteEntry TREE_OF_LIFE_ENTRY = new CompleteEntry(Rank.Cladus, "Tree of Life", "Arbor vitae"); {
+		TREE_OF_LIFE_ENTRY.setId(TREE_OF_LIFE_ID);
+	}
 	
 	private SimpleJdbcTemplate template;
 	private boolean useInterestingAttributesForSearches = true;
