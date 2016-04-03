@@ -119,7 +119,7 @@ public class BoringPruner {
 		int count = 0;
 		for (CompleteEntry e: entries) {
 			if (e.getCommonName() != null) {
-				logger.debug("removeBoringCommonNames ? " + e.getId());
+//				logger.debug("removeBoringCommonNames ? " + e.getId());
 				if (isCommonNameBoring(e)) {
 					logger.debug("removeBoringCommonNames." + e.getCommonName() + " (" + e.getLatinName() + ")");
 					e.setCommonName(null);
@@ -166,7 +166,7 @@ public class BoringPruner {
 		for (CompleteEntry e: leaves) {
 			boolean boring = isLeafBoring(e);
 			if (boring) {
-				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+//				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
 				detach(e);
 				changed++;
 			}
@@ -194,7 +194,7 @@ public class BoringPruner {
 			boolean boring = isFirstSubsetOfSecond(e, child);
 			if (boring) {
 				rewireToGrandparent(child);
-				logger.debug("pruneBoringParents." + e.getLatinName() + "/" + e.getCommonName());
+//				logger.debug("pruneBoringParents." + e.getLatinName() + "/" + e.getCommonName());
 				count++;
 			}
 		}

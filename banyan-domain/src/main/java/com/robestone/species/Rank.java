@@ -102,6 +102,7 @@ public enum Rank {
 	Superfamilia(400, "*Super-family", "Superfamily", "Superfamilae", "Superfamiliae", 
 			"Superfamlia" // pretty sure this is a misspelling, but it's pretty common
 			),
+	Suprafamilia(405),
 	Familia(410, "+Family", "Familiae", "Famila", "Familae"),
 	Parafamilia(415),
 	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
