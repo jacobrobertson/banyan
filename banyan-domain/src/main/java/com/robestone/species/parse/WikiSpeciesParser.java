@@ -578,7 +578,7 @@ public class WikiSpeciesParser {
 				continue;
 			}
 			String imageLink = matcher.group(1);
-			if (imageLink.indexOf("-logo.svg") > 0) {
+			if (imageLink.indexOf("-logo.") > 0) {
 				continue;
 			} else if (imageLink.indexOf("Achtung.svg") > 0) {
 				continue;
@@ -596,6 +596,8 @@ public class WikiSpeciesParser {
 			} else if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
 				continue;
 			} else if (imageLink.indexOf("Status_iucn") >= 0) {
+				continue;
+			} else if (imageLink.indexOf("-logo-") >= 0) {
 				continue;
 			} else if (
 					   imageLink.toUpperCase().endsWith(".OGV")
