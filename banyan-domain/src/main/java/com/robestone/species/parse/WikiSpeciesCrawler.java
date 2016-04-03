@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
+import com.robestone.species.SpeciesService;
 import com.robestone.species.UpdateType;
 import com.robestone.util.html.EntityMapper;
 
@@ -20,16 +21,11 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		
-		if (args == null || args.length == 0) {
-			args = new String[] { };
-		}
 		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = true;
-		/*
+		//*
 		args = new String[] {
-
-				"Etayoa trypethelii",
-				
+				"Archaea",
 		};
 		crawlAllStoredLinks = false;
 		//*/
@@ -202,6 +198,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		} else {
 			// need to ensure we don't get into a loop, which happens quite a bit
 			Set<CompleteEntry> parsed = new HashSet<CompleteEntry>();
+			parsed.add(SpeciesService.TREE_OF_LIFE_ENTRY);
 			while (results != null && !parsed.contains(results)) {
 				parsed.add(results);
 				parsed(results);

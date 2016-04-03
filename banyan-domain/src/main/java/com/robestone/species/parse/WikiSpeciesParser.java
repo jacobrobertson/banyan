@@ -365,7 +365,7 @@ public class WikiSpeciesParser {
 		
 		CompleteEntry parent;
 		if (SpeciesService.isTopLevelRank(latinName)) {
-			parent = new CompleteEntry(null, null, "Tree of Life");
+			parent = SpeciesService.TREE_OF_LIFE_ENTRY;
 		} else if (rank != null) {
 			parent = getParent(text, latinName, rank);
 		} else {
