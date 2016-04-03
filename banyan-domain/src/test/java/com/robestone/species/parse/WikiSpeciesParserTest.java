@@ -516,6 +516,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestAuthSplit("Anything Two-three");
 		doTestAuthSplit("Anything two-three");
 		doTestAuthSplit("Anything Two three");
+		doTestAuthSplit("Strychnos pungens Soler.", "Strychnos pungens", "Soler.");
 	}
 	private void doTestAuthSplit(String name, String... split) {
 		List<String[]> found = WikiSpeciesParser.splitAuthorNameFromSpeciesPageName(name);

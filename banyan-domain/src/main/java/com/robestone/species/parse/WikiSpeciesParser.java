@@ -241,6 +241,11 @@ public class WikiSpeciesParser {
 			}
 		}
 		
+		// Asclepias curassavica L. - the "L." is a special pattern
+		if (!isEntryOkay(entry) && name.endsWith(" L.")) {
+			String newName = name.substring(0, name.length() - 3);
+			entry = parse(name, newName, text, true);
+		}
 		
 		return entry;
 	}
@@ -249,6 +254,7 @@ public class WikiSpeciesParser {
 	 * Tara Molina
 	 * Zygomyia submarginata Harrison
 	 * Xerophyllum Michx.
+	 * Strychnos pungens Soler.
 	 * Halothamnus Jaubert & Spach
 	 */
 	private static Pattern splitAuthorPattern = Pattern.compile(
