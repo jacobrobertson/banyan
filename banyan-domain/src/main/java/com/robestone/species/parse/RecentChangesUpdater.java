@@ -63,6 +63,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		}
 		if (runMaintenance) {
 			recent.runMaintenance();
+			recent.runReports();
 		}
 	}
 	
@@ -115,6 +116,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		// download the images - has to be last due to "System.exit"
 		new ImagesCreater().downloadAll(true, false);
+	}
+	public void runReports() throws Exception {
+		new TreeReporter().runTreeReport();
 	}
 	public void crawlTreeReport() throws Exception {
 		Set<String> names = new TreeReporter().getLinksToCrawl();

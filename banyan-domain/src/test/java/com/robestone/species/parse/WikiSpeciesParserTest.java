@@ -411,6 +411,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testMus_musculus() throws IOException {
 		doTest("Mus musculus", "House Mouse", "Mus (Mus)", "thumb/a/ab/House_mouse.jpg/250px-House_mouse.jpg", Rank.Species);
 	}
+	public void testGyrinidae() throws IOException {
+		doTest("Gyrinidae", "Whirligig beetles, whirlygig beetles", "Adephaga", "2/23/Gyrinus_natator.JPG", Rank.Familia);
+	}
+	
 	
 	// ----------------------------------
 	
