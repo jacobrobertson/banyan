@@ -50,7 +50,6 @@ public enum Rank {
 	Divisio(190, "+Division"),
 	Subdivisio(200, "*Sub-division", "Subdivision", "Subdivisione"),
 	
-	Claudius(210), // TODO this is a species???+
 	Megaclassis(218),
 	Superclassis(220, "*Super-class"),
 	Classis(230, "+Class", "Classes"),
@@ -69,7 +68,7 @@ public enum Rank {
 	
 	Supersectio(490, "*Super-section", "Supersection"), // out of order - I moved these around
 	Sectio(290, "+Section", "Sections", "Sectiones", "Sectione"),
-	Subsectio(510, "*Sub-section", "Subsection", "Subsect", "Sebsectio" /*ugh!*/, "Subsectiones", "Subsections"),
+	Subsectio(510, "*Sub-section", "Subsection", "Subsect", "Subsectiones", "Subsections"),
 	
 	// --
 	Supergroup(295, "*Super-group"),
@@ -126,7 +125,7 @@ public enum Rank {
 	
 	Superspecies(530, "*Super-species"),
 	Species(540, "*Species", "Specie", "species", "Spcies", "Specoes"),
-	Subspecies(560, "*Sub-species", "Subspeies", "Subpecies", "Subspecie", "Susbspecies", "Sub-Species", "Sudspecies", "subspecies"), 
+	Subspecies(560, "*Sub-species", "Subspeies", "Subpecies", "Subspecie", "Susbspecies", "Sub-Species", "subspecies"), 
 		// TODO fix "Susbspecies" and "Sudspecies" and "species" in wikispecies
 		//		the only reason I haven't is that on some of these there's so many pages or templates
 	SpeciesGroup(565, "+Species Group", "Species group"),
@@ -164,6 +163,7 @@ public enum Rank {
 	Nothogenus(700),
 	Nothospecies(701),
 	Nothosubspecies(702),
+	Cultivar(705), // found in between Alliance and Nothogenera
 	Nothovarietas(710),
 	
 	Ichnogenus(820),
