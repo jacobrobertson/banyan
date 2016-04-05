@@ -599,7 +599,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			better = better || isBetter(found.getCommonName(), entry.getCommonName());
 			better = better || isBetter(found.getParentLatinName(), entry.getParentLatinName());
 			better = better || isBetter(found.getImageLink(), entry.getImageLink());
-			better = better || isBetter(found.getRank().toString(), entry.getRank().toString());
+			if (entry.getRank() != Rank.Error) {
+				better = better || isBetter(found.getRank().toString(), entry.getRank().toString());
+			}
 			better = better || isBetter(found.getDepictedLatinName(), entry.getDepictedLatinName());
 			better = better || found.isExtinct() != entry.isExtinct();
 			
