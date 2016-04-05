@@ -99,6 +99,10 @@
 					<extraJvmArguments>-Xmx1024m -Xms1024m -XX:MaxPermSize=128m</extraJvmArguments>
 					<programs>
 						<program>
+							<mainClass>com.robestone.species.parse.WikipediaImageAndNameFinder</mainClass>
+							<name>wikipedia</name>
+						</program>
+						<program>
 							<mainClass>com.robestone.species.parse.BoringWorker</mainClass>
 							<name>boring</name>
 						</program>

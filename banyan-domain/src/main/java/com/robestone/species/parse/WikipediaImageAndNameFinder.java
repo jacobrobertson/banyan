@@ -17,9 +17,16 @@ import com.robestone.species.LogHelper;
 public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
-		new WikipediaImageAndNameFinder().run();
-//		new WikipediaImageAndNameFinder().runOne("Gymnobucco calvus");
 		
+		/*
+			args = new String[] {"Gymnobucco calvus"};
+		//*/
+		
+		if (args != null && args.length == 1) {
+			new WikipediaImageAndNameFinder().runOne(args[0]);
+		} else {
+			new WikipediaImageAndNameFinder().run();
+		}
 	}
 	private WikipediaCrawler crawler = new WikipediaCrawler();
 	private TaxoboxFormatter formatter = new TaxoboxFormatter();
