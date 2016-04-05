@@ -28,7 +28,7 @@ public class TreeReporter extends AbstractWorker {
 
 	public Set<String> getLinksToCrawl() {
 		int maxResults = 5000;
-		List<Tree> trees = runTreeReport(1, maxResults);
+		List<Tree> trees = runTreeReport(1, 10, maxResults);
 		Set<String> allLinks = new HashSet<String>();
 		LogHelper.speciesLogger.debug("getLinksToCrawl.trees." + trees.size());
 		int count = 0;
@@ -50,9 +50,10 @@ public class TreeReporter extends AbstractWorker {
 	
 	public void runTreeReport() {
 		int minInteresting = 2;
-		runTreeReport(minInteresting, -1);
+		int minTreeNodes = 20;
+		runTreeReport(minInteresting, minTreeNodes, -1);
 	}
-	public List<Tree> runTreeReport(int minInteresting, int maxResults) {
+	public List<Tree> runTreeReport(int minInteresting, int minTreeNodes, int maxResults) {
 		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport");
 		Collection<CompleteEntry> entries = speciesService.findEntriesForTreeReport();
 		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport." + entries.size());
@@ -72,7 +73,7 @@ public class TreeReporter extends AbstractWorker {
 		List<Tree> filteredTrees = new ArrayList<Tree>();
 		for (Tree t: trees) {
 			int countInteresting = countInteresting(t);
-			if (countInteresting < minInteresting) {
+			if (countInteresting < minInteresting && t.size() < minTreeNodes) {
 				continue;
 			}
 			CompleteEntry root = t.getRoot();
