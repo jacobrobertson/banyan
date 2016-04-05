@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
-import com.robestone.species.SpeciesService;
 import com.robestone.species.UpdateType;
 import com.robestone.util.html.EntityMapper;
 
@@ -25,7 +24,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = true;
 		//*
 		args = new String[] {
-				"Archaea",
+				"Micranthemum umbrosum",
 		};
 		crawlAllStoredLinks = false;
 		//*/
@@ -196,13 +195,12 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		if (results == null) {
 			visitUnparseablePage(link, page);
 		} else {
-			// need to ensure we don't get into a loop, which happens quite a bit
-			Set<CompleteEntry> parsed = new HashSet<CompleteEntry>();
-			parsed.add(SpeciesService.TREE_OF_LIFE_ENTRY);
-			while (results != null && !parsed.contains(results)) {
-				parsed.add(results);
-				parsed(results);
-				results = results.getParent();
+			// for the page I just crawled, do the real update
+			udpateOrInsert(results, false);
+			
+			// for any parent/gparent, we will consider inserting if it doesn't already exist
+			while ((results = results.getParent()) != null) {
+				udpateOrInsert(results, true);
 			}
 		}
 	}
@@ -223,8 +221,14 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		return null;
 	}
 	
-	public void parsed(CompleteEntry entry) {
-		UpdateType updated = speciesService.updateOrInsertEntryMaybe(entry);
+	private void udpateOrInsert(CompleteEntry entry, boolean onlyInsert) {
+		
+		UpdateType updated;
+		if (onlyInsert) {
+			updated = speciesService.insertEntryMaybe(entry);
+		} else {
+			updated = speciesService.updateOrInsertEntryMaybe(entry);
+		}
 		if (updated == UpdateType.NoChange) {
 			return;
 		}

@@ -588,6 +588,15 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				entry.getId()
 				);
 	}
+	public UpdateType insertEntryMaybe(CompleteEntry entry) {
+		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
+		if (found != null) {
+			return UpdateType.NoChange;
+		} else {
+			insertEntry(entry);
+			return UpdateType.Insert;
+		}
+	}
 	public UpdateType updateOrInsertEntryMaybe(CompleteEntry entry) {
 		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
 		if (found != null) {
@@ -599,9 +608,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			better = better || isBetter(found.getCommonName(), entry.getCommonName());
 			better = better || isBetter(found.getParentLatinName(), entry.getParentLatinName());
 			better = better || isBetter(found.getImageLink(), entry.getImageLink());
-			if (entry.getRank() != Rank.Error) {
-				better = better || isBetter(found.getRank().toString(), entry.getRank().toString());
-			}
+			better = better || isBetter(found.getRank().toString(), entry.getRank().toString());
 			better = better || isBetter(found.getDepictedLatinName(), entry.getDepictedLatinName());
 			better = better || found.isExtinct() != entry.isExtinct();
 			
