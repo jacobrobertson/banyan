@@ -135,7 +135,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public void updateFromBoringWorkMarkInteresting(Collection<CompleteEntry> interesting) {
 		int count = 0;
-		int showEvery = 10000;
+		int showEvery = 100000;
 		logger.info(">updateFromBoringWork.interesting." + interesting.size());
 		for (CompleteEntry e: interesting) {
 			if (count++ % showEvery == 0) {
@@ -708,7 +708,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		List<CompleteEntry> found = template.query(
 				"select id from species where common_name = latin_name", this);
 		for (CompleteEntry entry: found) {
-			logger.debug("fixBoringCommonNames." + entry.getId());
+//			logger.debug("fixBoringCommonNames." + entry.getId());
 			template.update(
 					"update species set " +
 					"common_name = null, " +
