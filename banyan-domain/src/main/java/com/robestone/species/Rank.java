@@ -51,14 +51,14 @@ public enum Rank {
 	Subdivisio(200, "*Sub-division", "Subdivision", "Subdivisione"),
 	
 	Megaclassis(218),
-	Superclassis(220, "*Super-class"),
+	Superclassis(220, "*Super-class", "Superclasses"),
 	Classis(230, "+Class", "Classes"),
 	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),
 	
 	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
 	
 	// --
-	Infraclassis(245, "*Sub-class"),
+	Infraclassis(245, "*Sub-class", "Infraclasses"),
 	
 	Parvclassis(250, "*Sub-class"),
 	
@@ -74,7 +74,7 @@ public enum Rank {
 	Supergroup(295, "*Super-group"),
 	Group(296),
 	Subgroup(297, "*Sub-group"),
-	InformalGroup(298, "+Informal group"),
+	InformalGroup(298, "+Informal group", "Informal Group"),
 	
 	Legio(300, "+Legion", "Legions"),
 	Megacohors(305, "+Megacohort"),
@@ -104,7 +104,7 @@ public enum Rank {
 	Suprafamilia(405),
 	Familia(410, "+Family", "Familiae", "Famila", "Familae"),
 	Parafamilia(415),
-	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
+	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamilae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
 	
 	// TODO -- ? these might be another term for "genus"
 	Genera(425, "*Genus", "Generus", "Genre", "genera"),
@@ -112,7 +112,7 @@ public enum Rank {
 	
 	Supertribus(430, "*Super-tribe", "Supertribe", "Supertribes"),
 	Tribus(440, "+Tribe", "Tribu", "Tribes"),
-	Subtribus(450, "*Sub-tribe", "Subtribu", "Subtribe", "Substribes"),
+	Subtribus(450, "*Sub-tribe", "Subtribu", "Subtribe", "Subtribes", "Subtribi"),
 	
 	Supergenus(460, "*Super-genus"),
 	Genus(470, "Genua"),
@@ -135,7 +135,7 @@ public enum Rank {
 	Convarietas(580),
 	
 	Supervarietas(590, "*Super-variety", "Supervariety"),
-	Varietas(600, "+Variety", "Varieties",
+	Varietas(600, "+Variety", "Varieties", "Varieta",
 			"Variant" // used only twice, and I didn't want to edit wikispecies...
 			),
 	Subvarietas(610, "*Sub-variety", "Subvariety"),
@@ -169,12 +169,13 @@ public enum Rank {
 	Ichnogenus(820),
 	Ichnospecies(840),
 	
-	Error(-1), // used to represent rank not found
-	Empty(0); // i.e. no real class in this position for this species - not sure I need this at all?
+	Error(-1, false), // used to represent rank not found
+	Empty(0, false); // i.e. no real class in this position for this species - not sure I need this at all?
 	
 	private int rankIndex;
 	private Set<String> names;
 	private String commonName;
+	private boolean isValidRank;
 	
 	static {
 		// execute after other init
@@ -186,10 +187,14 @@ public enum Rank {
 		}
 	}
 	
+	Rank(int rankIndex, String... alternateNames) {
+		this(rankIndex, true, alternateNames);
+	}
 	/**
 	 * @param alternateNames Often due to using the plural instead of the singular
 	 */
-	Rank(int rankIndex, String... alternateNames) {
+	Rank(int rankIndex, boolean isValidRank, String... alternateNames) {
+		this.isValidRank = isValidRank;
 		this.commonName = toString();
 		Set<String> set = new HashSet<String>();
 		for (String name: alternateNames) {
@@ -205,6 +210,9 @@ public enum Rank {
 		set.add(toString());
 		this.rankIndex = rankIndex;
 		this.names = Collections.unmodifiableSet(set);
+	}
+	public boolean isValidRank() {
+		return isValidRank;
 	}
 	public String getCommonName() {
 		return commonName;
