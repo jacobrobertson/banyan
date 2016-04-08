@@ -1,6 +1,3 @@
-{"id":"1459536651847","latin":"Microhierax_caerulescens", "image":"[[File:Microhierax caerulescens.jpg|thumb|250px|''Microhierax caerulescens'']]"}
-
-
 javascript: (function() {
 	var value = prompt("Edits", "");
 	var obj = JSON.parse(value);
