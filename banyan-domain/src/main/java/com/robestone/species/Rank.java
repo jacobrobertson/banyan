@@ -60,7 +60,7 @@ public enum Rank {
 	// --
 	Infraclassis(245, "*Sub-class", "Infraclasses"),
 	
-	Parvclassis(250, "*Sub-class"),
+	Parvclassis(250, "*Sub-class", "Parvclasses"),
 	
 //	Superdivisio(260), -- moved it
 //	Divisio(270),

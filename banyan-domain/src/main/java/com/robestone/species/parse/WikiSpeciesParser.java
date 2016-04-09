@@ -247,6 +247,19 @@ public class WikiSpeciesParser {
 			entry = parse(name, newName, text, true);
 		}
 		
+		// Bombus (Psithyrus) citrinus > Bombus (Psithyrus) citrinus
+		if (!isEntryOkay(entry) && (pos = name.indexOf('(')) > 0) {
+			int pos2 = name.indexOf(')');
+			if (pos2 > 0) {
+				String left = name.substring(0, pos).trim();
+				String right = name.substring(pos + 1).trim();
+				if (right.length() > 0) {
+					String newName = left + " " + right;
+					entry = parse(name, newName, text, true);
+				}
+			}
+		}
+		
 		return entry;
 	}
 	
