@@ -51,10 +51,13 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 		run(entries);
 	}
 	public void run(List<CompleteEntry> entries) {
-		int maxToShow = 25;
+		int maxToShow = 200;
 		int totalCount = 0;
 		int interestingCount = 0;
 		boolean onlyKeepBest = false;
+		
+		LogHelper.speciesLogger.debug("WikipediaImageAndNameFinder.run. total/max " + entries.size() + "/" + maxToShow);
+		
 		for (CompleteEntry entry: entries) {
 			try {
 				totalCount++;

@@ -28,7 +28,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
-	public static final Integer TREE_OF_LIFE_ID = 141817;
+	// If I always insert this first in a new DB, it will be 1
+	public static final Integer TREE_OF_LIFE_ID = 1;
 	public static final CompleteEntry TREE_OF_LIFE_ENTRY = new CompleteEntry(Rank.Cladus, "Tree of Life", "Arbor vitae"); {
 		TREE_OF_LIFE_ENTRY.setId(TREE_OF_LIFE_ID);
 	}
@@ -53,15 +54,6 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		} else {
 			return "parent_id";
 		}
-	}
-	
-	public static boolean isTopLevelRank(String latinName) {
-		Set<String> set = new HashSet<String>();
-		set.add("Eukaryota");
-		set.add("Archaea");
-		set.add("Bacteria");
-//		set.add("Virus");
-		return set.contains(latinName);
 	}
 	/**
 	 * @return a random tree of given size.
@@ -93,12 +85,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	List<CompleteEntry> findEntriesForLuceneIndex() {
 		List<CompleteEntry> entries = template.query(
-				"select id, common_name, latin_name from species where boring_final = 0", this);
+				"select id, common_name, latin_name from species where boring_final = false", this);
 		return entries;
 	}
 	List<Integer> findAllIdsForCaching() {
 		List<Integer> ids = template.query(
-				"select id from species where boring_final = 0", 
+				"select id from species where boring_final = false", 
 				new ParameterizedSingleColumnRowMapper<Integer>());
 		return ids;
 	}
@@ -108,7 +100,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return EntryUtilities.buildTree(entries);
 	}
 	public void updateCommonNamesSharedWithSiblingsFalse() {
-		template.update("update species set shares_sibling_name = 0");
+		template.update("update species set shares_sibling_name = false");
 	}
 	public void updateCommonNameSharedWithSiblings(Entry entry) {
 		template.update("update species set shares_sibling_name = ? where id = ?", 
@@ -119,7 +111,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		List<CompleteEntry> entries = template.query("select " +
 				getMinimalEntryColumns(false) + 
 				", interesting_crunched_ids, linked_image_id " +
-				" from species where boring_final = 0", this);
+				" from species where boring_final = false", this);
 		logger.info("findInterestingTreeFromPersistence." + entries.size());
 		for (CompleteEntry entry: entries) {
 			cleanEntryFromPersistence(entry);
@@ -144,7 +136,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			template.update("update species set " +
 					"interesting_parent_id = ?, " +
 					"interesting_child_count = ?, " +
-					"boring_final = 0 " +
+					"boring_final = false " +
 					"where id = ?",
 					e.getParentId(),
 					e.getLoadedChildrenSize(),
@@ -181,7 +173,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				subCount = 0;
 				template.update("update species set " +
 						"interesting_parent_id = null, " +
-						"boring_final = 1 " +
+						"boring_final = true " +
 						"where id in (" + placeholders + ")",
 						subIds);
 			}
@@ -219,13 +211,13 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		while (true) {
 			// select all that are extinct (1)
 			Collection<CompleteEntry> entries = template.query(
-					"select id, parent_id from species where extinct = 1", this);
+					"select id, parent_id from species where extinct = true", this);
 			// update all children
 			int updated = 0;
 			for (CompleteEntry entry: entries) {
 				// only update those needing updating
 				updated += template.update(
-						"update species set extinct = 1 where parent_id = ? and not extinct = 1", 
+						"update species set extinct = true where parent_id = ? and not extinct = true", 
 						entry.getId());
 			}
 			logger.debug("fixExtinct.updated." + updated);
@@ -342,12 +334,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public Collection<CompleteEntry> findEntriesForExtinctReport() {
 		Collection<CompleteEntry> entries = template.query(
-				"select latin_name, parent_latin_name from species where extinct = 0 and parent_latin_name is not null", 
+				"select latin_name, parent_latin_name from species where extinct = false and parent_latin_name is not null", 
 				this);
 		
 		// filter out from extinct table - could do this as sql, but not really necessary
 		List<String> extinctNamesList = template.query(
-				"select latin_name from extinct_assigned where extinct = 1", 
+				"select latin_name from extinct_assigned where extinct = true", 
 				new EntityMapperRowMapper());
 		Set<String> set = new HashSet<String>(extinctNamesList);
 		Collection<CompleteEntry> filtered = new ArrayList<CompleteEntry>();
@@ -359,17 +351,21 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return filtered;
 	}
 	public void assignExtinct(String latinName) {
-		int updated = template.update("update extinct_assigned set extinct = 1 where latin_name = ?", latinName);
+		int updated = template.update("update extinct_assigned set extinct = true where latin_name = ?", latinName);
 		if (updated == 0) {
-			template.update("insert into extinct_assigned (latin_name, extinct) values (?, 1)", latinName);
+			template.update("insert into extinct_assigned (latin_name, extinct) values (?, true)", latinName);
 		}
 	}
+	private boolean isExtinctAssignedReady = false;
 	public void assignExtinctToSpecies() {
+		if (!isExtinctAssignedReady) {
+			return;
+		}
 		List<String> extinctNamesList = template.query(
-				"select latin_name from extinct_assigned where extinct = 1", 
+				"select latin_name from extinct_assigned where extinct = true", 
 				new EntityMapperRowMapper());
 		for (String name: extinctNamesList) {
-			template.update("update species set extinct = 1 where latin_name = ?", name);
+			template.update("update species set extinct = true where latin_name = ?", name);
 		}
 	}
 	public Collection<String> findAllUnmatchedParentNames() {
@@ -424,7 +420,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	List<Integer> findChildrenIdsFromPersistence(Integer id) {
 		return template.query(
 				"select id from species where " + getParentIdColumn() + " = ? and " +
-						getBoringColumn() + " = 0", 
+						getBoringColumn() + " = false", 
 				new ParameterizedSingleColumnRowMapper<Integer>(), id);
 	}
 	public Collection<CompleteEntry> getThumbnails() {
@@ -579,12 +575,16 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			entry.copyInterestingAttributes();
 		}
 	}
-	public void updateParentLatinName(CompleteEntry entry) {
+	public void updateParent(CompleteEntry entry) {
 		template.update(
 				"update species set " +
-				" parent_latin_name = ?" +  
-				" where id = ?", 
+						" parent_latin_name = ?," +  
+						" parent_id = ?," +  
+						" interesting_parent_id = ?" +
+						" where id = ?", 
 				entry.getParentLatinName(),
+				entry.getParentId(),
+				entry.getInterestingParentId(),
 				entry.getId()
 				);
 	}
@@ -949,7 +949,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		EntryUtilities.cleanEntry(entry);
 		template.update(
 			"insert into species (" +
-			"  id, " + 
+//			"  id, " + // derby doesn't want me to specify this, but mysql did
 			"  latin_name, " +
 			"  latin_name_clean, " +  
 			"  latin_name_cleanest , " +
@@ -962,8 +962,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			"  rank , " +
 			"  extinct , " +
 			"  image_link) " +
-			"values (?,?,?,?,?,?,?,?,?,?,?,?)", 
-			entry.getId(),
+			"values (?,?,?,?,?,?,?,?,?,?,?)", 
+//			entry.getId(),
 			entry.getLatinName(),
 			entry.getLatinNameClean(),
 			entry.getLatinNameCleanest(),
@@ -988,66 +988,66 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		int count = md.getColumnCount();
 		for (int i = 1; i <= count; i++) {
 			String c = md.getColumnName(i);
-			if (c.equals("id")) {
+			if (c.equalsIgnoreCase("id")) {
 				entry.setId(rs.getInt(c));
-			} else if (c.equals("latin_name")) {
+			} else if (c.equalsIgnoreCase("latin_name")) {
 				entry.setLatinName(getString(rs, c));
-			} else if (c.equals("latin_name_clean")) {
+			} else if (c.equalsIgnoreCase("latin_name_clean")) {
 				entry.setLatinNameClean(getString(rs, c));  
-			} else if (c.equals("latin_name_cleanest")) {
+			} else if (c.equalsIgnoreCase("latin_name_cleanest")) {
 				entry.setLatinNameCleanest(getString(rs, c));
-			} else if (c.equals("common_name")) {
+			} else if (c.equalsIgnoreCase("common_name")) {
 				entry.setCommonName(getString(rs, c));
-			} else if (c.equals("common_name_clean")) {
+			} else if (c.equalsIgnoreCase("common_name_clean")) {
 				entry.setCommonNameClean(getString(rs, c));
-			} else if (c.equals("common_name_cleanest")) {
+			} else if (c.equalsIgnoreCase("common_name_cleanest")) {
 				entry.setCommonNameCleanest(getString(rs, c));
-			} else if (c.equals("parent_id")) {
+			} else if (c.equalsIgnoreCase("parent_id")) {
 				entry.setParentId(rs.getInt(c));
 				if (rs.wasNull()) {
 					entry.setParentId(null);
 				}
-			} else if (c.equals("interesting_parent_id")) {
+			} else if (c.equalsIgnoreCase("interesting_parent_id")) {
 				entry.setInterestingParentId(rs.getInt(c));
 				if (rs.wasNull()) {
 					entry.setInterestingParentId(null);
 				}
-			} else if (c.equals("depicted_id")) {
+			} else if (c.equalsIgnoreCase("depicted_id")) {
 				entry.setDepictedId(rs.getInt(c));
 				if (rs.wasNull()) {
 					entry.setDepictedId(null);
 				}
-			} else if (c.equals("parent_latin_name")) {
+			} else if (c.equalsIgnoreCase("parent_latin_name")) {
 				entry.setParentLatinName(getString(rs, c));  
-			} else if (c.equals("depicted_latin_name")) {
+			} else if (c.equalsIgnoreCase("depicted_latin_name")) {
 				entry.setDepictedLatinName(getString(rs, c));  
-			} else if (c.equals("rank")) {
+			} else if (c.equalsIgnoreCase("rank")) {
 				entry.setRank(Rank.valueOf(rs.getInt(c)));
-			} else if (c.equals("extinct")) {
+			} else if (c.equalsIgnoreCase("extinct")) {
 				entry.setExtinct(rs.getBoolean(c));
-			} else if (c.equals("boring")) {
+			} else if (c.equalsIgnoreCase("boring")) {
 				entry.setBoring(rs.getBoolean(c));
-			} else if (c.equals("boring_final")) {
+			} else if (c.equalsIgnoreCase("boring_final")) {
 				// same property - reused
 				entry.setBoring(rs.getBoolean(c));
-			} else if (c.equals("shares_sibling_name")) {
+			} else if (c.equalsIgnoreCase("shares_sibling_name")) {
 				entry.setCommonNameSharedWithSiblings(rs.getBoolean(c));
-			} else if (c.equals("image_link")) {
-				String s = rs.getString(c);
+			} else if (c.equalsIgnoreCase("image_link")) {
+				String s = getString(rs, c);
 				if (s != null) {
 					entry.setImageLink(s);
 				}
-			} else if (c.equals("child_count")) {
+			} else if (c.equalsIgnoreCase("child_count")) {
 				entry.setPersistedChildCount(rs.getInt(c));
-			} else if (c.equals("interesting_child_count")) {
+			} else if (c.equalsIgnoreCase("interesting_child_count")) {
 				entry.setInterestingChildCount(rs.getInt(c));
-			} else if (c.equals("interesting_crunched_ids")) {
-				String sids = rs.getString(c);
+			} else if (c.equalsIgnoreCase("interesting_crunched_ids")) {
+				String sids = getString(rs, c);
 				if (sids != null) {
 					CrunchedIds ids = new CrunchedIds(sids, EntryUtilities.CRUNCHER);
 					entry.setInterestingCrunchedIds(ids);
 				}
-			} else if (c.equals("linked_image_id")) {
+			} else if (c.equalsIgnoreCase("linked_image_id")) {
 				entry.setLinkedImageId(rs.getInt(c));
 			}
 		}
@@ -1068,8 +1068,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		@Override
 		public RedirectPair mapRow(ResultSet rs, int rowNum) throws SQLException {
 			RedirectPair p = new RedirectPair();
-			p.from = rs.getString("redirect_from");
-			p.to = rs.getString("redirect_to");
+			p.from = getString(rs, "redirect_from");
+			p.to = getString(rs, "redirect_to");
 			return p;
 		}
 	}

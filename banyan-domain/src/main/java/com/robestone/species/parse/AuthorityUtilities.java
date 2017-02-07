@@ -31,14 +31,13 @@ public class AuthorityUtilities {
 	};
 	public static boolean isAuthorityPage(String latinName, String page) {
 		
-		boolean rankFound;
+		Rank rank;
 		try {
-			Rank rank = Rank.valueOfWithAlternates(latinName);
-			rankFound = (rank != null);
+			rank = Rank.valueOfWithAlternates(latinName);
 		} catch (Exception e) {
-			rankFound = false;
+			rank = null;
 		}
-		if (rankFound) {
+		if (rank != null && Rank.Virus != rank) {
 			return true;
 		}
 		

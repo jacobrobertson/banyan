@@ -21,19 +21,34 @@ public class MiscWorker extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		new MiscWorker().
+		research
 //		run
 //		testGigantopithecus
-		run2
+//		run2
 		();
 	}
 	
 	
 	public void run() throws Exception {
 //		speciesService.assignParentIdsForNullOrMissingId();
-		speciesService.fixParents();
+//		speciesService.fixParents();
+//		speciesService.recreateCleanNames();
 //		new RecentChangesUpdater().crawlParseStatus();
 //		speciesService.assignParentIdsForNullOrMissingId();
-//		new WikiSpeciesTreeFixer(speciesService).run();
+		new WikiSpeciesTreeFixer(speciesService).run();
+	}
+	
+	public void research() {
+		CompleteEntry entry = speciesService.findEntryByLatinName("Chordata Craniata");
+		while (entry != null) {
+			System.out.println(entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName() + 
+					" > " + entry.getParentId() + ", " + entry.getParentLatinName());
+			if (entry.getParentId() != null) {
+				entry = speciesService.findEntry(entry.getParentId());
+			} else {
+				entry = null;
+			}
+		}
 	}
 	
 	public void run2() {

@@ -20,7 +20,7 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 	private SimpleJdbcTemplate template;
 	
 	public boolean updateToAuth(String link) {
-		int count = template.update("update crawl set type = 'AUTH' where link = ? and (type <> 'AUTH' or type is null)", link);
+		int count = template.update("update crawl set crawl_type = 'AUTH' where link = ? and (crawl_type <> 'AUTH' or crawl_type is null)", link);
 		return (count == 1);
 	}
 	public int updateStatus(ParseStatus status) {
@@ -30,13 +30,13 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 			// insert
 			status.setDate(new Date());
 			return template.update(
-					"insert into crawl (link, status, status_date, type)" +
+					"insert into crawl (link, status, status_date, crawl_type)" +
 					"values (?, ?, ?, ?)", 
 					status.getLatinName(), status.getStatus(), status.getDate(), status.getType());
 		} else {
 			// update
 			return template.update(
-					"update crawl set status = ?, status_date = ?, type = ? " +
+					"update crawl set status = ?, status_date = ?, crawl_type = ? " +
 					"where link = ?", status.getStatus(), status.getDate(), status.getType(), status.getLatinName());
 		}
 	}
@@ -55,8 +55,8 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 	public Collection<String> findOldestLinks(int oldestCount) {
 		List<ParseStatus> found = template.query(
 				"select * from crawl " +
-				"where type is null " +
-				"order by status_date limit ?", this, oldestCount);
+				"where crawl_type is null " +
+				"order by status_date fetch first ? rows only", this, oldestCount);
 		Set<String> links = new HashSet<String>();
 		for (ParseStatus one: found) {
 			links.add(one.getLatinName());
@@ -75,21 +75,21 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 		return all;
 	}
 	public List<ParseStatus> findAllAuth() {
-		List<ParseStatus> all = template.query("select * from crawl where type = 'AUTH'", this);
+		List<ParseStatus> all = template.query("select * from crawl where crawl_type = 'AUTH'", this);
 		return all;
 	}
 	public List<ParseStatus> findAllNonAuth() {
-		return template.query("select * from crawl where (type <> 'AUTH' or type is null)", this);
+		return template.query("select * from crawl where (crawl_type <> 'AUTH' or crawl_type is null)", this);
 	}
 	public List<ParseStatus> findAllDoneNonAuth() {
-		return template.query("select * from crawl where status = 'DONE' and (type <> 'AUTH' or type is null)", this);
+		return template.query("select * from crawl where status = 'DONE' and (crawl_type <> 'AUTH' or crawl_type is null)", this);
 	}
 	public ParseStatus mapRow(ResultSet rs, int row) throws SQLException {
 		ParseStatus status = new ParseStatus();
 		status.setDate(rs.getDate("status_date"));
 		status.setUrl(EntityMapperJdbcTemplate.getString(rs, "link"));
 		status.setStatus(rs.getString("status"));
-		status.setType(rs.getString("type"));
+		status.setType(rs.getString("crawl_type"));
 		return status;
 	}
 	public void setDataSource(DataSource dataSource) {

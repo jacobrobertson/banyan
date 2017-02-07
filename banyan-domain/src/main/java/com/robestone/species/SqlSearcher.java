@@ -75,9 +75,9 @@ public class SqlSearcher implements EntrySearcher {
 	private int findBestIdBySqlPart(String sqlPart, String column, String query, Collection<Integer> existingIds) {
 		sqlPart = sqlPart.replace("COL", column);
 		String sql = "select " + column + ", id from species where " + sqlPart + " " +
-			" and " + service.getBoringColumn() + " = 0 " +
+			" and " + service.getBoringColumn() + " = false " +
 			getNotIdInPart(existingIds) +
-			" limit 10";
+			" fetch first 10 rows only";
 		logger.debug("findBestIdBySqlPart.sql." + sql);
 		List<IdAndString> found = service.getTemplate().query(sql, IdAndStringMapper, query);
 		int size = found.size();

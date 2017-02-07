@@ -10,7 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Rank;
-import com.robestone.species.SpeciesService;
 
 public class WikiSpeciesParser {
 
@@ -160,6 +159,18 @@ public class WikiSpeciesParser {
 				// Paederus (Anomalopaederus) => Anomalopaederus 
 				if (!isEntryOkay(entry)) {
 					entry = parse(name, names[1], text, true);
+				}
+			}
+		}
+		
+		// pages like Chordata Craniata - which should have been named Craniata (Chordata)
+		if (!isEntryOkay(entry) && name.indexOf(' ') > 0) {
+			String[] split = name.split(" ");
+			if (split.length == 2 && !split[0].equals(split[1])) {
+				// try it both ways
+				entry = parse(name, split[0], text, true);
+				if (!isEntryOkay(entry)) {
+					entry = parse(name, split[1], text, true);
 				}
 			}
 		}
@@ -377,9 +388,11 @@ public class WikiSpeciesParser {
 		extinct = StringUtils.trimToNull(extinct);
 		
 		CompleteEntry parent;
-		if (SpeciesService.isTopLevelRank(latinName)) {
-			parent = SpeciesService.TREE_OF_LIFE_ENTRY;
-		} else if (rank != null) {
+		// I'm removing this logic, and instead will use the WikiSpeciesTreeFixer
+//		if (SpeciesService.isTopLevelRank(latinName)) {
+//			parent = SpeciesService.TREE_OF_LIFE_ENTRY;
+//		} else 
+		if (rank != null) {
 			parent = getParent(text, latinName, rank);
 		} else {
 			parent = null;

@@ -19,10 +19,10 @@ public class TreeReporter extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		new TreeReporter().
-		runTreeReport
+		runTreeReport(1, 1, 100);
 //		loopReport
 //		getLinksToCrawl
-		();
+//		();
 //		new RecentChangesUpdater().crawlTreeReport();
 	}
 

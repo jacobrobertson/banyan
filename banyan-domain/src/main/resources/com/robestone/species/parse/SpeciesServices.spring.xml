@@ -22,13 +22,16 @@
         <property name="dataSource" ref="dataSource"/>
         <property name="speciesService" ref="SpeciesService"/>
     </bean>
-    <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp2.BasicDataSource">
+    
+    <bean id="dataSource" factory-method="getDataSource" class="com.robestone.species.DerbyDataSource" />
+    <!-- 
+	<bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp2.BasicDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="url" value="jdbc:mysql://${database.url}/species"/>
+        <property name="url" value="jdbc:mysql://address=(protocol=tcp)(host=2605:a601:753:8e01:ad29:b20d:e829:d884)(port=3306)(useSSL=false)/species"/>
         <property name="username" value="species-db"/>
-        <property name="password" value="${database.password}"/>
+        <property name="password" value="species-!@#$"/>
         <property name="testOnBorrow" value="true" />
         <property name="validationQuery" value="SELECT 1" />
     </bean>
-
+    -->
 </beans>

@@ -29,9 +29,21 @@ public class WikiSpeciesTreeFixer {
 	 * Reassigns the parent latin names for the given child latin names.
 	 */
 	private Map<String, String> assignParent = new HashMap<String, String>(); {
+		// tree of life "fixes" - this is actually under dispute quite a bit
+		assignParent.put("Virus", "Arbor vitae");
+		assignParent.put("Eukaryota", "Arbor vitae");
+		assignParent.put("Archaea", "Arbor vitae");
+		assignParent.put("Bacteria", "Arbor vitae");
+		
+		// general fixes due to terms being under dispute
 		assignParent.put("Placentalia", "Theria");
 		assignParent.put("Aves", "Avialae");
-//		assignParent.put("Virus", null); // this didn't work anyways, and I've fixed virus parsing
+		assignParent.put("Chordata", "Deuterostomia");
+
+		// these I set to null to remove them from the tree because they have a "better" alternative, 
+		//	and these aren't needed, they're just clutter
+		assignParent.put("Unikonta", null);
+		assignParent.put("Protista", null);
 	}
 	
 	private SpeciesService speciesService;
@@ -71,7 +83,7 @@ public class WikiSpeciesTreeFixer {
 			LogHelper.speciesLogger.info("fixReplaceAllParentLatinNames." + 
 					entry.getLatinName() + "(" + entry.getId() + ")." +
 					entry.getParentLatinName() + " => " + replaceWith);
-			speciesService.updateParentLatinName(entry);
+			speciesService.updateParent(entry);
 		}
 	}
 	public void fixAssignParent() {
@@ -82,13 +94,15 @@ public class WikiSpeciesTreeFixer {
 	}
 	public void fixAssignParent(String child, String newParent) {
 		CompleteEntry entry = speciesService.findEntryByLatinName(child, true);
-		if (!newParent.equals(entry.getParentLatinName())) {
-			entry.setParentLatinName(newParent);
-			LogHelper.speciesLogger.info("fixAssignParent." + 
-					entry.getLatinName() + "(" + entry.getId() + ")." +
-					entry.getParentLatinName() + " => " + newParent);
-			speciesService.updateParentLatinName(entry);
+		LogHelper.speciesLogger.info("fixAssignParent." + 
+				entry.getLatinName() + "(" + entry.getId() + ")." +
+				entry.getParentLatinName() + " => " + newParent);
+		if (newParent == null) {
+			entry.setParentId(null);
+			entry.setInterestingParentId(null);
 		}
+		entry.setParentLatinName(newParent);
+		speciesService.updateParent(entry);
 	}
 	
 }

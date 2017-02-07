@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.robestone.species.CompleteEntry;
+import com.robestone.species.LogHelper;
 
 public class VirusWorker extends AbstractWorker {
 
@@ -14,6 +15,7 @@ public class VirusWorker extends AbstractWorker {
 	}
 	
 	public void makeVirusesInteresting() {
+		LogHelper.speciesLogger.info("makeVirusesInteresting");
 		CompleteEntry entry = speciesService.findEntryByLatinName("Virus");
 		List<CompleteEntry> entries = new ArrayList<CompleteEntry>();
 		Set<Integer> ids = new HashSet<Integer>();

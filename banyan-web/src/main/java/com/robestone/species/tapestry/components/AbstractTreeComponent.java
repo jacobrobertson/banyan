@@ -30,11 +30,6 @@ public class AbstractTreeComponent {
 	public ISpeciesService getSpeciesService() {
 		return speciesService;
 	}
-	protected boolean isEntryRecursable(Entry entry) {
-		return (
-			entry.getLoadedChildrenSize() == 1
-		);		
-	}
 	protected String getShowChildrenCaption(Entry entry) {
 		String sub;
 		int num;

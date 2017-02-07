@@ -32,6 +32,11 @@ public class ImagesCreater extends AbstractWorker {
 
 	public static void main(String[] args) throws IOException {
 		
+		new ImagesCreater().
+		downloadOne("Chordata Craniata", 1, 1, false, false);
+//		downloadAll(true, false);
+
+/*		
 		if (args != null && args.length > 0) {
 			if (args[0].equals("fixTiny")) {
 				new ImagesCreater().downloadAll(false, true);
@@ -43,6 +48,7 @@ public class ImagesCreater extends AbstractWorker {
 			downloadAll(false, true)
 			;
 		}
+		*/
 	}
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
@@ -65,6 +71,10 @@ public class ImagesCreater extends AbstractWorker {
 			Entry entry = speciesService.findEntryByLatinName(latinName);
 			downloadOne(entry, 1, 1, false, false);
 		}
+	}
+	public void downloadOne(String latinName, int count, int size, boolean onlyNew, boolean onlyTiny) throws IOException {
+		Entry entry = this.speciesService.findEntryByLatinName(latinName);
+		downloadOne(entry, count, size, onlyNew, onlyTiny);
 	}
 	public void downloadOne(Entry entry, int count, int size, boolean onlyNew, boolean onlyTiny) throws IOException {
 		String latinName = entry.getLatinName();
@@ -93,6 +103,8 @@ public class ImagesCreater extends AbstractWorker {
 			count++;
 			LogHelper.speciesLogger.info("made thumbs > " + count + "/" + size);
 		}
+		// this worker also inserts/updates new and existing entries
+		imagesMeasurer.runOne(entry);
 	}
 	private static String getExtensionFromLink(String link) {
 		int dotPos = link.lastIndexOf('.');
@@ -222,7 +234,6 @@ public class ImagesCreater extends AbstractWorker {
 			int previewWidth = getWidthToDownload(250, xratio);
 			downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
 		}
-		imagesMeasurer.runOne(entry);
 	}
 	/*
 	public static String getLegalFileNamePart(String latinName) {

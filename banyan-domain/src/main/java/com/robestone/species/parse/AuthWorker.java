@@ -11,6 +11,7 @@ public class AuthWorker extends AbstractWorker {
 	}
 	
 	public void setStatusForRedirect() {
+		LogHelper.speciesLogger.info("setStatusForRedirect");
 		int count = 0;
 		// get all parse that are AUTH
 		List<ParseStatus> auths = parseStatusService.findAllAuth();

@@ -1,5 +1,7 @@
 -- try to figure out why most species are showing up as boring
 
+select * from species where latin_name = 'Protista';
+
 select 
 *
 -- id, latin_name, common_name, parent_latin_name, parent_id 

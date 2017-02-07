@@ -24,7 +24,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = true;
 		//*
 		args = new String[] {
-				"Micranthemum umbrosum",
+				"Virus",
 		};
 		crawlAllStoredLinks = false;
 		//*/

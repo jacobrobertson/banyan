@@ -47,6 +47,13 @@ public class MissingParentFilesFinder extends AbstractWorker {
 		LogHelper.speciesLogger.debug("searchFilesForParentIdNull>>");
 		Map<String, List<String>> reasons = new HashMap<String, List<String>>();
 		for (CompleteEntry e: entries) {
+			// check if the child exists - it might have been a red link
+			String cname = e.getLatinName();
+			boolean exists = WikiSpeciesCache.CACHE.isFilePresent(cname, false);
+			if (exists) {
+				continue;
+			}
+			
 			if (e.getParentLatinName() == null) {
 				// very rare case - recursive self-links
 				continue;

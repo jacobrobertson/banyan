@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,9 +31,10 @@ public class ExamplesService implements IExamplesService {
 	}
 
 	public void crunchIds() {
-		List<Example> examples = template.query("select * from example order by `index`",
+		List<Example> examples = template.query("select * from example order by example_index",
 				new ExampleMapper());
 		for (Example example: examples) {
+			LogHelper.speciesLogger.info("crunchIds." + example.getCaption());
 			String terms = example.getTerms();
 			String crunched;
 			if (terms.startsWith("#")) {
@@ -43,7 +45,19 @@ public class ExamplesService implements IExamplesService {
 				Set<Integer> ids = speciesService.findBestIds(terms, new ArrayList<Integer>());
 				crunched = cruncher.toString(ids);
 			}
+			// just for logging purposes, get the actual latin names (then I can paste to SQL if I want)
+			List<Integer> ids = cruncher.toList(crunched);
+			LogHelper.speciesLogger.info("crunchIds." + ids);
 			LogHelper.speciesLogger.info("crunchIds." + terms + " >> " + crunched);
+			List<CompleteEntry> entries = speciesService.findEntries(new HashSet<Integer>(ids));
+			StringBuilder buf = new StringBuilder();
+			for (CompleteEntry entry: entries) {
+				if (buf.length() > 0) {
+					buf.append(",");
+				}
+				buf.append(entry.getLatinName());
+			}
+			LogHelper.speciesLogger.info("crunchIds." + buf);
 			template.update("update example set crunched_ids = ?, terms = ? where example_id = ?", crunched, terms, example.getId());
 		}
 	}
@@ -65,7 +79,7 @@ public class ExamplesService implements IExamplesService {
 	}
 	public List<ExampleGroup> findExampleGroups() {
 		if (groups == null) {
-			List<ExampleGroup> groups = template.query("select * from example_group order by `index`",
+			List<ExampleGroup> groups = template.query("select * from example_group order by index",
 					new ExampleGroupMapper());
 			
 			Map<Integer, ExampleGroup> map = new HashMap<Integer, ExampleGroup>();
@@ -74,7 +88,7 @@ public class ExamplesService implements IExamplesService {
 				group.setExamples(new ArrayList<Example>());
 			}
 			
-			List<Example> examples = template.query("select * from example order by `index`",
+			List<Example> examples = template.query("select * from example order by example_index",
 					new ExampleMapper());
 			
 			for (Example example: examples) {
@@ -143,9 +157,9 @@ public class ExamplesService implements IExamplesService {
 			Example e = new Example();
 			e.setId(rs.getInt("example_id"));
 			e.setGroupId(rs.getInt("group_id"));
-			e.setCaption(rs.getString("caption"));
-			e.setTerms(rs.getString("terms"));
-			e.setCrunchedIds(rs.getString("crunched_ids"));
+			e.setCaption(EntityMapperJdbcTemplate.getString(rs, "caption"));
+			e.setTerms(EntityMapperJdbcTemplate.getString(rs, "terms"));
+			e.setCrunchedIds(EntityMapperJdbcTemplate.getString(rs, "crunched_ids"));
 			return e;
 		}
 	}

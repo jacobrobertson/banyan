@@ -18,7 +18,11 @@ public class RecentChangesUpdater extends AbstractWorker {
 		boolean crawlNewLinks = false;
 		boolean crawlOldLinks = false;
 		boolean runMaintenance = true;
-		boolean crawlParseStatus = true;
+		boolean downloadImages = false;
+		
+		// this should be true for nightly/weekly refreshes
+		// this should be false when you have already built the clean DB
+		boolean crawlParseStatus = false;
 		
 		if (args != null && args.length > 0) {
 			recent.maxOldLinks = 0;
@@ -51,6 +55,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 			crawlOldLinks = recent.maxOldLinks > 0;
 		}
 		
+		recent.downloadImages = downloadImages;
+		
 		if (crawlParseStatus) {
 			recent.crawlParseStatus();
 			recent.crawlTreeReport();
@@ -70,6 +76,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 	private int maxOldLinks = 1000;
 	private int maxChanges = 5000;
 	private int maxDays = 1;
+	private boolean downloadImages;
 	
 	public void runAll() throws Exception {
 		LogHelper.speciesLogger.info("RecentChangesUpdater.runAll");
@@ -97,7 +104,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 		 
 		// clean names
 		// TODO - I don't know what purpose this accomplishes unless I've updated the naming logic, but maybe there's another reason for this
-//		speciesService.recreateCleanNames();
+		// I added this back in, because quite a few things are missing the clean names, and I don't know why.  Safest to leave it
+		speciesService.recreateCleanNames();
 
 		// run full boring suite
 		new BoringWorker().runBoringPrunerWorker();
@@ -115,7 +123,10 @@ public class RecentChangesUpdater extends AbstractWorker {
 		new ExamplesCruncherWorker().run();
 		
 		// download the images - has to be last due to "System.exit"
-		new ImagesCreater().downloadAll(true, false);
+		// - I don't think it does that anymore... but doing last is fine?
+		if (downloadImages) {
+			new ImagesCreater().downloadAll(true, false);
+		}
 	}
 	public void runReports() throws Exception {
 		new TreeReporter().runTreeReport();

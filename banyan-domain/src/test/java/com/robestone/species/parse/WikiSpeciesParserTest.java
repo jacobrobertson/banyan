@@ -213,7 +213,7 @@ public class WikiSpeciesParserTest extends TestCase {
 	}
 	
 	public void testChordata_Craniata() throws IOException {
-		doTest("Chordata Craniata", null, "Chordata", null, Rank.Cladus, false, null, null);
+		doTest("Chordata Craniata", "Craniates", "Chordata", "thumb/a/a3/Varanus_bitatawa_%28KU_322188%29_from_Barangay_Dibuluan%2C_San_Mariano_-_ZooKeys-266-001-g069.jpg/250px-Varanus_bitatawa_%28KU_322188%29_from_Barangay_Dibuluan%2C_San_Mariano_-_ZooKeys-266-001-g069.jpg", Rank.Cladus, false, null, null);
 	}
 	public void testCordylus_giganteus() throws IOException {
 		doTest("Cordylus giganteus", "Giant girdled lizard, Giant sungazer lizard", "Cordylus", "thumb/7/7b/Cordylus_giganteus.jpg/250px-Cordylus_giganteus.jpg", Rank.Species, false, null, null);
@@ -413,6 +413,15 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	public void testGyrinidae() throws IOException {
 		doTest("Gyrinidae", "Whirligig beetles, whirlygig beetles", "Adephaga", "2/23/Gyrinus_natator.JPG", Rank.Familia);
+	}
+	public void testLophophanescristatusmitratus() throws IOException {
+		doTest("Lophophanes cristatus mitratus", "European Crested Tit", "Lophophanes cristatus", "thumb/1/1f/Parus_cristatus_7183.jpg/250px-Parus_cristatus_7183.jpg", Rank.Subspecies);
+	}
+	public void testVirus() throws IOException {
+		doTest("Virus", "Virus", null, "thumb/1/1b/Bacteriophage_structure.png/250px-Bacteriophage_structure.png", Rank.Regnum);
+		String page = getPage("Virus");
+		boolean isAuth = AuthorityUtilities.isAuthorityPage("Virus", page);
+		assertFalse(isAuth);
 	}
 	
 	

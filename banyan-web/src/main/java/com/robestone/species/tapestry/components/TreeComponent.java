@@ -14,7 +14,7 @@ import com.robestone.species.UrlIdUtilities;
 public class TreeComponent extends AbstractTreeComponent {
 
 	private static enum Button {
-		detail_first, detail_indented, tree_root, menu_more, menu_less
+		detail_first, detail_indented, tree_root, menu_more, menu_less, open_children
 	}
 	
 	public boolean beginRender(MarkupWriter writer) {
@@ -221,26 +221,41 @@ public class TreeComponent extends AbstractTreeComponent {
 		writer.end(); // span EntryLine
 	}
 	private Entry renderNodeLines(MarkupWriter writer, Entry entry) {
-		boolean recursable = isEntryRecursable(entry);
+		
+		System.out.println("renderNodeLines." + entry);
+		
+		// TODO this is the exact spot where I need to take a look at the chain of children, and turn
+		// 		them into a list of children that can be looped over
+		//		once the "chain" code is working, you can test the "collapse" code
+		List<Entry> chain = EntryUtilities.toChain(entry);
+		
+		chain = EntryUtilities.collapseList(chain);
+		
+		// writes the first entry in the chain
 		renderEntryLine(writer, entry, false);
+		
 		// look for any "chained" children like ()-()-()
 		int indent = 1;
-		while (recursable) {
+		for (int i = 1; i < chain.size(); i++) {
 			writer.element("br");
 			writer.end();
 			writer.element("span", "class", "EntryLine");
-			for (int i = 0; i < indent; i++) {
+			for (int j = 0; j < indent; j++) {
 				writer.writeRaw("&nbsp;");
 			}
-			entry = entry.getChildren().get(0);
-			writeGotoDetail(writer, entry, true);
+			entry = chain.get(i);
+			if (entry.isCollapsed()) {
+				writeGotoDetail(writer, entry, Button.open_children);
+			} else {
+				writeGotoDetail(writer, entry, true);
+			}
 
 			renderNameImageLink(writer, entry);
 			writeMenuButton(writer, entry);
-			recursable = isEntryRecursable(entry);
 			indent++;
 			writer.end(); // span EntryLine
 		}
+		// returns the last node that was rendered
 		return entry;
 	}
 	private void writeGotoDetail(MarkupWriter writer, Entry entry, boolean isHierarchy) {
@@ -248,6 +263,9 @@ public class TreeComponent extends AbstractTreeComponent {
 		if (!isHierarchy) {
 			button = Button.detail_first;
 		}
+		writeGotoDetail(writer, entry, button);
+	}
+	private void writeGotoDetail(MarkupWriter writer, Entry entry, Button button) {
 		writeButton(writer, entry, "Go to Details", "search.detail", button,
 				UrlIdUtilities.getUrlId(entry));
 	}

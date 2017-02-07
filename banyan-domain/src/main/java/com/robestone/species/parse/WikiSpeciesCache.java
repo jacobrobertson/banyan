@@ -24,6 +24,10 @@ public class WikiSpeciesCache {
 	public static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
 	public static String DELETED_PAGE = "This page has been deleted.";
 
+	public boolean isFilePresent(String latinName, boolean forceDownload) throws Exception {
+		File file = getFile(latinName);
+		return file.exists();
+	}
 	public String readFile(String latinName, boolean forceDownload) throws Exception {
 
 		String text = null;

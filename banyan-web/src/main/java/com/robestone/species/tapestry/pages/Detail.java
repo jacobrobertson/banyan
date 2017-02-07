@@ -186,7 +186,9 @@ public class Detail extends AbstractPage {
 		return url;
 	}
 	public String getEntryDetailImageUrl() {
-		return TreeComponent.getThumbnailUrl(getEntry(), "detail");
+		// we use "preview" instead of "detail" because
+		// it was too expensive to store all preview images which were the largest
+		return TreeComponent.getThumbnailUrl(getEntry(), "preview");
 	}
 	public List<? extends Entry> getAllEntries() {
 		return allEntries;

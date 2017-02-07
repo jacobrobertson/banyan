@@ -2,6 +2,7 @@ package com.robestone.species;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import junit.framework.TestCase;
@@ -11,18 +12,39 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class SpeciesServiceTest extends TestCase {
 
 	private SpeciesService service;
+	private ExamplesService examplesService;
 	
 	@Override
 	protected void setUp() throws Exception {
-		service = setUpSpeciesService();
+		setUpSpeciesService();
 	}
-	public static SpeciesService setUpSpeciesService() {
+	private void setUpSpeciesService() {
 		String path = "com/robestone/species/parse/SpeciesServices.spring.xml";
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(path);
-		SpeciesService service = (SpeciesService) context.getBean("SpeciesService");
+		service = (SpeciesService) context.getBean("SpeciesService");
 		service.setSearcher(new SqlSearcher(service));
-		return service;
+		
+		examplesService = (ExamplesService) context.getBean("ExamplesService");
 	}
+	
+	public void testExampleService() throws Exception {
+		// this is a smoke test, to make sure I have the SQL right
+		List<ExampleGroup> groups = examplesService.findExampleGroups();
+		for (ExampleGroup group: groups) {
+			List<Example> examples = group.getExamples();
+			for (Example example: examples) {
+				String cids = example.getCrunchedIds();
+				Set<Integer> ids = EntryUtilities.CRUNCHER.toSet(cids);
+				List<CompleteEntry> entries = service.findEntries(ids);
+				assertTrue(!entries.isEmpty());
+				for (CompleteEntry entry: entries) {
+					assertTrue(entry.getLatinName() != null);
+					System.out.println("testExampleService." + entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName());
+				}
+			}
+		}
+	}
+	
 	public void testEntityMapper() {
 		String latin = "Varanus (Philippinosaurus) olivaceus";
 		char code = 8217;
