@@ -14,7 +14,7 @@ public class WikiSpeciesProblemsFinder {
 	public static void main(String[] args) throws Exception {
 		FileTester tester;
 		
-		tester = new StubFinder();
+		tester = new RedirectFinder();
 		
 		new WikiSpeciesProblemsFinder(tester).run();
 	}
@@ -34,15 +34,32 @@ public class WikiSpeciesProblemsFinder {
 	}
 
 	public void testAll(File dir) throws Exception {
+		int count = 0;
+		int chunk = 0;
+		int maxChunk = 10000;
 		File[] files = dir.listFiles();
 		for (File file: files) {
 			if (file.isDirectory()) {
 				testAll(file);
 			} else {
 				testFile(file);
+				count++;
+				chunk++;
+				if (chunk == maxChunk) {
+					System.out.println(tester.getClass().getSimpleName() + "." + count);
+					chunk = 0;
+				}
 			}
 		}
 	}
+	
+	public static String getLatinName(File file) {
+		String name = file.getName();
+		int pos = name.lastIndexOf('.');
+		String latinName = name.substring(0, pos);
+		return latinName;
+	}
+	
 	private void testFile(File file) throws Exception {
 		String contents = IOUtils.toString(new FileInputStream(file));
 		tester.testFile(file, contents);
@@ -54,11 +71,28 @@ public class WikiSpeciesProblemsFinder {
 		public void testFile(File file, String contents) throws Exception {
 			if (contents.indexOf(imageLinkStubToken) > 0) {
 //				System.out.println(file.getPath());
-				String name = file.getName();
-				int pos = name.lastIndexOf('.');
-				String latinName = name.substring(0, pos);
+				String latinName = getLatinName(file);
 				System.out.println("\"" + latinName + "\",");
 			}
+		}
+	}
+	
+	public static class RedirectFinder extends AbstractWorker implements FileTester {
+		private RedirectPageParser redirectPageParser = new RedirectPageParser();
+		@Override
+		public void testFile(File file, String contents) throws Exception {
+			String redirect = redirectPageParser.getRedirectTo(contents);
+			if (redirect != null) {
+				String latinName = getLatinName(file);
+				String existingRedirect = speciesService.findRedirectTo(latinName);
+//				if (redirect.equals(existingRedirect)) {
+				System.out.println(latinName + ", dbRedirect=" + existingRedirect + ", fileRedirect=" + redirect);
+//				}
+				if (existingRedirect == null) {
+					speciesService.updateRedirect(latinName, redirect);
+				}
+			}
+
 		}
 	}
 	

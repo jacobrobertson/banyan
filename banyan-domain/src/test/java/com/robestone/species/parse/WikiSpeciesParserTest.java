@@ -423,7 +423,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		boolean isAuth = AuthorityUtilities.isAuthorityPage("Virus", page);
 		assertFalse(isAuth);
 	}
-	
+	public void testMyliobatidae() throws IOException {
+		doTest("Myliobatidae", "Eagle rays", "Dasyatoidea", "thumb/6/6e/Manta_birostris-Thailand.jpg/300px-Manta_birostris-Thailand.jpg", Rank.Familia);
+	}
 	
 	// ----------------------------------
 	

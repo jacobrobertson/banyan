@@ -13,6 +13,7 @@ public class EntityMapperRowMapper extends ParameterizedSingleColumnRowMapper<St
 	public String mapRow(ResultSet rs, int rowNumber) throws SQLException {
 		String s = super.mapRow(rs, rowNumber);
 		if (s != null) {
+			s = s.trim();
 			s = EntityMapper.convertToSymbolsText(s, '_');
 		}
 		return s;

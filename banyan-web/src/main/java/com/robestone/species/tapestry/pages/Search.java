@@ -4,10 +4,12 @@ import java.util.Collection;
 
 import org.apache.tapestry5.annotations.InjectComponent;
 import org.apache.tapestry5.annotations.InjectPage;
+import org.apache.tapestry5.ioc.annotations.Inject;
 import org.apache.tapestry5.services.ExceptionReporter;
 
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.IExamplesService;
 import com.robestone.species.LogHelper;
 import com.robestone.species.tapestry.components.NavigationBar;
 
@@ -18,6 +20,9 @@ public class Search extends AbstractPage implements ExceptionReporter {
 
 	public static final String NAME = "search";
 
+	@Inject
+	private IExamplesService examplesService;
+	
 	@InjectPage
 	private Detail detail;
 	
@@ -92,4 +97,17 @@ public class Search extends AbstractPage implements ExceptionReporter {
 		return getSearchContext().getLeavesCrunchedIds();
 	}
 
+	public String getSearchExample1() {
+		return examplesService.getSearchExample1();
+	}
+	public String getSearchExample2() {
+		return examplesService.getSearchExample2();
+	}
+	public String getSearchExample3() {
+		return examplesService.getSearchExample3();
+	}
+	public String getSearchExample4() {
+		return examplesService.getSearchExample4();
+	}
+	
 }

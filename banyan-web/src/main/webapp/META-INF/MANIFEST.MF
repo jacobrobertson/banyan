@@ -1,16 +1,15 @@
 Manifest-Version: 1.0
 Class-Path: antlr-runtime-3.1.1.jar aopalliance-1.0.jar common-image-3
  .3.1.jar common-io-3.3.1.jar common-lang-3.3.1.jar commons-codec-1.3.
- jar commons-collections-3.2.1.jar commons-dbcp2-2.1.1.jar commons-io-
- 1.4.jar commons-lang-2.4.jar commons-lang3-3.4.jar commons-logging-1.
- 2.jar commons-pool2-2.4.2.jar derby-10.12.1.1.jar derbytools-10.13.1.
- 1.jar imageio-core-3.3.1.jar imageio-jpeg-3.3.1.jar imageio-metadata-
- 3.3.1.jar javassist-3.9.0.GA.jar log4j-1.2.14.jar lucene-core-2.4.1.j
- ar mysql-connector-java-5.1.38.jar slf4j-api-1.5.2.jar slf4j-log4j12-
- 1.5.2.jar species-domain-1.2-SNAPSHOT.jar spring-beans-2.5.6.jar spri
- ng-context-2.5.6.jar spring-core-2.5.6.jar spring-jdbc-2.5.6.jar spri
- ng-tx-2.5.6.jar spring-web-2.5.6.jar stax-api-1.0.1.jar stax2-api-3.0
- .1.jar tapestry-core-5.1.0.5.jar tapestry-ioc-5.1.0.5.jar tapestry-sp
- ring-5.1.0.5.jar tapestry5-annotations-5.1.0.5.jar woodstox-core-asl-
- 4.0.3.jar
+ jar commons-collections-3.2.1.jar commons-io-1.4.jar commons-lang-2.4
+ .jar commons-lang3-3.4.jar commons-logging-1.1.1.jar derby-10.12.1.1.
+ jar derbytools-10.13.1.1.jar imageio-core-3.3.1.jar imageio-jpeg-3.3.
+ 1.jar imageio-metadata-3.3.1.jar javassist-3.21.0-GA.jar log4j-1.2.14
+ .jar lucene-core-2.4.1.jar slf4j-api-1.5.2.jar slf4j-log4j12-1.5.2.ja
+ r species-domain-1.2-SNAPSHOT.jar spring-beans-2.5.6.jar spring-conte
+ xt-2.5.6.jar spring-core-2.5.6.jar spring-jdbc-2.5.6.jar spring-tx-2.
+ 5.6.jar spring-web-2.5.6.jar stax-api-1.0.1.jar stax2-api-3.0.1.jar t
+ apestry-core-5.1.0.5.jar tapestry-ioc-5.1.0.5.jar tapestry-spring-5.1
+ .0.5.jar tapestry5-annotations-5.1.0.5.jar woodstox-core-asl-4.0.3.ja
+ r
 

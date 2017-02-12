@@ -54,9 +54,11 @@ public class ImagesCreater extends AbstractWorker {
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
 	
 	public void downloadAll(boolean onlyNew, boolean onlyTiny) throws IOException {
+		System.out.println(">images.downloadAll");
 		Collection<? extends Entry> links = speciesService.getThumbnails();
 		int size = links.size();
 		int count = 0;
+		int chunk = 0;
 		for (Entry entry: links) {
 			try {
 				downloadOne(entry, size, count, onlyNew, onlyTiny);
@@ -64,7 +66,14 @@ public class ImagesCreater extends AbstractWorker {
 				e.printStackTrace();
 				// I don't want to fail these!  and they fail once in a while!
 			}
+			count++;
+			chunk++;
+			if (chunk > 10000) {
+				System.out.println("images.downloadAll." + count);
+				chunk = 0;
+			}
 		}
+		System.out.println("<images.downloadAll");
 	}
 	public void downloadTests(String... latinNames) throws IOException {
 		for (String latinName: latinNames) {
@@ -100,7 +109,6 @@ public class ImagesCreater extends AbstractWorker {
 				// fails on some images - haven't figured out why yet
 				e.printStackTrace();
 			}
-			count++;
 			LogHelper.speciesLogger.info("made thumbs > " + count + "/" + size);
 		}
 		// this worker also inserts/updates new and existing entries

@@ -2,9 +2,12 @@ package com.robestone.species.parse;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.robestone.species.BoringPruner;
 import com.robestone.species.CompleteEntry;
+import com.robestone.species.DerbyDataSource;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Tree;
@@ -20,8 +23,10 @@ import com.robestone.species.WikiSpeciesTreeFixer;
 public class MiscWorker extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
+		DerbyDataSource.dbPath = "D:\\banyan-db\\derby";
 		new MiscWorker().
 		research
+//		runM
 //		run
 //		testGigantopithecus
 //		run2
@@ -31,24 +36,62 @@ public class MiscWorker extends AbstractWorker {
 	
 	public void run() throws Exception {
 //		speciesService.assignParentIdsForNullOrMissingId();
-//		speciesService.fixParents();
+		speciesService.fixParents();
 //		speciesService.recreateCleanNames();
 //		new RecentChangesUpdater().crawlParseStatus();
 //		speciesService.assignParentIdsForNullOrMissingId();
-		new WikiSpeciesTreeFixer(speciesService).run();
+//		new WikiSpeciesTreeFixer(speciesService).run();
 	}
-	
+	public void runM() throws Exception {
+		RecentChangesUpdater rcu = new RecentChangesUpdater();
+		rcu.setDownloadImages(false);
+		rcu.setRecreateCleanNames(false);
+		rcu.runMaintenance();
+	}
 	public void research() {
-		CompleteEntry entry = speciesService.findEntryByLatinName("Chordata Craniata");
+		String[] names = {"Rajomorphii", "Myliobatidae", "Pristis zijsron"};
+		for (String name: names) {
+			showParents(name);
+		}
+	}
+	public void showParents(String name) {
+		Set<Integer> ids = new HashSet<Integer>();
+		String tab = "";
+		CompleteEntry entry = speciesService.findEntryByLatinName(name, true);
+		while (entry != null && entry.getParentId() != null) {
+			CompleteEntry parent = speciesService.findEntryById(entry.getParentId(), true);
+			System.out.println(tab + entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName() + 
+					" > " + entry.getParentId() + "(" + entry.getParentLatinName() + ") > " + parent.getLatinName());
+			ids.add(entry.getId());
+			entry = parent;
+			/*
+			String to = speciesService.findRedirectTo(parent.getLatinName());
+			if (to != null) {
+				parent = speciesService.findEntryByLatinName(entry.getParentLatinName(), true);
+				entry = speciesService.findEntryByLatinName(to, true);
+				System.out.println(tab + "TO - " + to + "(" + entry.getId() + ")" + "/" + parent.getLatinName() + "(" + parent.getId() + ")");
+			} else if (entry.getParentLatinName() != null) {
+				entry = speciesService.findEntryByLatinName(entry.getParentLatinName(), true);
+			} else {
+				entry = null;
+			}
+			*/
+			tab = tab + "   ";
+		}
+		System.out.println("--------------");
+		entry = speciesService.findTreeForNodes(ids);
 		while (entry != null) {
-			System.out.println(entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName() + 
-					" > " + entry.getParentId() + ", " + entry.getParentLatinName());
-			if (entry.getParentId() != null) {
-				entry = speciesService.findEntry(entry.getParentId());
+			System.out.println(
+					entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName()
+					+ ", " + entry.isBoring() + ", " + entry.getParentId() + "/" + entry.getInterestingParentId()
+					);
+			if (entry.getChildren() != null && !entry.getChildren().isEmpty()) {
+				entry = (CompleteEntry) entry.getChildren().get(0);
 			} else {
 				entry = null;
 			}
 		}
+		
 	}
 	
 	public void run2() {

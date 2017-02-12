@@ -42,7 +42,15 @@ public class ExamplesService implements IExamplesService {
 				crunched = getUpdatedCrunchedIds(ids);
 				terms = "#" + crunched;
 			} else {
-				Set<Integer> ids = speciesService.findBestIds(terms, new ArrayList<Integer>());
+//				Set<Integer> ids = speciesService.findBestIds(terms, new ArrayList<Integer>());
+				Set<Integer> ids = new HashSet<Integer>();
+				for (String latinName: terms.split(",")) {
+					Entry e = speciesService.findEntryByLatinName(latinName);
+					if (e == null) {
+						throw new IllegalArgumentException("Latin name not found for examples: " + latinName);
+					}
+					ids.add(e.getId());
+				}
 				crunched = cruncher.toString(ids);
 			}
 			// just for logging purposes, get the actual latin names (then I can paste to SQL if I want)
@@ -124,6 +132,24 @@ public class ExamplesService implements IExamplesService {
 	private static final int YOU_MIGHT_NOT_KNOW = 2;
 	public ExampleGroup getFamilies() {
 		return getGroups().get(FAMILIES);
+	}
+	public String getSearchExample1() {
+		return getCrunchedIds(4, 0);
+	}
+	public String getSearchExample2() {
+		return getCrunchedIds(4, 1);
+	}
+	public String getSearchExample3() {
+		return getCrunchedIds(4, 2);
+	}
+	public String getSearchExample4() {
+		return getCrunchedIds(4, 3);
+	}
+	/**
+	 * Each of these are hard-coded, so the create-examples.sql can't change
+	 */
+	private String getCrunchedIds(int groupIndex, int exampleIndex) {
+		return groups.get(groupIndex).getExamples().get(exampleIndex).getCrunchedIds();
 	}
 	public ExampleGroup getOtherFamilies() {
 		return getGroups().get(OTHER_FAMILIES);

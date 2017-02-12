@@ -2,6 +2,7 @@ package com.robestone.species;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -17,8 +18,12 @@ public class DerbyDataSource {
 	public static void main(String[] args) throws Exception {
 		create();
 	}
-		
 	private static DataSource dataSource;
+//	public static String dbPath = "D:\\banyan-db\\derby-bak-1";
+	public static String dbPath = null;
+	
+	private static String defaultWindowsPath = "D:\\banyan-db\\derby";
+	private static String defaultLinuxPath = "/home/public/banyan/banyan-db";
 	
 	private static void create() throws Exception {
 		EmbeddedDataSource ds = (EmbeddedDataSource) getDataSource();
@@ -48,12 +53,23 @@ public class DerbyDataSource {
 			System.setProperty("derby.system.home", 
 //					"D:\\eclipse-workspaces\\git\\roots-web\\src\\main\\derby"
 //					"D:\\eclipse-workspaces\\git\\banyan\\banyan-domain\\src\\main\\derby"
-					"D:\\banyan-db\\derby"
+//					"D:\\banyan-db\\derby"
+//					"D:\\banyan-db\\derby-bak-1"
+					getDerbyHome()
 					);
 			System.setProperty("derby.language.sequence.preallocator", "1");
 			dataSource = ds;
 		}
 		return dataSource;
+	}
+	private static String getDerbyHome() {
+		if (dbPath != null) {
+			return dbPath;
+		} else if (new File(defaultWindowsPath).exists()) {
+			return defaultWindowsPath;
+		} else {
+			return defaultLinuxPath;
+		}
 	}
 	
 }

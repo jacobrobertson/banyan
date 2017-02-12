@@ -1,6 +1,15 @@
 -- try to figure out why most species are showing up as boring
 
-select * from species where latin_name = 'Protista';
+-- manta rays, etc not showing up on tre
+select
+*
+--id, RTRIM(latin_name) as "latin_name", common_name, RTRIM(parent_latin_name) as "parent_latin_name", parent_id, interesting_parent_id, boring, boring_final  
+from species where 
+		latin_name in ('Myliobatiformes')
+	or	id in (9097, 9074)
+	or	parent_id in (9097, 9074)
+	or interesting_parent_id in (9097, 9074)
+;
 
 select 
 *

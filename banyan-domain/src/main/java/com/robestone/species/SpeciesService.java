@@ -251,10 +251,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	 * This happens usually because of a redirect page, but can also
 	 * happen when a worker is stopped abnormally.
 	 */
-	public void assignParentIdsForNullOrMissingId() {
-		logger.info(">assignParentIdsForNullOrMissingId");
-		Collection<CompleteEntry> entries = template.query(
-				"select id, parent_id, parent_latin_name, latin_name from species ", this);
+	private void assignParentIdsForRedirectOrMissingId(List<CompleteEntry> entries) {
+		logger.info(">assignParentIdsForRedirectOrMissingId");
 		Map<String, String> redirects = findAllRedirectFromsMap();
 		Map<String, Entry> entriesByLatinName = new HashMap<String, Entry>();
 		Map<Integer, Entry> entriesById = new HashMap<Integer, Entry>();
@@ -263,31 +261,34 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			entriesById.put(e.getId(), e);
 		}
 		
-		logger.info("assignParentIdsForNullOrMissingId.entries." + entries.size());
-		// hook them together
+		logger.info("assignParentIdsForRedirectOrMissingId.entries." + entries.size());
+		// reassign all entries to the redirect to if it exists
 		int count = 0;
 		for (CompleteEntry e: entries) {
-			Entry p = entriesById.get(e.getParentId());
-			if (p == null) {
-//				logger.debug("missingParent." + e.getId());
-				// see if we have a redirect-to
-				String to = redirects.get(e.getParentLatinName()); // findRedirectTo(e.getParentLatinName());
-				if (to != null) {
-					p = entriesByLatinName.get(to);
-					// not all redirect-to pages will be in the db 
-					if (p != null) {
-						logger.info("assignParentIdsForNullOrMissingId.fix." + (count++) + "." + e.getLatinName());
-						template.update("update species set parent_id = ? where id = ?", p.getId(), e.getId());
-					}
+			Entry p = null;
+			// see if we have a redirect-to
+			String to = redirects.get(e.getParentLatinName()); // findRedirectTo(e.getParentLatinName());
+			if (to != null) {
+				p = entriesByLatinName.get(to);
+				// not all redirect-to pages will be in the db 
+				if (p != null) {
+					e.setParentId(p.getId());
+					logger.info("assignParentIdsForRedirectOrMissingId.fix." + (count++) + "." + e.getLatinName());
+					template.update("update species set parent_id = ? where id = ?", e.getParentId(), e.getId());
 				}
+			} 
+			
+			if (p == null) {
+				p = entriesById.get(e.getParentId());
 			}
 			// if we still don't have a parent, then set the id to null in the db
 			if (p == null && e.getParentId() != null) {
-				logger.info("assignParentIdsForNullOrMissingId.broken." + e.getLatinName());
+				e.setParentId(null);
+				logger.info("assignParentIdsForRedirectOrMissingId.broken." + e.getLatinName());
 				template.update("update species set parent_id = null where id = ?", e.getId());
 			}
 		}
-		logger.info("<assignParentIdsForNullOrMissingId");
+		logger.info("<assignParentIdsForRedirectOrMissingId");
 	}
 	public String findRedirectTo(String from) {
 		List<String> found = template.query(
@@ -521,7 +522,6 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return found;
 	}
 	public CompleteEntry findEntry(Integer id) {
-//		if (1 + 1 == 2) throw new RuntimeException("findEntry." + id);
 		return getEntryFromCache(id);
 	}
 	public Entry findDepictedEntry(Entry entry) {
@@ -689,6 +689,21 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			return entry;
 		}
 		throw new IncorrectResultSizeDataAccessException(latinName, 1, found.size());
+	}
+	public CompleteEntry findEntryById(Integer id, boolean getParentLatinName) {
+		List<CompleteEntry> found = template.query(
+				"select " +
+				getMinimalEntryColumns(getParentLatinName) +
+				" from species where id = ?", this, id);
+		if (found.isEmpty()) {
+			return null;
+		}
+		if (found.size() == 1) {
+			CompleteEntry entry = found.get(0);
+			makeInteresting(entry);
+			return entry;
+		}
+		throw new IncorrectResultSizeDataAccessException("" + id, 1, found.size());
 	}
 	public List<String> findChildNamesByParentLatinName(String parentLatinName) {
 		return template.query(
@@ -896,20 +911,20 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public void fixParents() {
 		logger.info(">fixParents");
+		List<CompleteEntry> found = template.query("select id, parent_id, latin_name, parent_latin_name, depicted_latin_name from species", this);
+		logger.info(">fixParents." + found.size());
 		// start by fixing all parent ids based on latin name
-		assignParentIdsByParentLatinName();
+		assignParentIdsByParentLatinName(found);
 		// double check for any missing ids, or any redirect ids
-		assignParentIdsForNullOrMissingId();
+		assignParentIdsForRedirectOrMissingId(found);
 		// redirects might cause this
 		fixSelfParentIds();
 		logger.info("<fixParents");
 	}
 	
-	private void assignParentIdsByParentLatinName() {
+	private void assignParentIdsByParentLatinName(List<CompleteEntry> found) {
 		int showEvery = 10000;
 		logger.info(">assignParentIdsByParentLatinName");
-		List<CompleteEntry> found = template.query("select id, parent_id, latin_name, parent_latin_name, depicted_latin_name from species", this);
-		logger.info(">assignParentIdsByParentLatinName." + found.size());
 
 		// build some helpful maps
 		Set<String> depictedSet = new HashSet<String>();
@@ -933,11 +948,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		
 		int count = 0;
 		for (CompleteEntry one: found) {
-			count++;
-			if (count % showEvery == 0) {
-				logger.debug(">assignParentIdsByParentLatinName.depicted(" + count + ")." + one.getId() + "." + one.getLatinName());
-			}
 			if (depictedSet.contains(one.getLatinName())) {
+				count++;
+				if (count % showEvery == 0) {
+					logger.debug(">assignParentIdsByParentLatinName.depicted(" + count + ")." + one.getId() + "." + one.getLatinName());
+				}
 				template.update(
 						"update species set depicted_id = ? where depicted_latin_name = ?", 
 						one.getId(), one.getLatinName());

@@ -24,4 +24,9 @@ public interface IExamplesService {
 	ExampleGroup getHaveYouHeardOf();
 	ExampleGroup getYouMightNotKnow();
 
+	String getSearchExample1();
+	String getSearchExample2();
+	String getSearchExample3();
+	String getSearchExample4();
+
 }

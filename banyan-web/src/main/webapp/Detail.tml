@@ -60,7 +60,7 @@
 				</t:if>
 				<div class="DetailImage">
 					<a href="${imageSourceUrl}">
-					<img src="${entryDetailImageUrl}" width="${entry.image.detailWidth}" height="${entry.image.detailHeight}" alt="${entryDisplayName}" />
+					<img src="${entryDetailImageUrl}" width="${entry.image.previewWidth}" height="${entry.image.previewHeight}" alt="${entryDisplayName}" />
 					<br/>
 					<span class="ImageSourceLink"><i>View original image at WikiSpecies</i></span>
 					</a>

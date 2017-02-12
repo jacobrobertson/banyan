@@ -50,7 +50,7 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 	public void assignInterestingSubspecies(Tree tree) {
 		logger.info("assignInterestingSubspecies > " + tree.size());
 		int count = 0;
-		int max = 1000;
+		int max = 10000;
 		for (Entry entry: tree.getEntries()) {
 			if (count++ % max == 0) {
 				logger.info("assignInterestingSubspecies." + (count) + "." + entry.getLatinName());

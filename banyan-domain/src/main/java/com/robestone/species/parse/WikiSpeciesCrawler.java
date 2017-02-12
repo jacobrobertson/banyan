@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
+import com.robestone.species.Rank;
 import com.robestone.species.UpdateType;
 import com.robestone.util.html.EntityMapper;
 
@@ -24,7 +25,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = true;
 		//*
 		args = new String[] {
-				"Virus",
+				"Batomorphii",
 		};
 		crawlAllStoredLinks = false;
 		//*/
@@ -139,13 +140,6 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		parseStatusService.updateStatus(ps);
 	}
 
-	public void visitUnparseablePage(ParseStatus ps, String page) {
-		String redirectTo = redirectPageParser.getRedirectTo(page);
-		if (redirectTo != null) {
-			speciesService.updateRedirect(ps.getLatinName(), redirectTo);
-		}
-	}
-	
 	public static Set<String> parseLinks(String page) {
 		page = StringUtils.replace(page, "\n", "`"); // TODO why do I need to do this? (again..)
 		page = StringUtils.replace(page, "\r", "`"); // TODO why do I need to do this?
@@ -178,11 +172,18 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public void visitPage(ParseStatus link, String page) {
-		boolean isAuth = AuthorityUtilities.isAuthorityPage(link.getLatinName(), page);
-		if (isAuth) {
-			LogHelper.speciesLogger.info("type." + link.getLatinName() + ".AUTH");
-			link.setType(ParseStatus.AUTHORITY);
-			return;
+		// cannot tell a redirect page from auth page, so have to check for redirect first
+		String redirect = redirectPageParser.getRedirectTo(page);
+		if (redirect != null) {
+			// we won't return from the method here, because it's okay to log both the entry and the redirect
+			speciesService.updateRedirect(link.getLatinName(), redirect);
+		} else {
+			boolean isAuth = AuthorityUtilities.isAuthorityPage(link.getLatinName(), page);
+			if (isAuth) {
+				LogHelper.speciesLogger.info("type." + link.getLatinName() + ".AUTH");
+				link.setType(ParseStatus.AUTHORITY);
+				return;
+			}
 		}
 		boolean isDeleted = isDeleted(page);
 		link.setDeleted(isDeleted);
@@ -193,7 +194,12 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		// parse it
 		CompleteEntry results = parsePage(link, page);
 		if (results == null) {
-			visitUnparseablePage(link, page);
+//			visitUnparseablePage(link, page);
+			// Nothing to do here...
+			// Couldn't figure out what this page was...
+			if (redirect == null) {
+				LogHelper.speciesLogger.error(">>> Could Not Parse >>> " + link.getLatinName());
+			}
 		} else {
 			// for the page I just crawled, do the real update
 			udpateOrInsert(results, false);
@@ -207,7 +213,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private CompleteEntry parsePage(ParseStatus link, String page) {
 		String name = link.getLatinName();
 		CompleteEntry results = parser.parse(name, page);
-		if (results != null) {
+		if (isEntryParsedOkay(results)) {
 			return results;
 		}
 		// try the redirect "from" name(s)
@@ -220,7 +226,19 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 		return null;
 	}
-	
+	/**
+	 * Can't rely on other code to determine if this was parsed or not.
+	 */
+	private boolean isEntryParsedOkay(CompleteEntry e) {
+		if (e == null) {
+			return false;
+		} else if (e.getRank() != null && e.getRank() != Rank.Error) {
+			// if rank is null, then this didn't parse - that is a requirement
+			return true;
+		} else {
+			return false;
+		}
+	}
 	private void udpateOrInsert(CompleteEntry entry, boolean onlyInsert) {
 		
 		UpdateType updated;

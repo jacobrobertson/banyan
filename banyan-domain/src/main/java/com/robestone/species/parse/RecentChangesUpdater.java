@@ -15,10 +15,11 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		RecentChangesUpdater recent = new RecentChangesUpdater();
 
-		boolean crawlNewLinks = false;
+		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
+		boolean crawlNewLinks = true;
 		boolean crawlOldLinks = false;
 		boolean runMaintenance = true;
-		boolean downloadImages = false;
+		boolean downloadImages = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
@@ -56,6 +57,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		}
 		
 		recent.downloadImages = downloadImages;
+		recent.recreateCleanNames = recreateCleanNames;
 		
 		if (crawlParseStatus) {
 			recent.crawlParseStatus();
@@ -77,6 +79,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 	private int maxChanges = 5000;
 	private int maxDays = 1;
 	private boolean downloadImages;
+	private boolean recreateCleanNames;
 	
 	public void runAll() throws Exception {
 		LogHelper.speciesLogger.info("RecentChangesUpdater.runAll");
@@ -105,7 +108,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// clean names
 		// TODO - I don't know what purpose this accomplishes unless I've updated the naming logic, but maybe there's another reason for this
 		// I added this back in, because quite a few things are missing the clean names, and I don't know why.  Safest to leave it
-		speciesService.recreateCleanNames();
+		if (recreateCleanNames) {
+			speciesService.recreateCleanNames();
+		}
 
 		// run full boring suite
 		new BoringWorker().runBoringPrunerWorker();
@@ -178,6 +183,12 @@ public class RecentChangesUpdater extends AbstractWorker {
 		crawler.setForceNewDownloadForCache(true);
 		crawler.pushStoredLinks(allLinks);
 		crawler.crawl();
+	}
+	public void setDownloadImages(boolean downloadImages) {
+		this.downloadImages = downloadImages;
+	}
+	public void setRecreateCleanNames(boolean recreateCleanNames) {
+		this.recreateCleanNames = recreateCleanNames;
 	}
 
 }
