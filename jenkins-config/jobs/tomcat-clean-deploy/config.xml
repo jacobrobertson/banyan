@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties/>
+  <scm class="hudson.scm.NullSCM"/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!C:\cygwin64\bin\sh.exe
+export PATH=$PATH:/usr/bin
+
+# rsync war over (assumes appassembler job was run)
+rsync -avz --chmod=777 --progress \
+/cygdrive/d/banyan-jenkins/jobs/banyan-apps-assemble/workspace/banyan-web/target/species.war \
+pepblast_jrob@ssh.phx.nearlyfreespeech.net:/home/public/banyan
+
+# delete old apps
+ssh pepblast_jrob@ssh.phx.nearlyfreespeech.net &quot;rm -rf /home/public/banyan/apache-tomcat-5.5.33/webapps/*&quot;
+
+# copy war to right spot
+ssh pepblast_jrob@ssh.phx.nearlyfreespeech.net &quot;cp /home/public/banyan/species.war /home/public/banyan/apache-tomcat-5.5.33/webapps/ROOT.war&quot;</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers/>
+  <buildWrappers/>
+</project>
