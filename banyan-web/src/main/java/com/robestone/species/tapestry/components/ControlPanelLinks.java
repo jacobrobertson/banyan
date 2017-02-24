@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.apache.tapestry5.annotations.Parameter;
 
 import com.robestone.species.Entry;
@@ -16,7 +15,7 @@ import com.robestone.species.UrlIdUtilities;
  */
 public class ControlPanelLinks extends AbstractTreeComponent {
 
-	private Logger logger = Logger.getLogger(ControlPanelLinks.class);
+//	private Logger logger = Logger.getLogger(ControlPanelLinks.class);
 	
 	private static final String NO = "false";
 	
@@ -67,13 +66,13 @@ public class ControlPanelLinks extends AbstractTreeComponent {
 		if (isShowMoreNeeded(renderEntry)) {
 			// get the current leaves, combine with crunched ids, then combine
 			Collection<Integer> rootIds = EntryUtilities.getLeavesIds(getRoot());
-			logger.debug("getRenderShowMore >");
-			logger.debug("getRenderShowMore.rootIds." + rootIds);
+//			logger.debug("getRenderShowMore >");
+//			logger.debug("getRenderShowMore.rootIds." + rootIds);
 			Set<Integer> moreIds = renderEntry.getInterestingCrunchedIds().getIds();
-			logger.debug("getRenderShowMore.moreIds." + moreIds);
+//			logger.debug("getRenderShowMore.moreIds." + moreIds);
 			Set<Integer> allIds = new HashSet<Integer>(moreIds);
 			allIds.addAll(rootIds);
-			logger.debug("getRenderShowMore.allIds." + allIds);
+//			logger.debug("getRenderShowMore.allIds." + allIds);
 			String finalIds = EntryUtilities.CRUNCHER.toString(allIds);
 			return getRenderLink(finalIds);
 		} else {

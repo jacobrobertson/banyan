@@ -9,6 +9,7 @@ import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
 import com.robestone.species.IExamplesService;
 import com.robestone.species.LogHelper;
+import com.robestone.species.parse.MemoryReporter;
 import com.robestone.species.tapestry.pages.Search;
 import com.robestone.species.tapestry.services.SearchContext;
 
@@ -23,6 +24,8 @@ public class NavigationBar {
 	
 	@Parameter(required = false, value = "false")
 	private boolean showExamplesCaption;
+	
+	private MemoryReporter reporter = new MemoryReporter();
 	
 	protected SearchContext getSearchContext() {
 		return searchContext;
@@ -42,6 +45,7 @@ public class NavigationBar {
 		return getSearchContext().getSearch();
 	}
 	public void setSearch(String search) {
+		reporter.report();
 		getSearchContext().setSearch(search);
 	}
 

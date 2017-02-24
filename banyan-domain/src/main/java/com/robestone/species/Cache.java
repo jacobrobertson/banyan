@@ -1,18 +1,21 @@
 package com.robestone.species;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
 
 public class Cache {
 
 	private SpeciesService speciesService;
 	private ImageService imageService;
 	
-	private Map<Integer, EntryProperties> entryProperties = new HashMap<Integer, EntryProperties>();
-	private Map<Integer, Image> images = new HashMap<Integer, Image>();
-	private Map<Integer, List<Integer>> childrenIds = new HashMap<Integer, List<Integer>>();
+	private Map<Integer, EntryProperties> entryProperties = new WeakHashMap<Integer, EntryProperties>();
+	private Map<Integer, Image> images = new WeakHashMap<Integer, Image>();
+	private Map<Integer, List<Integer>> childrenIds = new WeakHashMap<Integer, List<Integer>>();
+	private Set<Integer> noImageIds = new HashSet<Integer>();
 	
 	private Integer[] allIds;
 	
@@ -29,13 +32,19 @@ public class Cache {
 		return allIds;
 	}
 	private Image getImage(Integer id) {
-		if (images.isEmpty()) {
-			Collection<Image> list = imageService.findAllImages();
-			for (Image i: list) {
-				images.put(i.getEntryId(), i);
+		if (noImageIds.contains(id)) {
+			return null;
+		}
+		Image image = images.get(id);
+		if (image == null) {
+			image = imageService.findImage(id);
+			if (image != null) {
+				images.put(id, image);
+			} else {
+				noImageIds.add(id);
 			}
 		}
-		return images.get(id);
+		return image;
 	}
 	public EntryProperties getEntryProperties(Integer id) {
 		EntryProperties p = entryProperties.get(id);

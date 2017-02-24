@@ -154,7 +154,7 @@ public class TreeComponent extends AbstractTreeComponent {
 	}
 
 	private Entry renderEntryCellContents(MarkupWriter writer, Entry... entries) {
-		addTopCorners(writer);
+//		addTopCorners(writer);
 		Element div = writer.element("div");
 		div.addClassName("Node");
 		String originalId = getId(entries[0].getId());
@@ -166,9 +166,10 @@ public class TreeComponent extends AbstractTreeComponent {
 			entry = renderAggregatedChildNodeLines(writer, entries);
 		}
 		writer.end(); // div
-		addBottomCorners(writer);
+//		addBottomCorners(writer);
 		return entry;
 	}
+	/*
 	private void addTopCorners(MarkupWriter writer) {
 //		jQuery(divNode).before('<b class="xtop"><b class="xb1"></b><b class="xb2"></b><b class="xb3"></b><b class="xb4"></b></b>');
 		writer.element("b", "class", "xtop");
@@ -195,21 +196,30 @@ public class TreeComponent extends AbstractTreeComponent {
 		writer.end();
 		writer.end();
 	}
+	*/
 	private String getId(int id) {
 		return "node-" + id;
 	}
 	private Entry renderAggregatedChildNodeLines(MarkupWriter writer, Entry... entries) {
 		Entry toReturn = null;
+		boolean first = true;
 		for (Entry entry: entries) {
 			toReturn = entry;
-			renderEntryLine(writer, entry, false);
+			renderEntryLine(writer, entry, false, first);
 			writer.element("br");
 			writer.end();
+			first = false;
 		}
 		return toReturn;
 	}
-	private void renderEntryLine(MarkupWriter writer, Entry entry, boolean isHierarchy) {
-		writer.element("span", "class", "EntryLine");
+	private void renderEntryLine(MarkupWriter writer, Entry entry, boolean isHierarchy, boolean isFirst) {
+		String className;
+		if (isFirst) {
+			className = "EntryLine EntryLineTop";
+		} else {
+			className = "EntryLine";
+		}
+		writer.element("span", "class", className);
 		boolean isRoot = (entry.getParent() == null);
 		if (!isRoot) {
 			writeGotoDetail(writer, entry, isHierarchy);
@@ -222,7 +232,7 @@ public class TreeComponent extends AbstractTreeComponent {
 	}
 	private Entry renderNodeLines(MarkupWriter writer, Entry entry) {
 		
-		System.out.println("renderNodeLines." + entry);
+//		System.out.println("renderNodeLines." + entry);
 		
 		// TODO this is the exact spot where I need to take a look at the chain of children, and turn
 		// 		them into a list of children that can be looped over
@@ -232,7 +242,7 @@ public class TreeComponent extends AbstractTreeComponent {
 		chain = EntryUtilities.collapseList(chain);
 		
 		// writes the first entry in the chain
-		renderEntryLine(writer, entry, false);
+		renderEntryLine(writer, entry, false, true);
 		
 		// look for any "chained" children like ()-()-()
 		int indent = 1;

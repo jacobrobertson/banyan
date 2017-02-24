@@ -24,7 +24,6 @@ public class IdCruncher {
 	private int minPadSize;
 	private char padChangeDelimiter = '_';
 	private int[] minValues;
-	private String[] pads;
 	
 	public static final String R62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	
@@ -47,12 +46,8 @@ public class IdCruncher {
 		this.radix = chars.length();
 		this.minPadSize = padSize;
 		minValues = new int[10];
-		pads = new String[10];
-		String padding = ""; // String.valueOf(padChangeDelimiter);
 		for (int i = 0; i < minValues.length; i++) {
 			minValues[i] = (int) Math.pow(radix, i + 1);
-			pads[i] = padding;
-			padding += String.valueOf(padChangeDelimiter);
 		}
 	}
 	public static IdCruncher withSubtraction(String chars) {

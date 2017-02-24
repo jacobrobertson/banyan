@@ -32,7 +32,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
-		crawler.pushStoredLinks(crawlAllStoredLinks, args);
+		crawler.pushOnlyTheseNames(new HashSet<String>(Arrays.asList(args)));
+		if (crawlAllStoredLinks) {
+			crawler.pushAllFoundLinks();
+		}
 		crawler.crawl();
 	}
 	
@@ -44,54 +47,52 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private RedirectPageParser redirectPageParser = new RedirectPageParser();
 	private int updatedCount = 0;
 	
-	public void crawlStoredLinks() throws Exception {
-		pushStoredLinks(true);
-		crawl();
+	/**
+	 * Pushes any links in the Crawl table in status FOUND
+	 */
+	public void pushAllFoundLinks() throws Exception {
+		List<ParseStatus> found = parseStatusService.findAllStatus();
+		System.out.println("pushAllFoundLinks" + found.size());
+		pushLinks(found);
 	}
-	
-	public void pushStoredLinks(String... actualLinks) {
-		pushStoredLinks(true, actualLinks);
+	/**
+	 * Pushes any links in the Crawl table regardless of status
+	 * - used only for full recrawling.
+	 */
+	public void pushAllStatus() throws Exception {
+		List<ParseStatus> found = parseStatusService.findAllStatus();
+		System.out.println("pushAllStatus" + found.size());
+		pushLinks(found);
 	}
-	public void pushStoredLinks(boolean findAll, String... actualLinks) {
-		Set<String> actualSet = new HashSet<String>();
-		actualSet.addAll(Arrays.asList(actualLinks));
-		actualSet = fixEntities(actualSet);
-		pushStoredLinks(actualSet, findAll);
+	private void markAllDoneLinks() throws Exception {
+		List<ParseStatus> found = parseStatusService.findAllStatus();
+		for (ParseStatus one: found) {
+			if (one.isDone()) {
+				this.found.add(one);
+			}
+		}
+	}
+	private void pushLinks(List<ParseStatus> status) throws Exception {
+		for (ParseStatus s: status) {
+			s.setUrl(s.getLatinName().trim()); // corner case if this gets in the DB
+			push(s);
+		}
 	}
 	private Set<String> fixEntities(Set<String> names) {
 		Set<String> fixed = new HashSet<String>();
 		for (String name: names) {
 			name = name.trim();
-			name = EntityMapper.convertToSymbolsText(name);
+			try {
+				name = EntityMapper.convertToSymbolsText(name, false);
+			} catch (Exception e) {
+				// we can't do much... either skip or add as-is
+			}
 			fixed.add(name);
 		}
 		return fixed;
 	}
-	/**
-	 * @param namesToForce Use these if we're doing some for a special reason
-	 * 	these are guaranteed to be crawled regardless of their status.
-	 */
-	public void pushStoredLinks(Set<String> namesToForce) {
-		pushStoredLinks(namesToForce, true);
-	}
-	public void pushStoredLinks(Set<String> namesToForce, boolean findAll) {
-		List<ParseStatus> all = parseStatusService.findAllStatus();
-		if (findAll) {
-			// add all that aren't done, 
-			// plus any that are done that we want to force
-			for (ParseStatus s: all) {
-				found.add(s);
-				s.setUrl(s.getLatinName().trim()); // corner case if this gets in the DB
-				if (!ParseStatus.DONE.equals(s.getStatus())
-						|| namesToForce.contains(s.getLatinName())) {
-					currentStack.push(s);
-					// don't want to add twice
-					namesToForce.remove(s.getLatinName());
-				}
-			}
-		} else {
-			found.addAll(all);
-		}
+	public void pushOnlyTheseNames(Set<String> namesToForce) {
+		namesToForce = fixEntities(namesToForce);
 		// add all names to force that weren't already in the DB
 		for (String latin: namesToForce) {
 			ParseStatus i = new ParseStatus();
@@ -101,8 +102,16 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			found.add(i);
 		}
 	}
+	private void push(ParseStatus link) {
+		boolean existed = found.add(link);
+		// avoid pushing twice
+		if (!existed && !link.isDone()) {
+			currentStack.push(link);
+		}
+	}
 	
 	public void crawl() throws Exception {
+		markAllDoneLinks();
 		while (!currentStack.empty()) {
 			// loop for all found links
 			while (!currentStack.empty()) {
@@ -111,7 +120,9 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				if (status.getType() != null) {
 					continue;
 				}
-				LogHelper.speciesLogger.info("crawlOne." + currentStack.size() + "." + status);
+				LogHelper.speciesLogger.info(
+						"crawlOne." + currentStack.size() + " < " + found.size() + 
+						"." + status.getLatinName() + "." + status.getStatus() + "." + status.getType());
 				crawlOne(status);
 			}
 			currentStack = nextStack;

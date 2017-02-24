@@ -3,6 +3,7 @@ package com.robestone.species;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 import javax.sql.DataSource;
 
@@ -15,6 +16,14 @@ public class ImageService implements ParameterizedRowMapper<Image> {
 	
 	public Collection<Image> findAllImages() {
 		return template.query("select * from images", this);
+	}
+	public Image findImage(Integer id) {
+		List<Image> found = template.query("select * from images where entry_id = ?", this, id);
+		if (found.isEmpty()) {
+			return null;
+		} else {
+			return found.get(0);
+		}
 	}
 	
 	public Image mapRow(ResultSet rs, int rowNum) throws SQLException {

@@ -1,10 +1,12 @@
 CREATE TABLE crawl (
+  crawl_id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
   status_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   link char(254) DEFAULT NULL,
   status char(50) DEFAULT NULL,
   crawl_type char(40) DEFAULT NULL
 );
 CREATE INDEX idx_crawl_link on crawl (link);
+CREATE INDEX idx_crawl_id on crawl (crawl_id);
 
 CREATE TABLE example (
   example_index int DEFAULT NULL,

@@ -11,7 +11,7 @@ public class HowToUse extends AbstractPage {
 
 	@Cached
 	public List<Entry> getEntries() {
-		Entry one = getSpeciesService().findEntry(55075);
+		Entry one = getSpeciesService().findEntry(73488);
 		List<Entry> list = new ArrayList<Entry>();
 		list.add(one);
 		return list;

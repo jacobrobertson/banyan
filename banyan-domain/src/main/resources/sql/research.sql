@@ -1,6 +1,13 @@
+alter TABLE crawl add column  crawl_id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1);
+
+
+
+select status_date, status, rtrim(link) from crawl where link like 'Ani%' order by link fetch first 10 rows only;
+
+
 -- try to figure out why most species are showing up as boring
 
--- manta rays, etc not showing up on tre
+-- manta rays, etc not showing up on tred"
 select
 *
 --id, RTRIM(latin_name) as "latin_name", common_name, RTRIM(parent_latin_name) as "parent_latin_name", parent_id, interesting_parent_id, boring, boring_final  

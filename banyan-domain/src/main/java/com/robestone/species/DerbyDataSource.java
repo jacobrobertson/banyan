@@ -19,6 +19,15 @@ public class DerbyDataSource {
 		create();
 	}
 	private static DataSource dataSource;
+	
+	/**
+	 * http://db.apache.org/derby/docs/10.2/tuning/rtunproper81359.html#rtunproper81359
+	 * derby.storage.pageCacheSize
+	 * Default 1000 pages.
+	 * The minimum value is 40 pages
+	 */
+	private static String numberOfCachedPages = "40";
+	
 //	public static String dbPath = "D:\\banyan-db\\derby-bak-1";
 	public static String dbPath = null;
 	
@@ -47,9 +56,6 @@ public class DerbyDataSource {
 	
 	public static DataSource getDataSource() {
 		if (dataSource == null) {
-			EmbeddedDataSource ds = new EmbeddedDataSource();
-			ds.setDatabaseName("species");
-//			ds.setConnectionAttributes("shutdown=true");
 			System.setProperty("derby.system.home", 
 //					"D:\\eclipse-workspaces\\git\\roots-web\\src\\main\\derby"
 //					"D:\\eclipse-workspaces\\git\\banyan\\banyan-domain\\src\\main\\derby"
@@ -58,6 +64,12 @@ public class DerbyDataSource {
 					getDerbyHome()
 					);
 			System.setProperty("derby.language.sequence.preallocator", "1");
+			System.setProperty("derby.storage.pageCacheSize", numberOfCachedPages);
+			
+			EmbeddedDataSource ds = new EmbeddedDataSource();
+			ds.setDatabaseName("species");
+//			ds.setConnectionAttributes("shutdown=true");
+			
 			dataSource = ds;
 		}
 		return dataSource;

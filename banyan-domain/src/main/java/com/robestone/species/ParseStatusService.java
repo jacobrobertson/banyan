@@ -2,10 +2,13 @@ package com.robestone.species;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -23,6 +26,10 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 		int count = template.update("update crawl set crawl_type = 'AUTH' where link = ? and (crawl_type <> 'AUTH' or crawl_type is null)", link);
 		return (count == 1);
 	}
+	public int deleteStatus(ParseStatus status) {
+		return template.update("delete from crawl where crawl_id = ?", status.getCrawlId());
+	}
+		
 	public int updateStatus(ParseStatus status) {
 		if (status.isDeleted()) {
 			return template.update("delete from crawl where link = ?", status.getLatinName());
@@ -63,16 +70,28 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 		}
 		return links;
 	}
+	public List<ParseStatus> findAllStatusDuplicatesOkay() {
+		return template.query("select * from crawl", this);
+	}
 	public List<ParseStatus> findAllStatus() {
 		List<ParseStatus> all = template.query("select * from crawl", this);
-		Set<String> links = new HashSet<String>();
+		Map<String, ParseStatus> map = new HashMap<String, ParseStatus>();
 		for (ParseStatus one: all) {
-			boolean added = links.add(one.getLatinName());
-			if (!added) {
-				throw new IllegalArgumentException("Duplicate status: " + one.getLatinName());
+			String key = one.getLatinName();
+			if (map.containsKey(key)) {
+//				throw new IllegalArgumentException("Duplicate status: " + one.getLatinName());
+				LogHelper.speciesLogger.error("Duplicate status: " + key);
+				
+				// for now, we just choose the one with the DONE
+				// we need to delete these later
+				if (one.isDone()) {
+					map.put(key, one);
+				}
+			} else {
+				map.put(key, one);
 			}
 		}
-		return all;
+		return new ArrayList<ParseStatus>(map.values());
 	}
 	public List<ParseStatus> findAllAuth() {
 		List<ParseStatus> all = template.query("select * from crawl where crawl_type = 'AUTH'", this);
@@ -88,12 +107,20 @@ public class ParseStatusService implements ParameterizedRowMapper<ParseStatus> {
 		ParseStatus status = new ParseStatus();
 		status.setDate(rs.getDate("status_date"));
 		status.setUrl(EntityMapperJdbcTemplate.getString(rs, "link"));
-		status.setStatus(rs.getString("status"));
-		status.setType(rs.getString("crawl_type"));
+		status.setStatus(getString(rs, "status"));
+		status.setType(getString(rs, "crawl_type"));
+		status.setCrawlId(rs.getInt("crawl_id"));
 		return status;
 	}
 	public void setDataSource(DataSource dataSource) {
 		this.template = new EntityMapperJdbcTemplate(dataSource);
+	}
+	private String getString(ResultSet rs, String col) throws SQLException {
+		String s = rs.getString(col);
+		if (s != null) {
+			return s.trim();
+		}
+		return s;
 	}
 	
 }

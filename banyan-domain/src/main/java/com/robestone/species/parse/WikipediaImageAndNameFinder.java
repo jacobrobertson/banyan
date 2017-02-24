@@ -18,8 +18,8 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
 		
-		/*
-			args = new String[] {"Gymnobucco calvus"};
+		//*
+			args = new String[] {"Thallomys nigricauda"};
 		//*/
 		
 		if (args != null && args.length == 1) {

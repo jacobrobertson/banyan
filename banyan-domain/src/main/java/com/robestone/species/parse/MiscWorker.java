@@ -25,12 +25,12 @@ public class MiscWorker extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 		DerbyDataSource.dbPath = "D:\\banyan-db\\derby";
 		new MiscWorker().
-		research
+		crawlEntriesWithCommonNameAndNoImage();
+//		research();
 //		runM
 //		run
 //		testGigantopithecus
 //		run2
-		();
 	}
 	
 	
@@ -140,4 +140,25 @@ public class MiscWorker extends AbstractWorker {
 		BoringPruner pruner = new BoringPruner();
 		pruner.prune(tree);
 	}
+	
+	public void crawlEntriesWithCommonNameAndNoImage() throws Exception {
+		Collection<CompleteEntry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
+		System.out.println("crawlEntriesWithCommonNameAndNoImage.willCrawl." + entries.size());
+		Set<String> names = new HashSet<String>();
+		for (CompleteEntry entry: entries) {
+			String common = entry.getCommonName().trim();
+			if (common.length() > 0) {
+//				System.out.println("crawlEntriesWithCommonNameAndNoImage.willCrawl." + common + " / " + entry.getLatinName());
+				names.add(entry.getLatinName());
+			}
+		}
+		entries = null;
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(true);
+		
+		crawler.pushOnlyTheseNames(names);
+		crawler.crawl();
+
+	}
+	
 }

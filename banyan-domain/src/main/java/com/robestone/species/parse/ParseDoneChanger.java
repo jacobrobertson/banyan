@@ -4,8 +4,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.robestone.species.LogHelper;
@@ -23,11 +25,39 @@ public class ParseDoneChanger extends AbstractWorker {
 //		pc.createForAllSpecies();
 //		pc.findBadStatuses();
 //		pc.checkSpeciesNeedingWork(true);
-		pc.reCrawlAllUnparsed();
+		pc.fixDuplicates();
+	}
+	public void fixDuplicates() throws Exception {
+		LogHelper.speciesLogger.info("fixDuplicates>");
+		Map<String, ParseStatus> map = new HashMap<String, ParseStatus>();
+		List<ParseStatus> statuses = this.parseStatusService.findAllStatusDuplicatesOkay();
+		LogHelper.speciesLogger.info("fixDuplicates." + statuses.size());
+		int count = 0;
+		for (ParseStatus s: statuses) {
+			String key = s.getLatinName();
+			if (map.containsKey(key)) {
+				ParseStatus previous = map.get(key);
+				ParseStatus toDelete;
+				if (previous.isDone()) {
+					toDelete = s;
+				} else {
+					toDelete = previous;
+				}
+				count += parseStatusService.deleteStatus(toDelete);
+				LogHelper.speciesLogger.info(
+						"fixDuplicates.delete." + toDelete.getLatinName() + "." + 
+								s.getCrawlId() + "/" + previous.getCrawlId());
+				System.out.println("deleted." + count);
+			} else {
+				map.put(key,  s);
+			}
+		}
 	}
 	public void reCrawlAllUnparsed() throws Exception {
 		checkSpeciesNeedingWork(true);
-		new WikiSpeciesCrawler().crawlStoredLinks();
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.pushAllFoundLinks();
+		crawler.crawl();
 	}
 	
 	public void checkSpeciesNeedingWork(boolean persist) {

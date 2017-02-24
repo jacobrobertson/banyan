@@ -52,6 +52,7 @@ public class ImagesCreater extends AbstractWorker {
 	}
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
+	private boolean forceMeasuring = false;
 	
 	public void downloadAll(boolean onlyNew, boolean onlyTiny) throws IOException {
 		System.out.println(">images.downloadAll");
@@ -99,12 +100,13 @@ public class ImagesCreater extends AbstractWorker {
 			download = true;
 		}
 		
+		boolean downloaded = false;
 		if (download) {
 			String hashPath = getImagePathHashed(latinName);
 			System.out.print(latinName + "(" + hashPath + ") " + link + " > ");
 			// create the thumbs
 			try {
-				downloadThumbs(entry, latinName, fileExtension, link, onlyTiny);
+				downloaded = downloadThumbs(entry, latinName, fileExtension, link, onlyTiny);
 			} catch (Exception e) {
 				// fails on some images - haven't figured out why yet
 				e.printStackTrace();
@@ -112,7 +114,9 @@ public class ImagesCreater extends AbstractWorker {
 			LogHelper.speciesLogger.info("made thumbs > " + count + "/" + size);
 		}
 		// this worker also inserts/updates new and existing entries
-		imagesMeasurer.runOne(entry);
+		if (downloaded || forceMeasuring) {
+			imagesMeasurer.runOne(entry);
+		}
 	}
 	private static String getExtensionFromLink(String link) {
 		int dotPos = link.lastIndexOf('.');
@@ -225,23 +229,27 @@ public class ImagesCreater extends AbstractWorker {
 		return false;
 	}
 	
-	private void downloadThumbs(Entry entry, String latinName, String fileExtension, String link, boolean onlyTiny) throws IOException {
+	private boolean downloadThumbs(Entry entry, String latinName, String fileExtension, String link, boolean onlyTiny) throws IOException {
+		boolean downloaded = false;
 		File saved = downloadThumb(latinName, TINY, fileExtension, null, TINY_LENGTH, link, false);
 		if (saved == null) {
 			// in this case, the image was removed
-			return;
+			return false;
 		}
 		float xratio = getXRatioFromThumb(saved);
 		if (xratio < 1f) {
 			downloadThumb(latinName, TINY, fileExtension, null, 
 					getWidthToDownload(TINY_LENGTH, xratio), link, false);
+			downloaded = true;
 		}
 		if (!onlyTiny) {
 			int detailWidth = getWidthToDownload(400, xratio);
 			saved = downloadThumb(latinName, DETAIL, fileExtension, null, detailWidth, link, true);
 			int previewWidth = getWidthToDownload(250, xratio);
 			downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
+			downloaded = true;
 		}
+		return downloaded;
 	}
 	/*
 	public static String getLegalFileNamePart(String latinName) {

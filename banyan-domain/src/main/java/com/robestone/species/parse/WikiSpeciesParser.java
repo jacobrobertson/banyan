@@ -612,6 +612,10 @@ public class WikiSpeciesParser {
 				continue;
 			} else if (imageLink.indexOf("Help-") > 0) {
 				continue;
+			} else if (imageLink.indexOf("Merge-") > 0) {
+				continue;
+			} else if (imageLink.indexOf("_important.") > 0) {
+				continue;
 			} else if (imageLink.indexOf("Keep_tidy") > 0) {
 				continue;
 			} else if (imageLink.indexOf("_apps_") > 0) {

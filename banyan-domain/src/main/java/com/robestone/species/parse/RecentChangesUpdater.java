@@ -51,6 +51,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 				if (p[0].equals("crawlParseStatus")) {
 					crawlParseStatus = Boolean.parseBoolean(p[1]);
 				}
+				if (p[0].equals("recreateCleanNames")) {
+					recreateCleanNames = Boolean.parseBoolean(p[1]);
+				}
 			}
 			crawlNewLinks = recent.maxChanges > 0;
 			crawlOldLinks = recent.maxOldLinks > 0;
@@ -59,17 +62,23 @@ public class RecentChangesUpdater extends AbstractWorker {
 		recent.downloadImages = downloadImages;
 		recent.recreateCleanNames = recreateCleanNames;
 		
+		LogHelper.speciesLogger.info("RecentChangesUpdater.main.argsParsed");
+		
 		if (crawlParseStatus) {
+			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
 			recent.crawlParseStatus();
 			recent.crawlTreeReport();
 		}
 		if (crawlNewLinks) {
+			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
 			recent.crawlNewLinks();
 		}
 		if (crawlOldLinks) {
+			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
 			recent.crawlOldLinks();
 		}
 		if (runMaintenance) {
+			LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
 			recent.runMaintenance();
 			recent.runReports();
 		}
@@ -140,7 +149,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		Set<String> names = new TreeReporter().getLinksToCrawl();
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(false);
-		crawler.pushStoredLinks(names, false);
+		crawler.pushOnlyTheseNames(names);
 		crawler.crawl();
 	}
 	public void crawlParseStatus() throws Exception {
@@ -150,7 +159,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 		// now run it in cached mode so it won't take much time
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(false);
-		crawler.crawlStoredLinks();
+		crawler.pushAllFoundLinks();
+		crawler.crawl();
 	}
 	public void crawlNewLinks() throws Exception {
 		Set<String> allLinks = new HashSet<String>();
@@ -168,7 +178,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 			
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(true);
-		crawler.pushStoredLinks(allLinks, false);
+		crawler.pushOnlyTheseNames(allLinks);
 		crawler.crawl();
 	}
 	
@@ -181,7 +191,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(true);
-		crawler.pushStoredLinks(allLinks);
+		crawler.pushOnlyTheseNames(allLinks);
 		crawler.crawl();
 	}
 	public void setDownloadImages(boolean downloadImages) {

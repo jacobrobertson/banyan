@@ -1,5 +1,6 @@
 package com.robestone.species;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,7 +26,8 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 
 import com.robestone.util.html.EntityMapper;
 
@@ -134,8 +136,17 @@ public class LuceneSearcher implements EntrySearcher {
 			throw new RuntimeException(e);
 		}
 	}
+	private static String defaultWindowsPath = "D:\\banyan-db\\lucene";
+	private static String defaultLinuxPath = "/home/private/banyan-lucene";
+	private File getDirectory() {
+		File file = new File(defaultWindowsPath);
+		if (file.exists()) {
+			return file;
+		}
+		return new File(defaultLinuxPath);
+	}
 	private void doBuildIndex(Collection<? extends Entry> entries) throws IOException {
-		RAMDirectory directory = new RAMDirectory();
+		Directory directory = FSDirectory.getDirectory(getDirectory()); // new RAMDirectory();
 		IndexWriter writer = new IndexWriter(directory, analyzer,
 				true, IndexWriter.MaxFieldLength.UNLIMITED);
 		int count = 0;

@@ -15,7 +15,20 @@ public class ParseStatus {
 	private Date date;
 	private String type;
 	private boolean isDeleted;
+	private Integer crawlId;
 	
+	public Integer getCrawlId() {
+		return crawlId;
+	}
+	public void setCrawlId(Integer crawlId) {
+		this.crawlId = crawlId;
+	}
+	public boolean isAuth() {
+		return AUTHORITY.equals(type);
+	}
+	public boolean isDone() {
+		return DONE.equals(status);
+	}
 	public String getType() {
 		return type;
 	}
