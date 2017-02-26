@@ -96,9 +96,19 @@
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>appassembler-maven-plugin</artifactId>
 				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>assemble</id>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
 				<configuration>
 					<platforms>
 						<platform>windows</platform>
+						<platform>unix</platform>
 					</platforms>
 					<repositoryLayout>flat</repositoryLayout>
 					<extraJvmArguments>-Xmx1024m -Xms1024m -XX:MaxPermSize=128m</extraJvmArguments>

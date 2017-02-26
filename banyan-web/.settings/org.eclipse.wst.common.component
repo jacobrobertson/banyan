@@ -1,8 +1,8 @@
-<project-modules id="moduleCoreId" project-version="2.0">
-  <wb-module deploy-name="species-tapestry-1.2-SNAPSHOT">
-    <property name="context-root" value="species-tapestry"/>
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+  <wb-module deploy-name="banyan-web">
     <wb-resource deploy-path="/" source-path="src/main/webapp"/>
     <property name="java-output-path" value="/target/classes"/>
+        <property name="context-root" value="banyan-web"/>
     <dependent-module archiveName="antlr-runtime-3.1.1.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/var/M2_REPO/org/antlr/antlr-runtime/3.1.1/antlr-runtime-3.1.1.jar">
       <dependency-type>uses</dependency-type>
     </dependent-module>

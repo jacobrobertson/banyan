@@ -17,3 +17,7 @@ How to deploy new derby DB to NFSN
 - run slim.sql on that new slim DB (will take a while)
 -- Will remove rows, and drop tables, and compress DB - saves 80% of space
 - run rsync-db.sh
+
+
+Other info
+- if the rsync asks for the keystore pass, just hit return
