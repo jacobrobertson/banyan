@@ -388,7 +388,7 @@ public class TreeComponent extends AbstractTreeComponent {
 					StringBuilder buf = new StringBuilder();
 					for (String name: entry.getCommonNames()) {
 						if (buf.length() > 0) {
-							buf.append("<br/>");
+							buf.append("</b><br/><b>");
 						}
 						buf.append(name);
 					}

@@ -38,7 +38,7 @@ public class PathFixerFilter implements Filter {
 		String path = hreq.getServletPath();
 		String origPath = path;
 
-		/*
+		//*
 		System.out.println("hreq.getContextPath() = " + hreq.getContextPath());
 		System.out.println("hreq.getAttributeNames() = " + hreq.getAttributeNames());
 		System.out.println("hreq.getPathInfo() = " + hreq.getPathInfo());
@@ -94,8 +94,11 @@ public class PathFixerFilter implements Filter {
          */
         int navBarLinkPos = path.indexOf(".navigationbar.");
         if (navBarLinkPos > 0) {
-        	path = path.substring(0,  navBarLinkPos);
-        	queryString = null;
+        	int formPos = path.indexOf(".navigationbar.form");
+        	if (formPos < 0) {
+        		path = path.substring(0,  navBarLinkPos);
+        		queryString = null;
+        	}
         }
         
         

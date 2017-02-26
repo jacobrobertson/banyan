@@ -3,9 +3,13 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns="http://maven.apache.org/POM/4.0.0">
 	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.jacobrobertson.banyan</groupId>
+		<artifactId>banyan-parent</artifactId>
+		<version>1.2-SNAPSHOT</version>
+	</parent>
 	<groupId>com.robestone.species</groupId>
 	<artifactId>species-tapestry</artifactId>
-	<version>1.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>species-tapestry</name>
 	<dependencies>
@@ -76,72 +80,8 @@
 		</dependency>
 	</dependencies>
 	
-	<profiles>
-		<profile>
-			<id>jetty-windows</id>
-			<activation>
-				<os><name>windows</name></os>
-			</activation>
-			<properties>
-				<banyan-images-resourceBase>D:/banyan-images</banyan-images-resourceBase>
-			</properties>
-		</profile>
-		<profile>
-			<id>jetty-linux</id>
-			<activation>
-				<os><name>linux</name></os>
-			</activation>
-			<properties>
-				<banyan-images-resourceBase>/home/public/banyan-images</banyan-images-resourceBase>
-			</properties>
-		</profile>
-	</profiles>
-	
 	<build>
 		<plugins>
-			<!-- Run the application using "mvn jetty:run" 
-			http://localhost:8080/species-tapestry/search
-			-->
-			<plugin>
-				<groupId>org.mortbay.jetty</groupId>
-				<artifactId>maven-jetty-plugin</artifactId>
-				<version>6.1.9</version>
-				<configuration>
-					<!-- Log to the console. -->
-					<requestLog
-						implementation="org.mortbay.jetty.NCSARequestLog">
-						<!-- This doesn't do anything for Jetty, but is a workaround for a 
-							Maven bug that prevents the requestLog from being set. -->
-						<append>true</append>
-					</requestLog>
-					<connectors>
-						<connector
-							implementation="org.mortbay.jetty.nio.SelectChannelConnector">
-							<port>8080</port>
-							<maxIdleTime>60000</maxIdleTime>
-						</connector>
-					</connectors>
-						<!-- Images are being kept at D:/banyan-images, and "banyan-images" is the context root
-							Need to make this cleaner probably
-					<resourceBases>
-						<resourceBase>src/main/webapp</resourceBase>
-						<resourceBase>D:/</resourceBase>
-					</resourceBases>
-						-->
-					<webApp>
-						<contextPath>/banyan</contextPath>
-                    	<war>${basedir}/target/species.war</war>
-					</webApp>
-					<contextHandlers>
-						<contextHandler implementation="org.mortbay.jetty.handler.ContextHandler">
-                    		<contextPath>/banyan-images</contextPath>
-                    		<resourceBase>${banyan-images-resourceBase}</resourceBase>
-                    		<handler implementation="org.mortbay.jetty.handler.ResourceHandler" />
-                		</contextHandler>
-                	</contextHandlers>
-				</configuration>
-			</plugin>
-
 
 			<!-- This changes the WAR file packaging so that what would normally go 
 				into WEB-INF/classes is instead packaged as WEB-INF/lib/species-tapestry.jar. 

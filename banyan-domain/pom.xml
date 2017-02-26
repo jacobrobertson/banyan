@@ -4,8 +4,11 @@
 	<groupId>com.robestone.species</groupId>
 	<artifactId>species-domain</artifactId>
 	<name>species-domain</name>
-	<version>1.2-SNAPSHOT</version>
-<!-- Created 11/25 @ 5:37 PM -->
+	<parent>
+		<groupId>com.jacobrobertson.banyan</groupId>
+		<artifactId>banyan-parent</artifactId>
+		<version>1.2-SNAPSHOT</version>
+	</parent>
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.derby</groupId>

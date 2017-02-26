@@ -1,29 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-  <classpathentry kind="src" path="src/test/java" output="target/test-classes" including="**/*.java"/>
-  <classpathentry kind="src" path="src/test/resources" output="target/test-classes" excluding="**/*.java"/>
-  <classpathentry kind="src" path="src/main/java" including="**/*.java"/>
-  <classpathentry kind="src" path="src/main/resources" excluding="**/*.java"/>
-  <classpathentry kind="output" path="target/classes"/>
-  <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/derby/derby/10.12.1.1/derby-10.12.1.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/derby/derbytools/10.13.1.1/derbytools-10.13.1.1.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/imageio/imageio-jpeg/3.3.1/imageio-jpeg-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/imageio/imageio-jpeg/3.3.1/imageio-jpeg-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/imageio/imageio-core/3.3.1/imageio-core-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/imageio/imageio-core/3.3.1/imageio-core-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/common/common-lang/3.3.1/common-lang-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/common/common-lang/3.3.1/common-lang-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/common/common-io/3.3.1/common-io-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/common/common-io/3.3.1/common-io-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/common/common-image/3.3.1/common-image-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/common/common-image/3.3.1/common-image-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/com/twelvemonkeys/imageio/imageio-metadata/3.3.1/imageio-metadata-3.3.1.jar" sourcepath="M2_REPO/com/twelvemonkeys/imageio/imageio-metadata/3.3.1/imageio-metadata-3.3.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/junit/junit/3.8.1/junit-3.8.1.jar" sourcepath="M2_REPO/junit/junit/3.8.1/junit-3.8.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar" sourcepath="M2_REPO/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4.jar" sourcepath="M2_REPO/commons-io/commons-io/1.4/commons-io-1.4-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-jdbc/2.5.6/spring-jdbc-2.5.6.jar" sourcepath="M2_REPO/org/springframework/spring-jdbc/2.5.6/spring-jdbc-2.5.6-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" sourcepath="M2_REPO/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-beans/2.5.6/spring-beans-2.5.6.jar" sourcepath="M2_REPO/org/springframework/spring-beans/2.5.6/spring-beans-2.5.6-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-core/2.5.6/spring-core-2.5.6.jar" sourcepath="M2_REPO/org/springframework/spring-core/2.5.6/spring-core-2.5.6-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-context/2.5.6/spring-context-2.5.6.jar" sourcepath="M2_REPO/org/springframework/spring-context/2.5.6/spring-context-2.5.6-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0.jar" sourcepath="M2_REPO/aopalliance/aopalliance/1.0/aopalliance-1.0-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/springframework/spring-tx/2.5.6/spring-tx-2.5.6.jar" sourcepath="M2_REPO/org/springframework/spring-tx/2.5.6/spring-tx-2.5.6-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/log4j/log4j/1.2.14/log4j-1.2.14.jar" sourcepath="M2_REPO/log4j/log4j/1.2.14/log4j-1.2.14-sources.jar"/>
-  <classpathentry kind="var" path="M2_REPO/org/apache/lucene/lucene-core/2.4.1/lucene-core-2.4.1.jar" sourcepath="M2_REPO/org/apache/lucene/lucene-core/2.4.1/lucene-core-2.4.1-sources.jar"/>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/test-classes" path="src/test/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
