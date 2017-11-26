@@ -1,4 +1,4 @@
--- this is what I want to delete
+-- this is what I want to delete, no need to actually run them
 
 select count(*) from species where boring_final = true;
 select count(*) from crawl;

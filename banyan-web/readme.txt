@@ -5,4 +5,4 @@ To get running locally
 2. open project "banyan" which has "banyan/banyan-tomcat"
 3. run the tomcat server from that panel
 4. browse to
-http://localhost:8080/species-tapestry/search
+http://localhost:8080/banyan/search

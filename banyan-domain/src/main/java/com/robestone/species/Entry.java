@@ -1,9 +1,10 @@
 package com.robestone.species;
 
+import java.io.Serializable;
 import java.util.List;
 
 
-public interface Entry {
+public interface Entry extends Serializable {
 
 	String getDepictedLatinName();
 	Integer getDepictedId();

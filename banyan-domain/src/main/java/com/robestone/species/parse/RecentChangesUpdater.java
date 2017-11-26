@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.log4j.Level;
 
+import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
 
@@ -191,9 +192,25 @@ public class RecentChangesUpdater extends AbstractWorker {
 
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(true);
+		
+		// we want to do these regularly to ensure that the crawler is working as expected.
+		// now is an okay time to do it
+		addLatinNamesWithCommonNameAndNoImage(allLinks);
+		
 		crawler.pushOnlyTheseNames(allLinks);
 		crawler.crawl();
 	}
+	private void addLatinNamesWithCommonNameAndNoImage(Set<String> names) throws Exception {
+		Collection<CompleteEntry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
+		System.out.println("pushEntriesWithCommonNameAndNoImage.willCrawl." + entries.size());
+		for (CompleteEntry entry: entries) {
+			String common = entry.getCommonName().trim();
+			if (common.length() > 0) {
+				names.add(entry.getLatinName());
+			}
+		}
+	}
+	
 	public void setDownloadImages(boolean downloadImages) {
 		this.downloadImages = downloadImages;
 	}

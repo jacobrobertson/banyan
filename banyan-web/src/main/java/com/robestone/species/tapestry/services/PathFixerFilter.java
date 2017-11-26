@@ -82,6 +82,13 @@ public class PathFixerFilter implements Filter {
 
         String queryString = hreq.getQueryString();
 
+        
+        // if it is "start.navigationbar." - remove the query so it doesn't unmarshal the tree
+        int startNavBarLinkPos = path.indexOf("start.navigationbar.");
+        if (startNavBarLinkPos > 0) {
+        	queryString = null;
+        }
+        
         /* these hidden links are making google complain
          * 
          * Can apply to any page, not just examples
@@ -91,26 +98,15 @@ public class PathFixerFilter implements Filter {
 			/examples.navigationbar.close
 			  
 			might also have t:ac=lQ0.13 at the end
+			
+			solution - if it is "example.navigationbar." - we only allow startover and random - else redirect to simpler path
          */
-        int navBarLinkPos = path.indexOf(".navigationbar.");
-        if (navBarLinkPos > 0) {
-        	int formPos = path.indexOf(".navigationbar.form");
-        	if (formPos < 0) {
-        		path = path.substring(0,  navBarLinkPos);
-        		queryString = null;
-        	}
-        }
-        
-        
-        // these are hidden links that google is finding - need to fix so google won't complain
-        // change these -- hreq.getQueryString() = t:ac=lQ1.3
-        // /search.detail?t:ac=2rE2rLxUkKbl
-        // /search.tree?t:ac=2rE2rLxUkKbl
-        // to this
-        // /search/search.tree/2rE2rLxUkKbl
-        if (queryString != null && queryString.startsWith("t:ac=")) {
-        	path = "/search.tree/" + queryString.substring(5);
+        int exampleNavBarLinkPos = path.indexOf("example.navigationbar.");
+        if (exampleNavBarLinkPos > 0) {
         	queryString = null;
+        	if (path.indexOf(".startover") < 0 && path.indexOf(".random") < 0) {
+        		path = path.substring(0,  exampleNavBarLinkPos);
+        	}
         }
         
 		if (origPath != path) {

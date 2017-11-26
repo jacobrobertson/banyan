@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -55,6 +56,10 @@ public class DerbyDataSource {
 	}
 	
 	public static DataSource getDataSource() {
+		ensureShutDown();
+		return doGetDataSource();
+	}
+	private static DataSource doGetDataSource() {
 		if (dataSource == null) {
 			System.setProperty("derby.system.home", 
 //					"D:\\eclipse-workspaces\\git\\roots-web\\src\\main\\derby"
@@ -68,11 +73,26 @@ public class DerbyDataSource {
 			
 			EmbeddedDataSource ds = new EmbeddedDataSource();
 			ds.setDatabaseName("species");
-//			ds.setConnectionAttributes("shutdown=true");
 			
 			dataSource = ds;
 		}
 		return dataSource;
+	}
+	private static void ensureShutDown() {
+		// there was an issue with restarting during debugging... trying to fix that
+		System.setProperty("derby.system.home", getDerbyHome());
+		System.setProperty("derby.language.sequence.preallocator", "1");
+		System.setProperty("derby.storage.pageCacheSize", numberOfCachedPages);
+		
+		EmbeddedDataSource ds = new EmbeddedDataSource();
+		ds.setDatabaseName("species");
+		ds.setConnectionAttributes("shutdown=true");
+		try {
+			ds.getConnection();
+		} catch (SQLException e) {
+			System.out.println("Could not shutdown preemptively, might be okay: " + e.getMessage());
+		}
+		dataSource = null;
 	}
 	private static String getDerbyHome() {
 		if (dbPath != null) {

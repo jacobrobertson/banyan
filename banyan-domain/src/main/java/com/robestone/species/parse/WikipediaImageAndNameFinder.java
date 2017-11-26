@@ -18,9 +18,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
 		
-		//*
-			args = new String[] {"Thallomys nigricauda"};
-		//*/
+//		args = new String[] {"Cladonia"};
 		
 		if (args != null && args.length == 1) {
 			new WikipediaImageAndNameFinder().runOne(args[0]);
@@ -28,6 +26,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 			new WikipediaImageAndNameFinder().run();
 		}
 	}
+	private String outFilePath = "D:\\eclipse-workspaces\\git\\banyan-parent\\banyan-jstests\\src\\main\\webapp\\page-list.js";
 	private WikipediaCrawler crawler = new WikipediaCrawler();
 	private TaxoboxFormatter formatter = new TaxoboxFormatter();
 
@@ -95,7 +94,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	}
 	private void outputToJsPage(Taxobox box, boolean isNamesInteresting) {
 		try {
-			FileOutputStream fout = new FileOutputStream("D:\\eclipse-workspaces\\git\\banyan\\banyan-jstests\\src\\main\\webapp\\page-list.js", true);
+			FileOutputStream fout = new FileOutputStream(outFilePath, true);
 			OutputStreamWriter outWriter = new OutputStreamWriter(fout, Charset.forName("UTF-8"));
 			String entry = formatter.toJsPageEntry(box, isNamesInteresting);
 			String key = String.valueOf(System.currentTimeMillis());

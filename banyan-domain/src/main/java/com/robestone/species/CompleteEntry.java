@@ -5,6 +5,7 @@ import java.util.List;
 
 public class CompleteEntry implements Entry {
 
+	private static final long serialVersionUID = -8212944771743644312L;
 	private List<CompleteEntry> children;
 	private CompleteEntry parent;
 	private EntryProperties props;
