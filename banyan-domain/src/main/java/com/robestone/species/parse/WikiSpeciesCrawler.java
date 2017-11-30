@@ -22,10 +22,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 		
 		boolean forceNewDownloadForCache = true;
-		boolean crawlAllStoredLinks = true;
+		boolean crawlAllStoredLinks = false;
 		//*
 		args = new String[] {
-				"Batomorphii",
+				"Lucianovenator",
 		};
 		crawlAllStoredLinks = false;
 		//*/

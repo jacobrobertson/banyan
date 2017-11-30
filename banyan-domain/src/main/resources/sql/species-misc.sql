@@ -21,15 +21,15 @@ SELECT * FROM species where (rank = 0 or rank = -1);
 
 select * from species where id = parent_id limit 1000;
 select * from species where image_link is not null limit 1000;
-select * from species where latin_name = 'Alphamesonivirus 1';
+select * from species where latin_name like '%Crithagra buchanani%';
 select * from species where latin_name like 'Rattus%';
 -- delete from species where latin_name ='Group IV: ssRNA( )';
 
 select * from species where (latin_name like '%virus%' or latin_name like '%Virus%') and image_link is not null;
 select * from species where (latin_name like '%virus%' or latin_name like '%Virus%') and common_name is not null;
 select count(*) from species where (latin_name like '%virus%' or latin_name like '%Virus%');
-select * from species where common_name_clean like 'RAT%';
-select * from species where parent_latin_name like 'Monophyllus (Leach)';
+select * from species where common_name_clean like '%DRYMOTOX%';
+select * from species where parent_latin_name like 'Drymotoxeres pucheranii';
 select * from species where boring_final <> 0 limit 100;
 
 -- tree scores

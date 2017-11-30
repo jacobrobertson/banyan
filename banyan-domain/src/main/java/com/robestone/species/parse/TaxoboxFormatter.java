@@ -54,21 +54,33 @@ public class TaxoboxFormatter {
 			return "";
 		}
 		String d = box.getImageSpeciesDepicted();
-		if (StringUtils.isEmpty(d)) {
-			d = box.getLatinName();
-		}
-		boolean isSameDepicted = box.getLatinName().equalsIgnoreCase(d);
-		String imageName = box.getImage();//.replace("'", "\\'");
+		d = formatDepictedName(box.getLatinName(), d);
+		String imageName = box.getImage();
 		String text = 
 			"[[File:"
 			+ imageName + "|thumb|250px|''";
-		if (isSameDepicted) {
-			text += d;
-		} else {
-			text += ("[[" + d + "]]");
-		}
+		text += d;
 		text += "'']]\n\n";
 		return text;
+	}
+	private String formatDepictedName(String latinName, String depicted) {
+		if (StringUtils.isEmpty(depicted)) {
+			depicted = latinName;
+		}
+		// check for "C. orestes" and "Callosciurus orestes"
+		// TODO - could also try and format for C. f. something, but since that's much more rare...
+		if (depicted.length() > 2 && depicted.charAt(1) == '.' && depicted.charAt(0) == latinName.charAt(0)) {
+			int pos = latinName.indexOf(' ');
+			if (pos > 0) {
+				depicted = latinName.substring(0, pos) + depicted.substring(2);
+			}
+		}
+		boolean isSameDepicted = latinName.equalsIgnoreCase(depicted);
+		if (isSameDepicted) {
+			return depicted;
+		} else {
+			return ("[[" + depicted + "]]");
+		}
 	}
 	/**
 	 == Taxonavigation ==

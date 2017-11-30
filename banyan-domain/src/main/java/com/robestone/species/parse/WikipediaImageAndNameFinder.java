@@ -7,7 +7,9 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.robestone.species.CommonNameSimilarityChecker;
 import com.robestone.species.CompleteEntry;
@@ -18,7 +20,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
 		
-//		args = new String[] {"Cladonia"};
+		args = new String[] {"Cetraria islandica"};
 		
 		if (args != null && args.length == 1) {
 			new WikipediaImageAndNameFinder().runOne(args[0]);
@@ -55,12 +57,24 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 		int interestingCount = 0;
 		boolean onlyKeepBest = false;
 		
+		Set<String> latinNames = new HashSet<>();
+		for (CompleteEntry entry: entries) {
+			latinNames.add(entry.getLatinName());
+		}
+		
+		
 		LogHelper.speciesLogger.debug("WikipediaImageAndNameFinder.run. total/max " + entries.size() + "/" + maxToShow);
 		
 		for (CompleteEntry entry: entries) {
 			try {
 				totalCount++;
 				Taxobox box = crawler.toTaxobox(entry.getLatinName());
+				
+				// we will skip this if it was (for example) a redirect to a non-existent, or a page we don't want to look at
+				if (!latinNames.contains(box.getLatinName())) {
+					continue;
+				}
+				
 				if (isBoxInteresting(box, entry)) {
 					LogHelper.speciesLogger.info("=============================== "  + interestingCount + "/" + totalCount);
 					LogHelper.speciesLogger.info(entry.getLatinName());

@@ -10,15 +10,22 @@ import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
 
+/**
+ * This is the main class to run to get new entries into the database.
+ * @author jacob
+ */
 public class RecentChangesUpdater extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		
 		RecentChangesUpdater recent = new RecentChangesUpdater();
 
+		recent.maxRecentChangesLinks = 300;
+		recent.maxOldLinks = 100;
+		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
-		boolean crawlOldLinks = false;
+		boolean crawlOldLinks = true;
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		
@@ -28,7 +35,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		if (args != null && args.length > 0) {
 			recent.maxOldLinks = 0;
-			recent.maxChanges = 0;
+			recent.maxRecentChangesLinks = 0;
 			recent.maxDays = 0;
 			runMaintenance = false;
 			crawlParseStatus = false;
@@ -41,7 +48,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 					recent.maxOldLinks = Integer.parseInt(p[1]);
 				}
 				if (p[0].equals("maxChanges")) {
-					recent.maxChanges = Integer.parseInt(p[1]);
+					recent.maxRecentChangesLinks = Integer.parseInt(p[1]);
 				}
 				if (p[0].equals("maxDays")) {
 					recent.maxDays = Integer.parseInt(p[1]);
@@ -56,7 +63,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 					recreateCleanNames = Boolean.parseBoolean(p[1]);
 				}
 			}
-			crawlNewLinks = recent.maxChanges > 0;
+			crawlNewLinks = recent.maxRecentChangesLinks > 0;
 			crawlOldLinks = recent.maxOldLinks > 0;
 		}
 		
@@ -86,7 +93,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 	}
 	
 	private int maxOldLinks = 1000;
-	private int maxChanges = 5000;
+	private int maxRecentChangesLinks = 5000;
 	private int maxDays = 1;
 	private boolean downloadImages;
 	private boolean recreateCleanNames;
@@ -166,8 +173,8 @@ public class RecentChangesUpdater extends AbstractWorker {
 	public void crawlNewLinks() throws Exception {
 		Set<String> allLinks = new HashSet<String>();
 
-		String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&days=" +
-				+ maxDays + "&limit=" + maxChanges
+		String url = "https://species.wikimedia.org/w/index.php?title=Special:RecentChanges&hidebots=0&days=" +
+				+ maxDays + "&limit=" + maxRecentChangesLinks
 				+ "&namespace=0";
 		LogHelper.speciesLogger.info("url." + url);
 		String page = WikiSpeciesCache.getPageForUrl(url, 100);

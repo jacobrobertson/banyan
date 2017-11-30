@@ -15,9 +15,11 @@ public class WikiSpeciesParser {
 
 	public static final String OKINA = String.valueOf((char) 0x02BB);
 
+	// <a class="mw-selflink selflink">Catapsilothrix</a>
+	
 	private Pattern rankPattern = Pattern.compile("(?:\\s+|<dd>|<p>|<li>)†?" +
 			getRanksPatternPart(false) +
-			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?<strong class=\"selflink\">");
+			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?(?:<i>)?(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)");
 	private Pattern extinctPattern = Pattern.compile(":([\\s†]*)?(?:<i>|<b>)*([\\s†]*)<strong class=\"selflink\">");
 	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?\\s*(.*?)\\s*(?:</div>|<br />)");
 	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");

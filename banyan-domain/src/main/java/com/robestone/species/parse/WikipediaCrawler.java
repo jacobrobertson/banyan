@@ -9,7 +9,7 @@ public class WikipediaCrawler {
 
 	public static void main(String[] args) {
 		WikipediaCrawler c = new WikipediaCrawler();
-		c.showBoth("Eriocranioidea");
+		c.showBoth("Trachypithecus phayrei");
 //		c.showOne("Meghimatium fruhstorferi");
 	}
 	private WikipediaTaxoboxParser parser = new WikipediaTaxoboxParser();

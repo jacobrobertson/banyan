@@ -34,7 +34,7 @@ public class WikipediaTaxoboxParser {
 //			"([" + W + "]+)"
 			);
 	private Pattern imagePattern = Pattern.compile(
-			"([" + W + "\\(\\),\\']+)"
+			"(?:File:)?([" + W + "\\(\\),\\'–]+)"
 			);
 	// TODO - picks up wrong one on these
 	// image_caption = ''[[Omphalotus nidiformis|O. nidiformis]]''<br> on ''[[Banksia serrata]]'' stump,<br> [[Picnic Point, New South Wales]]
@@ -121,8 +121,12 @@ public class WikipediaTaxoboxParser {
 	}
 	private void cleanImage(Taxobox box) {
 		String image = box.getImage();
-		if (image != null && image.toUpperCase().endsWith(".SVG")) {
-			box.setImage(null);
+		if (image != null) {
+			if (image.toUpperCase().endsWith(".SVG")) {
+				box.setImage(null);
+			} else if (image.contains("Deleted")) {
+				box.setImage(null);
+			}
 		}
 	}
 	private void ensureGoodCommonName(Taxobox box) {
@@ -190,20 +194,34 @@ public class WikipediaTaxoboxParser {
 		if (caption == null) {
 			return null;
 		}
+		if (caption.startsWith("Illustration by")) {
+			// this pattern never has the latin name in it
+			return null;
+		}
 		String name = WikiSpeciesParser.getGroup(
 				caption, imageSpeciesDepictedPattern3, imageSpeciesDepictedPattern, imageSpeciesDepictedPattern2);
 		if (name == null) {
 			return null;
 		}
-		if (name.contains("Illustration by")) {
-			name = null;
-		}
 		if (name.startsWith("In ")) {
-			name = null;
+			return null;
+		}
+		if (isNonLatin(name)) {
+			return null;
 		}
 		
 		return name;
 	}
+	private String[] badImageNames = {"Forest", "Reserve", "Illustration"};
+	private boolean isNonLatin(String caption) {
+		for (int i = 0; i < badImageNames.length; i++) {
+			if (caption.contains(badImageNames[i])) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private String getLatinName(List<Line> lines, String originalLatinName) {
 		String n = getLatinNameWithMatchExact(lines, originalLatinName);
 		if (n != null) {
