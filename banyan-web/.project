@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>banyan-web</name>
-	<comment></comment>
+	<name>species-tapestry-1.2-SNAPSHOT</name>
+	<comment>NO_M2ECLIPSE_SUPPORT: Project files created with the maven-eclipse-plugin are not supported in M2Eclipse.</comment>
 	<projects>
 		<project>banyan-domain</project>
 	</projects>

@@ -28,6 +28,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		boolean crawlOldLinks = true;
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
+		boolean runMaintenanceOnly = !true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
@@ -72,20 +73,22 @@ public class RecentChangesUpdater extends AbstractWorker {
 		
 		LogHelper.speciesLogger.info("RecentChangesUpdater.main.argsParsed");
 		
-		if (crawlParseStatus) {
-			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
-			recent.crawlParseStatus();
-			recent.crawlTreeReport();
+		if (!runMaintenanceOnly) {
+			if (crawlParseStatus) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
+				recent.crawlParseStatus();
+				recent.crawlTreeReport();
+			}
+			if (crawlNewLinks) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
+				recent.crawlNewLinks();
+			}
+			if (crawlOldLinks) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
+				recent.crawlOldLinks();
+			}
 		}
-		if (crawlNewLinks) {
-			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
-			recent.crawlNewLinks();
-		}
-		if (crawlOldLinks) {
-			LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
-			recent.crawlOldLinks();
-		}
-		if (runMaintenance) {
+		if (runMaintenance || runMaintenanceOnly) {
 			LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
 			recent.runMaintenance();
 			recent.runReports();
