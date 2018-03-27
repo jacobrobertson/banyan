@@ -24,9 +24,10 @@ public class IdCruncher {
 	private int minPadSize;
 	private char padChangeDelimiter = '_';
 	private int[] minValues;
+	private String[] pads;
 	
 	public static final String R62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	
+
 	/**
 	 * 62 is for 0-9, a-z, A-Z.
 	 * 3 means padSize of 3.
@@ -46,8 +47,12 @@ public class IdCruncher {
 		this.radix = chars.length();
 		this.minPadSize = padSize;
 		minValues = new int[10];
+		pads = new String[10];
+		String padding = ""; // String.valueOf(padChangeDelimiter);
 		for (int i = 0; i < minValues.length; i++) {
 			minValues[i] = (int) Math.pow(radix, i + 1);
+			pads[i] = padding;
+			padding += String.valueOf(padChangeDelimiter);
 		}
 	}
 	public static IdCruncher withSubtraction(String chars) {
@@ -234,8 +239,11 @@ public class IdCruncher {
 		return buf.toString();
 	}
 	public int toInt(String s) {
+		return (int) toLong(s);
+	}
+	public long toLong(String s) {
 		int len = s.length() - 1;
-		int val = 0;
+		long val = 0;
 		for (int i = 0; i <= len; i++) {
 			char c = s.charAt(i);
 			int n = toInt(c);
@@ -252,18 +260,18 @@ public class IdCruncher {
 	public String toString(int n) {
 		return toString(n, true);
 	}
-	private String toString(int n, boolean pad) {
+	public String toString(long n, boolean pad) {
 		return toString(n, pad, this.minPadSize);
 	}
-	private String toString(int n, boolean pad, int padSize) {
+	private String toString(long n, boolean pad, int padSize) {
 		String s;
 		if (n == 0) {
 			s = zero;
 		} else {
 			StringBuilder buf = new StringBuilder();
 			while (n > 0) {
-				int next = n / radix;
-				int diff = n - (next * radix);
+				long next = n / radix;
+				int diff = (int) (n - (next * radix));
 				buf.insert(0, toChar(diff));
 				n = next;
 			}
@@ -278,6 +286,50 @@ public class IdCruncher {
 	}
 	public char toChar(int n) {
 		return chars.charAt(n);
+	}
+	
+	public CrunchedIds parse(String crunchedIds, String pinnedIdsMask) {
+		List<Integer> idsList = toList(crunchedIds);
+		Set<Integer> pinnedIds = null;
+		if (pinnedIdsMask != null) {
+			pinnedIds = new HashSet<>();
+			// we use a long, because we want to be able to pin many ids
+			long longMask = toLong(pinnedIdsMask);
+			for (int i = 0; i < idsList.size(); i++) {
+				if (((1 << i) & longMask) != 0) {
+					pinnedIds.add(idsList.get(i));
+				}
+			}
+		}
+		Set<Integer> idsSet = new HashSet<>(idsList);
+		
+		return new CrunchedIds(idsSet, pinnedIds, crunchedIds, pinnedIdsMask);
+	}
+	public CrunchedIds build(Collection<Integer> ids, Set<Integer> pinnedIds) {
+		
+		String crunchedIds = toString(ids);
+		String pinnedMask = null;
+		
+		Set<Integer> idsSet;
+		if (ids instanceof Set) {
+			idsSet = (Set<Integer>) ids;
+		} else {
+			idsSet = new HashSet<>(ids);
+		}
+		
+		if (pinnedIds != null) {
+			List<Integer> idsList = new ArrayList<>(ids);
+			Collections.sort(idsList);
+			long mask = 0;
+			for (int i = 0; i < idsList.size(); i++) {
+				if (pinnedIds.contains(idsList.get(i))) {
+					mask |= (1 << i);
+				}
+			}
+			pinnedMask = toString(mask, false);
+		}
+		
+		return new CrunchedIds(idsSet, pinnedIds, crunchedIds, pinnedMask);
 	}
 	
 }

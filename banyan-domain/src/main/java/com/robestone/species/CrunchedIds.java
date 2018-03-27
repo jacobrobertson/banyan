@@ -5,9 +5,18 @@ import java.util.Set;
 public class CrunchedIds {
 
 	private Set<Integer> ids;
+	private Set<Integer> pinnedIds;
 	private String crunchedIds;
 	private IdCruncher cruncher;
+	private String pinnedMask;
 
+	public CrunchedIds(Set<Integer> ids, Set<Integer> pinnedIds,
+			String crunchedIds, String pinnedMask) {
+		this.ids = ids;
+		this.pinnedIds = pinnedIds;
+		this.crunchedIds = crunchedIds;
+		this.pinnedMask = pinnedMask;
+	}
 	public CrunchedIds(Set<Integer> ids, IdCruncher cruncher) {
 		this.ids = ids;
 		this.cruncher = cruncher;
@@ -37,5 +46,11 @@ public class CrunchedIds {
 		} else {
 			return ids.size();
 		}
+	}
+	public Set<Integer> getPinnedIds() {
+		return pinnedIds;
+	}
+	public String getPinnedMask() {
+		return pinnedMask;
 	}
 }
