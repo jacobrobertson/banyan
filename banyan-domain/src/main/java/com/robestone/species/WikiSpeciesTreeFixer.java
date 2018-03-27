@@ -21,7 +21,7 @@ public class WikiSpeciesTreeFixer {
 	 * Reassigns all parent latin names.
 	 */
 	private Map<String, String> replacedParentLatinNames = new HashMap<String, String>(); {
-		replacedParentLatinNames.put("Eutheria", "Placentalia");
+//		replacedParentLatinNames.put("Eutheria", "Placentalia");
 		replacedParentLatinNames.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
@@ -36,9 +36,10 @@ public class WikiSpeciesTreeFixer {
 		assignParent.put("Bacteria", "Arbor vitae");
 		
 		// general fixes due to terms being under dispute
-		assignParent.put("Placentalia", "Theria");
-		assignParent.put("Aves", "Avialae");
-		assignParent.put("Chordata", "Deuterostomia");
+		// I think each of these was fixed
+//		assignParent.put("Placentalia", "Theria");
+//		assignParent.put("Aves", "Avialae");
+//		assignParent.put("Chordata", "Deuterostomia");
 
 		// these I set to null to remove them from the tree because they have a "better" alternative, 
 		//	and these aren't needed, they're just clutter
