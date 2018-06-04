@@ -212,10 +212,16 @@ public class WikipediaTaxoboxParser {
 		
 		return name;
 	}
-	private String[] badImageNames = {"Forest", "Reserve", "Illustration"};
+	private String[] badImageNames = 
+		{"Forest", "Reserve", "Illustration", "Nature", "Conservation", "Sanctuary", 
+				"Zoo", "Project", "Area",
+				"National", "Museum", "Nature", "Science"	
+				};
 	private boolean isNonLatin(String caption) {
 		for (int i = 0; i < badImageNames.length; i++) {
-			if (caption.contains(badImageNames[i])) {
+			if (caption.contains(" " + badImageNames[i])
+					|| caption.contains(badImageNames[i] + " ")
+					) {
 				return true;
 			}
 		}

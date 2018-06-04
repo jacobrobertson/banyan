@@ -20,7 +20,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
 		
-		args = new String[] {"Cetraria islandica"};
+//		args = new String[] {"Cetraria islandica"};
 		
 		if (args != null && args.length == 1) {
 			new WikipediaImageAndNameFinder().runOne(args[0]);
@@ -69,6 +69,9 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 			try {
 				totalCount++;
 				Taxobox box = crawler.toTaxobox(entry.getLatinName());
+				if (box == null) {
+					continue;
+				}
 				
 				// we will skip this if it was (for example) a redirect to a non-existent, or a page we don't want to look at
 				if (!latinNames.contains(box.getLatinName())) {

@@ -29,7 +29,7 @@ public class TaxoboxFormatter {
 		if (isNamesInteresting) {
 			String common = box.getCommonName();
 			if (!StringUtils.isEmpty(common)) {
-				entries.add("\"common\":\"" + common.replace("'", "\\'") + "\"");
+				entries.add("\"commonName\":\"" + common.replace("'", "\\'") + "\"");
 			}
 		}
 		for (int i = 0; i < entries.size(); i++) {

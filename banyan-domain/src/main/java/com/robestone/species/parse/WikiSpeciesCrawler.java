@@ -23,16 +23,25 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		
 		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = false;
+		boolean argIsParentTree = false;
+		boolean downstreamOnly = false;
+		int distance = 5;
 		//*
 		args = new String[] {
-				"Lucianovenator",
+				"Placentalia", "Theria",
+				"Aves", "Avialae",
+				"Chordata", "Deuterostomia"
 		};
 		crawlAllStoredLinks = false;
 		//*/
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
-		crawler.pushOnlyTheseNames(new HashSet<String>(Arrays.asList(args)));
+		if (argIsParentTree) {
+			crawler.pushTree(args[0], distance, downstreamOnly);
+		} else {
+			crawler.pushOnlyTheseNames(new HashSet<String>(Arrays.asList(args)));
+		}
 		if (crawlAllStoredLinks) {
 			crawler.pushAllFoundLinks();
 		}
@@ -46,6 +55,12 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private WikiSpeciesParser parser = new WikiSpeciesParser();
 	private RedirectPageParser redirectPageParser = new RedirectPageParser();
 	private int updatedCount = 0;
+	
+	
+	public void pushTree(String rootLatinName, int distance, boolean downstreamOnly) {
+		Set<String> names = speciesService.findLatinNamesInTree(rootLatinName, distance, downstreamOnly);
+		pushOnlyTheseNames(names);
+	}
 	
 	/**
 	 * Pushes any links in the Crawl table in status FOUND

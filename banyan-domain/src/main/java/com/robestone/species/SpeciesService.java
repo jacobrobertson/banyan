@@ -389,6 +389,43 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return template.query("select latin_name from species where rank > 0 and parent_latin_name is not null", 
 				new EntityMapperRowMapper());
 	}
+	public Set<String> findLatinNamesInTree(String rootLatinName, int distance, boolean downstreamOnly) {
+		Set<String> set = new HashSet<>();
+		set.add(rootLatinName);
+		findLatinNamesInTree(rootLatinName, distance, downstreamOnly, set);
+		return set;
+	}
+	private void findLatinNamesInTree(String rootLatinName, int distance, boolean downstreamOnly, Set<String> found) {
+		
+		// find the root id
+		CompleteEntry entry = findEntryByLatinName(rootLatinName);
+		
+		// get each adjoining node - up and down
+		List<Integer> childIds = findChildrenIdsFromPersistence(entry.getId());
+		List<CompleteEntry> nodes = new ArrayList<>();
+		for (Integer childId: childIds) {
+			CompleteEntry child = findEntry(childId);
+			nodes.add(child);
+		}
+
+		if (!downstreamOnly) {
+			CompleteEntry parent = findEntry(entry.getParentId());
+			nodes.add(parent);
+		}
+		
+		distance--;
+		for (CompleteEntry node: nodes) {
+			
+			boolean added = found.add(node.getLatinName());
+			
+			// recurse, checking the distance
+			if (distance > 0 && added) {
+				findLatinNamesInTree(node.getLatinName(), distance, downstreamOnly, found);
+			}
+		}
+		
+	}
+	
 	public Collection<CompleteEntry> findBoringEntries(boolean bothBoring) {
 		String andOr;
 		if (bothBoring) {
