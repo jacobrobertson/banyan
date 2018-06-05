@@ -1,5 +1,6 @@
 function testFunction() {
 	$("#tree").empty();
+	addEntriesToMasterMap(data2.entries);
 	buildTree($("#tree"), dbMap["1"]);
 }
 function addChildTestFunction() {
@@ -67,7 +68,15 @@ function appendEntryLinesElement(h, e) {
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
 	var div = $("<div id='node-" + e.id + "' class='Node'></div>").appendTo(td); 
-	buildNodeEntryLine(div, e);	
+	buildNodeEntryLine(div, e, 0);
+	
+	if (e.collapsed) {
+		for (var i = 0; i < e.collapsed.length; i++) {
+			div.append($("<br/>"));
+			buildNodeEntryLine(div, e.collapsed[i], i + 1);
+		}
+	}
+	
 	var blankTr = $("<tr>").appendTo(table);
 	if (showLine) {
 		$("<td class='b'>&nbsp;</td>").appendTo(tr);
@@ -75,25 +84,20 @@ function appendEntryLinesElement(h, e) {
 	}
 	table.appendTo(h);
 }
-function appendEntryLinesElement_REAL(htmlElement, dataElement) {
-	// create the base table, TODO determine the rowspans, and padding tr if needed
-	var table = $("<table></table>").appendTo(htmlElement);
-	var div = $('<div id="node-6691" class="Node"></div>')
-				.appendTo($('<td class="n" rowspan="2"></td>'))
-				.appendTo($("<tr></tr>")).appendTo(table);
 
-	// TODO walk down the list of nodes, add the <br>
-	buildNodeEntryLine(div, dataElement);
-	
-	// append any padding <tr>s TODO confirm this is necessary
-	table.append("<tr></tr>");
-}
-
-function buildNodeEntryLine(h, e) {
+function buildNodeEntryLine(h, e, depth) {
 	var span = $('<span class="EntryLine EntryLineTop"></span>').appendTo(h);
 	// detail button
-	span.append('<a title="Go to Details" href="search.detail/' + e.href + 
-			'"><img src="' + iconPath() + '/detail_first.png" class="tree-detail_first" alt="search.detail" /></a>');
+	var detailIcon = "detail_first.png";
+	var detailClass = "tree-detail_first";
+	if (depth > 0) {
+		detailIcon = "detail_indented.png";
+		detailClass = "tree-detail_indented";
+	}
+	var pad = getNbsps(depth);
+	span.append(pad + '<a title="Go to Details" href="search.detail/' + e.href + 
+			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
+			detailClass + '" alt="search.detail" /></a>');
 	// image and link
 	span.append('<a class="preview" name="' + e.id + '" href="search.detail/' + e.href + '">' 
 		 + e.cname + '<img alt="' + e.alt + '" height="' + e.height + '" width="' + e.width + '" src="' + 
@@ -101,6 +105,13 @@ function buildNodeEntryLine(h, e) {
 	// menu button
 	span.append('<a href="search.tree/TODO#' + e.id + '" name="' + e.id + '" class="opener">'
 			+ '<img src="' + iconPath() + '/menu_more.png" alt="menu"></a>');
+}
+function getNbsps(count) {
+	var pad = "";
+	for (var i = 0; i < count; i++) {
+		pad = pad + "&nbsp";
+	}
+	return pad;
 }
 function imagePath() {
 	return "images";
@@ -215,6 +226,7 @@ var data = {
 			{"id": "41", "cname": "AFAO", "parentId": "4" },
 			{"id": "42", "cname": "PSCAO", "parentId": "4" },
 			{"id": "421", "cname": "SFG", "parentId": "42" },
+			{"id": "4211", "cname": "TTPP", "parentId": "421" },
 			{"id": "43", "cname": "PARMO", "parentId": "4" },
 			{"id": "21", "cname": "IPUSO", "parentId": "2" },
 			{"id": "22", "cname": "DBMO", "parentId": "2" }
