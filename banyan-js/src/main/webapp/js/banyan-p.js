@@ -1,53 +1,23 @@
 function testFunction() {
+	$("#tree").empty();
 	buildTree($("#tree"), dbMap["1"]);
 }
 function addChildTestFunction() {
 	addEntriesToMasterMap(data2.entries);
-	insertChildTree(dbMap["4"]);
+	testFunction();
 }
-
-function insertChildTree(e) {
-	// locate the correct parent html element for the parent we will add it to
-	var table = $("tree-" + e.parentId);
-	
-	// locate the insertion point - i.e. we are not appending this child, we are inserting it
-	var pos = dbMap[e.parentId].children.indexOf(e) * 2;
-	
-	// render the html and add to that element
-	
-	
-	// adjust the rowspan for the proper parent elements
-	
-	// adjust the style for the linking cells (remove "l", etc)
+function testFunction2() {
+	// TODO
 }
-
-// see https://stackoverflow.com/questions/3562493/jquery-insert-div-as-certain-index
-function insertAt(expression, index, element) {
-	var lastIndex = expression.children().size();
-	// TODO I probably don't need this check
-	if (index < 0) {
-		index = Math.max(0, lastIndex + 1 + index);
-	}
-	expression.append(element);
-	if (index < lastIndex) {
-		expression.children().eq(index).before(expression.children().last());
-	}
-}
-
-/**
- * @param h root Html Element
- * @param e root data Entry
- */
 function buildTree(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	buildRowsForTree(table, e);
 }
-// TODO add an index, and instead of append to, insert them at that position
 function buildRowsForTree(table, e) {
 	var tr = $("<tr></tr>").appendTo(table);
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (e.children.length * 2) + "'></td>").appendTo(tr);
-	buildNodeTable(td, e);
+	appendEntryLinesElement(td, e);
 	var lastIndex = e.children.length - 1;
 	for (var index = 0; index < e.children.length; index++) {
 		var firstChild = (index == 0);
@@ -73,16 +43,31 @@ function buildRowsForTree(table, e) {
 	}
 }
 
-/**
- * This is just the table element that holds the Entry Lines
- */
-function buildNodeTable(h, d) {
-	var showLine = (d.children.length > 1);
+function buildEntryLinesElement(e) {
+	var showLine = (e.children.length > 1);
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	 
-	$("<td class='n' rowspan='2'><div id='node-" + d.id + "' class='Node'>" 
-			+ d.cname + "</div></td>").appendTo(tr);
+	$("<td class='n' rowspan='2'><div id='node-" + e.id + "' class='Node'>" 
+			+ e.cname + "</div></td>").appendTo(tr);
+	
+	// add the necessary blank cells, but do not set the class (b, l) here
+	tr.append($("<td>&nbsp;</td>")); // this is the cell that will need the class TODO add an id?
+	table.append($("<tr><td>&nbsp;</td></tr>"));
+	
+	return table;
+}
+
+/**
+ * This is just the table element that holds the Entry Lines
+ */
+function appendEntryLinesElement(h, e) {
+	var showLine = (e.children.length > 1);
+	var table = $("<table></table>");
+	var tr = $("<tr></tr>").appendTo(table);
+	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
+	var div = $("<div id='node-" + e.id + "' class='Node'></div>").appendTo(td); 
+	buildNodeEntryLine(div, e);	
 	var blankTr = $("<tr>").appendTo(table);
 	if (showLine) {
 		$("<td class='b'>&nbsp;</td>").appendTo(tr);
@@ -90,7 +75,7 @@ function buildNodeTable(h, d) {
 	}
 	table.appendTo(h);
 }
-function buildNodeTable_REAL(htmlElement, dataElement) {
+function appendEntryLinesElement_REAL(htmlElement, dataElement) {
 	// create the base table, TODO determine the rowspans, and padding tr if needed
 	var table = $("<table></table>").appendTo(htmlElement);
 	var div = $('<div id="node-6691" class="Node"></div>')
@@ -121,7 +106,7 @@ function imagePath() {
 	return "images";
 }
 function iconPath() {
-	return "../../../../../banyan-web/src/main/webapp/icons";
+	return "icons";
 }
 
 function addEntriesToMasterMap(entries) {
@@ -130,6 +115,7 @@ function addEntriesToMasterMap(entries) {
 	for (var i = 0; i < entries.length; i++) {
 		var e = entries[i];
 		e.children = [];
+		enhanceEntryTemp(e);
 		// TODO this might not be a simple replacement, depending on the operation
 		dbMap[e.id] = e;
 	}
@@ -142,6 +128,7 @@ function addEntriesToMasterMap(entries) {
 		if (p) {
 			var dname = getEntryDisplayName(e);
 			var foundPos = false;
+			var foundSame = false;
 			// TODO - need to insert in the correct position right now
 			for (var j = 0; j < p.children.length; j++) {
 				var c = p.children[j];
@@ -150,14 +137,67 @@ function addEntriesToMasterMap(entries) {
 					p.children.splice(j, 0, e);
 					foundPos = true;
 					break;
+				} else if (e.id == c.id) {
+					foundSame = true;
+					p.children[j] = e;
+					break;
 				}
 			}
-			if (!foundPos) {
+			if (!foundPos && !foundSame) {
 				p.children.push(e);
 			}
 		}
 	}
+	
+	collapseNodes(getRoot(entries[0]));
 }
+function getRoot(e) {
+	while (true) {
+		var p = dbMap[e.parentId];
+		if (p) {
+			e = p;
+		} else {
+			break;
+		}
+	}
+	return e;
+}
+// collapse nodes into the "chains" - whenever there is a child with just one child, etc, roll it up
+// TODO add the "..." behavior for long chains
+function collapseNodes(e) {
+	if (e.children.length == 0) {
+		return;
+	} else if (e.children.length > 1) {
+		// don't do anything for this node, but recurse
+		for (var i = 0; i < e.children.length; i++) {
+			collapseNodes(e.children[i]);
+		}
+	} else {
+		e.collapsed = [];
+		var r = e;
+		while (r.children.length == 1) {
+			var c = r.children[0];
+			e.collapsed.push(c);
+			r.children = [];
+			r = c;
+		}
+	}
+}
+//function collapseNode(e) {
+//	for (var i = 0; i < entries.length; i++) {
+//		var e = entries[i];
+//	}
+//}
+
+// this is temp until I start using actual data
+function enhanceEntryTemp(e) {
+	e.alt = "Endopterygota"; 
+	e.img = "15/Endopterygota.jpg";
+	e.href = "Complete_Metamorphosis_Insects_Endopterygota_6691";
+	e.height = 16;
+	e.width = 20;
+}
+
 function getEntryDisplayName(e) {
 	// TODO we will care about parens, and boring, etc...
 	return e.cname;
@@ -168,11 +208,16 @@ var data = {
 			// example for the full tree - I won't use this until I'm ready to implement full look
 			//"6691": { "cname": "Complete Metamorphosis Insects", "parentId": "6692", "alt": "Endopterygota", 
 			//	"img": "15/Endopterygota.jpg", "href": "Complete_Metamorphosis_Insects_Endopterygota_6691", "height": 16, "width": 20},
-			{"id": "1", "cname": "Tree of Life", "parentId": "0" },
-			{"id": "2", "cname": "Mammals", "parentId": "1" },
-			{"id": "3", "cname": "Plants", "parentId": "1" },
-			{"id": "21", "cname": "Dog", "parentId": "2" },
-			{"id": "22", "cname": "Cat", "parentId": "2" }
+			{"id": "1", "cname": "FSA", "parentId": "0" },
+			{"id": "2", "cname": "OTC", "parentId": "1" },
+			{"id": "3", "cname": "AMC", "parentId": "1" },
+			{"id": "4", "cname": "ADC", "parentId": "1" },
+			{"id": "41", "cname": "AFAO", "parentId": "4" },
+			{"id": "42", "cname": "PSCAO", "parentId": "4" },
+			{"id": "421", "cname": "SFG", "parentId": "42" },
+			{"id": "43", "cname": "PARMO", "parentId": "4" },
+			{"id": "21", "cname": "IPUSO", "parentId": "2" },
+			{"id": "22", "cname": "DBMO", "parentId": "2" }
 		]
 	};
 var dbMap = {};
@@ -182,9 +227,8 @@ addEntriesToMasterMap(data.entries);
 // represents additional data retrieved from server
 var data2 = {
 		"entries": [
-			{"id": "4", "cname": "Birds", "parentId": "1" },
-			{"id": "41", "cname": "Canary", "parentId": "4" },
-			{"id": "42", "cname": "Eagle", "parentId": "4" }
+			{"id": "31", "cname": "AO", "parentId": "3" },
+			{"id": "32", "cname": "CITSO", "parentId": "3" }
 		]
 	};
 
