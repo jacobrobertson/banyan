@@ -1,14 +1,108 @@
-function testFunction() {
-	$("#tree").empty();
-	addEntriesToMasterMap(data2.entries);
-	buildTree($("#tree"), dbMap["1"]);
+// global vars and their functions
+var dbMap = {};
+var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't show
+
+function getGlobalMap() {
+	return dbMap;
+}
+function getMapEntry(key) {
+	return dbMap[key];
+}
+function isEntryShown(id) {
+	return (dbEntryIdsToShow[id] == true);
+}
+function markNodeAsShown(id, show) {
+	dbEntryIdsToShow[id] = show;
+}
+// -------
+
+// ----- TEST functions -----
+var testFile = "1-1528250141737"; // "6691";
+function testLoadJson() {
+	log("Starting Test Function", 4);
+	loadJson(testFile, {}, true);
+}
+function testRenderTree(testId, keepOnlyNew) { // from button
+	renderTree(testId, keepOnlyNew);
+}
+function testDeleteTreeNode(id) {
+	markNodeAsShown(id, false);
+	var testId = $("#renderId").val();
+	testRenderTree(testId, true);
+}
+// util mostly for testing phase
+function addAllToRenderMap(e) {
+	dbEntryIdsToShow[e.id] = true;
+	for (var i = 0; i < e.children.length; i++) {
+		addAllToRenderMap(e.children[i]);
+	}
 }
 function addChildTestFunction() {
-	addEntriesToMasterMap(data2.entries);
+	addEntriesToMap(data2.entries);
 	testFunction();
 }
-function testFunction2() {
-	// TODO
+// ------- end test functions
+function renderTree(id, keepOnlyNew) { // from button
+	$("#tree").empty();
+	// for this test, we flag every entry as being rendered
+	if (!keepOnlyNew) {
+		addAllToRenderMap(getMapEntry(id));
+	}
+	var e = getMapEntry(id);
+	// we need to collapse nodes only once we know the map is done
+	prepareNodesForRender(e);
+	buildTree($("#tree"), e);
+	addMenusToButtons();
+}
+function addNodesToSelect() {
+	$("#renderId").empty();
+	$("#deleteId").empty();
+	for (var id in dbMap) {
+		$("#renderId").append("<option value='" + id + "'>" + id + "</option>");
+		$("#deleteId").append("<option value='" + id + "'>" + id + "</option>");
+	}
+}
+
+function loadJson(jsonId, idsMap, recurse) {
+
+	
+	// load the json, and in the callback add to worklist and global map
+	
+	/// ----- this really isn't okay, because I don't render it when it's done
+	
+	var url = "../json/" + jsonId + ".json";
+	log("Processing " + url, 2);
+
+	$.getJSON(url, function(data) {
+		log("getJson: " + data + "/" + data.entries, 1);
+		addEntriesToMap(data.entries);
+		for (var i = 0; i < data.entries.length; i++) {
+			var e = data.entries[i];
+			log("Entry " + e.id + " parent:" + e.parent + " c: " + e.cname + " l: " + e.lname, 1);
+			if (e.parent) {
+				log("Entry " + e.id + 
+						" parentId/children = " + e.parent.id + "/" + e.parent.children.length, 1);
+			}
+			
+		}
+		//log("Map Size: " + Object.keys(getGlobalMap()).length);
+		if (recurse) {
+			for (var i = 0; i < data.entries.length; i++) {
+				// TODO need to load parents recursively also, as we might just have one child id
+				//		the problem is that would also load the other map fragments?
+				//		this algorithm really isn't quite right, we should get leafs and then walk up
+				//if (!getMapEntry(data.entries[i].parentId)) {
+					//loadJson(data.entries[i].parentId, idsMap, true);
+				//}
+				var cids = data.entries[i].childrenIds || [];
+				for (var j = 0; j < cids.length; j++) {
+					if (!getMapEntry(cids[j])) {
+						loadJson(cids[j], idsMap, true);
+					}
+				}
+			}
+		}
+	});
 }
 function buildTree(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
@@ -16,11 +110,16 @@ function buildTree(h, e) {
 }
 function buildRowsForTree(table, e) {
 	var tr = $("<tr></tr>").appendTo(table);
+	var children = e.childrenToShow;
+	if (e.collapsed.length > 0) {
+		children = e.collapsed[e.collapsed.length - 1].childrenToShow;
+	}
 	// this td is for the root element's info
-	var td = $("<td rowspan='" + (e.children.length * 2) + "'></td>").appendTo(tr);
-	appendEntryLinesElement(td, e);
-	var lastIndex = e.children.length - 1;
-	for (var index = 0; index < e.children.length; index++) {
+	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
+	var showLine = (children.length > 1);
+	appendEntryLinesElement(td, e, showLine);
+	var lastIndex = children.length - 1;
+	for (var index = 0; index < children.length; index++) {
 		var firstChild = (index == 0);
 		if (!firstChild) {
 			tr = $("<tr></tr>").appendTo(table);
@@ -34,7 +133,7 @@ function buildRowsForTree(table, e) {
 		// this td holds the given child
 		var childTd = $("<td rowspan='2'></td>").appendTo(tr);
 		// render recursively
-		buildTree(childTd, e.children[index]);
+		buildTree(childTd, children[index]);
 		if (index != lastIndex) {
 			blankClass = " class='l'";
 		} else {
@@ -44,37 +143,19 @@ function buildRowsForTree(table, e) {
 	}
 }
 
-function buildEntryLinesElement(e) {
-	var showLine = (e.children.length > 1);
-	var table = $("<table></table>");
-	var tr = $("<tr></tr>").appendTo(table);
-	 
-	$("<td class='n' rowspan='2'><div id='node-" + e.id + "' class='Node'>" 
-			+ e.cname + "</div></td>").appendTo(tr);
-	
-	// add the necessary blank cells, but do not set the class (b, l) here
-	tr.append($("<td>&nbsp;</td>")); // this is the cell that will need the class TODO add an id?
-	table.append($("<tr><td>&nbsp;</td></tr>"));
-	
-	return table;
-}
-
 /**
  * This is just the table element that holds the Entry Lines
  */
-function appendEntryLinesElement(h, e) {
-	var showLine = (e.children.length > 1);
+function appendEntryLinesElement(h, e, showLine) {
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
 	var div = $("<div id='node-" + e.id + "' class='Node'></div>").appendTo(td); 
 	buildNodeEntryLine(div, e, 0);
 	
-	if (e.collapsed) {
-		for (var i = 0; i < e.collapsed.length; i++) {
-			div.append($("<br/>"));
-			buildNodeEntryLine(div, e.collapsed[i], i + 1);
-		}
+	for (var i = 0; i < e.collapsed.length; i++) {
+		div.append($("<br/>"));
+		buildNodeEntryLine(div, e.collapsed[i], i + 1);
 	}
 	
 	var blankTr = $("<tr>").appendTo(table);
@@ -99,8 +180,9 @@ function buildNodeEntryLine(h, e, depth) {
 			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
 	// image and link
+	var name = getEntryDisplayName(e);
 	span.append('<a class="preview" name="' + e.id + '" href="search.detail/' + e.href + '">' 
-		 + e.cname + '<img alt="' + e.alt + '" height="' + e.height + '" width="' + e.width + '" src="' + 
+		 + name + '<img alt="' + e.alt + '" height="' + e.height + '" width="' + e.width + '" src="' + 
 		 	imagePath() + '/tiny/' + e.img + '" class="Thumb" /></a>');
 	// menu button
 	span.append('<a href="search.tree/TODO#' + e.id + '" name="' + e.id + '" class="opener">'
@@ -114,27 +196,27 @@ function getNbsps(count) {
 	return pad;
 }
 function imagePath() {
-	return "images";
+	return "http://jacobrobertson.com/banyan-images"; // "images";
 }
 function iconPath() {
-	return "icons";
+	return "http://jacobrobertson.com/banyan/icons"; // "icons";
 }
 
-function addEntriesToMasterMap(entries) {
-	
+function addEntriesToMap(entries) {
+	var map = getGlobalMap();
 	// add each item to the map
 	for (var i = 0; i < entries.length; i++) {
 		var e = entries[i];
 		e.children = [];
 		enhanceEntryTemp(e);
 		// TODO this might not be a simple replacement, depending on the operation
-		dbMap[e.id] = e;
+		map[e.id] = e;
 	}
 	
 	// link each child to its parent
 	for (var i = 0; i < entries.length; i++) {
 		var e = entries[i];
-		var p = dbMap[e.parentId];
+		var p = map[e.parentId];
 		e.parent = p;
 		if (p) {
 			var dname = getEntryDisplayName(e);
@@ -159,8 +241,6 @@ function addEntriesToMasterMap(entries) {
 			}
 		}
 	}
-	
-	collapseNodes(getRoot(entries[0]));
 }
 function getRoot(e) {
 	while (true) {
@@ -173,45 +253,69 @@ function getRoot(e) {
 	}
 	return e;
 }
-// collapse nodes into the "chains" - whenever there is a child with just one child, etc, roll it up
-// TODO add the "..." behavior for long chains
-function collapseNodes(e) {
-	if (e.children.length == 0) {
-		return;
-	} else if (e.children.length > 1) {
-		// don't do anything for this node, but recurse
-		for (var i = 0; i < e.children.length; i++) {
-			collapseNodes(e.children[i]);
-		}
-	} else {
-		e.collapsed = [];
-		var r = e;
-		while (r.children.length == 1) {
-			var c = r.children[0];
-			e.collapsed.push(c);
-			r.children = [];
-			r = c;
+function prepareNodesForRender(e) {
+	buildShownNodes(e);
+	collapseNodes(e);
+}
+function buildShownNodes(e) {
+	e.childrenToShow = [];
+	for (var i = 0; i < e.children.length; i++) {
+		var c = e.children[i];
+		if (isEntryShown(c.id)) {
+			e.childrenToShow.push(c);
+			buildShownNodes(c);
 		}
 	}
 }
-//function collapseNode(e) {
-//	for (var i = 0; i < entries.length; i++) {
-//		var e = entries[i];
-//	}
-//}
+
+// collapse nodes into the "chains" - whenever there is a child with just one child, etc, roll it up
+// TODO add the "..." behavior for long chains
+function collapseNodes(e) {
+	e.collapsed = [];
+	if (e.childrenToShow.length == 0) {
+		return;
+	} else if (e.childrenToShow.length > 1) {
+		// don't do anything for this node, but recurse
+		for (var i = 0; i < e.childrenToShow.length; i++) {
+			collapseNodes(e.childrenToShow[i]);
+		}
+	} else {
+		var r = e;
+		while (r.childrenToShow.length == 1) {
+			var c = r.childrenToShow[0];
+			e.collapsed.push(c);
+			r = c;
+		}
+		prepareNodesForRender(r);
+	}
+}
 
 // this is temp until I start using actual data
 function enhanceEntryTemp(e) {
 	e.alt = "Endopterygota"; 
 	e.img = "15/Endopterygota.jpg";
-	e.href = "Complete_Metamorphosis_Insects_Endopterygota_6691";
-	e.height = 16;
+	e.href = e.id;// "Complete_Metamorphosis_Insects_Endopterygota_6691";
+	e.height = 16; // TODO these need to be tinyHeight and tinyWidth
 	e.width = 20;
+	e.cpHide = "TODO";
+	e.cpFocus = "TODO";
+	e.cpClose = "TODO";
+	e.cpShow = "TODO";
+	e.cpShowMore = "TODO";
+	e.showCaption = "TODO";
+	e.showMoreCaption = "TODO";
 }
 
 function getEntryDisplayName(e) {
 	// TODO we will care about parens, and boring, etc...
-	return e.cname;
+	return e.cname || e.lname;
+}
+
+var minLogLevel = 3;
+function log(m, level) {
+	if (level >= minLogLevel) {
+		$("#log").append("<div>" + m + "</div>");
+	}
 }
 
 var data = {
@@ -232,8 +336,7 @@ var data = {
 			{"id": "22", "cname": "DBMO", "parentId": "2" }
 		]
 	};
-var dbMap = {};
-addEntriesToMasterMap(data.entries);
+// addEntriesToMasterMap(data.entries);
 
 
 // represents additional data retrieved from server
