@@ -1,0 +1,463 @@
+body {height:90%;background: #e8f3db;}
+
+.Highlight .Node {background:#ffefdc;}
+.Highlight .xb2 {background:#ffefdc;}
+.Highlight .xb3 {background:#ffefdc;}
+.Highlight .xb4 {background:#ffefdc;}
+.NodeCell {padding: 0px 15px 0px 15px;}
+.EntryLine {
+	white-space:nowrap;
+}
+.ChildLines {position: absolute; border-left:1px solid #c82;border-top:1px solid #c82;border-bottom:1px solid #c82;z-index: -100;}
+.ParentLine {position: absolute; border-bottom:1px solid #c82;z-index: -100;}
+.SpeciesTree {height: 99%;}
+.Crumb {color: #c82; }
+
+.NodeTable { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
+.NodeTable td { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
+
+#preview{
+	position:absolute;
+	border:2px solid #f8fbf4;
+	background:#628e2f;
+	padding: 7px;
+	display:none;
+	color:#fff;
+	border-radius: 27px 63px 5px 50px;
+}
+#preview img {
+	border:2px solid #f8fbf4;
+	text-align: center;
+	border-radius: 25px 60px 5px 50px;
+}
+#preview .PopupLatin {
+	padding-top: 10px; /* not working... */
+	padding-left: 23px;
+}
+
+#preview b {
+	text-align: initial;
+	padding-top: 10px; /* not working... */
+	padding-left: 23px;
+}
+
+.NodeButtons { width: 12px; }
+.NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
+.NodeButtons img { margin: 0px; padding: 0px; border: 0px;}
+
+.NodeWords {float:left;}
+.NodeButtonsCell { width: 1%; height: 100%;}
+.NodeButtonsRow { height: 100%;}
+
+.Boring {
+	font-style: italic;
+	color: #828282;
+}
+.preview:focus, .preview:focus .Boring, .preview:focus i {
+	outline: 0;
+	font-weight: bold;
+	color: #228282;
+	text-decoration: underline;
+}
+.Extinct {
+	font-size: 70%;
+	color: #FF4040;
+	cursor: default;
+}
+.TopExtinct {
+	font-style: italic;
+	font-size: 105%;
+	color: red;
+	cursor: default;
+}
+.Node .Box {
+	border:1px solid #466522; 
+	background:#f8fbf4;
+	padding: 1px 5px 1px 5px;
+	color: #628e2f;
+}
+.Button {
+	margin-left: 5px;
+	background:#7eb63d;
+	color: #466522;
+	border-style: solid;
+	border-color: #547a29;
+	border-width: 1px;
+}
+* {
+    outline-color: #628e2f;
+}
+.ButtonOverzzzz {
+	background: #c82;
+	border-color: #ea4;
+}
+.Node .Link {
+	margin-left: 5px;
+	color: #466522;
+	font-weight: bold;
+}
+.Welcome {
+	font-style: italic;
+	font-size: 150%;
+	font-weight: bold;
+	color: #547a29;
+}
+#ExamplesLink, #Ex1, #Ex2, #Ex3, #Ex4, #RandomLink {
+	margin-left: 0px;
+	color: #547a29;
+	font-weight: bold;
+	text-decoration: underline;
+	vertical-align: baseline;
+}
+a.CreditLink {
+	color: #c82;
+	font-weight: bold;
+	text-decoration: underline;
+}
+.HeaderDiv {
+	position: relative;
+	padding-left: 5px;
+}
+
+.Star {
+	text-align: center;
+}
+.Quote {
+	color: #547a29;
+	font-weight: normal;
+	font-style: italic;
+	text-align: center;
+	margin-bottom: 8px;
+}
+.SearchExample {
+	color: #628e2f;
+	font-weight: normal;
+	font-style: normal;
+	text-decoration: none;
+}
+.FaqTitle { font-style: italic; color: #466522; font-size: 1.2em; }
+.Spacer {
+	margin-left: 5px;
+	margin-right: 5px;
+	color: #547a29;
+	font-weight: bold;
+}
+img {
+	border: medium none;
+}
+td.Entry { /* node */
+	padding: 0px;
+}
+td.Left {
+	padding-right: 5px;
+	border-left: solid 1px #c82;
+}
+td.Top {
+	padding-right: 5px;
+	border-top: solid 1px #c82;
+}
+td.Bottom {
+	padding-right: 5px;
+	border-bottom: solid 1px #c82;
+}
+div	.NodeDiv {
+	border: solid 1px black;
+}
+.Blank {
+	/*border: 1px yellow dashed;*/
+}
+table.SpeciesTree {
+	border-collapse: collapse;
+	margin: 0px;
+	border: solid 0px black;
+	padding: 0px;
+	height: 99%;
+}
+
+table {
+	border-collapse: collapse;
+	margin: 0px;
+	padding: 0px;
+	border: solid 0px blue;
+}
+td {
+	border-collapse: collapse;
+	margin: 0px;
+	padding: 0px;
+	border: solid 0px black;
+}
+/* Detail screen */
+.DetailTitle {
+	text-align: left;
+	font-size: 150%;
+	font-weight: bold;
+	color: #547a29;
+}
+.DetailLatinTitle {
+	text-align: left;
+	font-size: 105%;
+	color: #7eb63d;
+	font-style: italic;
+}
+.PopupLatin {
+	font-style: italic;
+	font-weight: bold;
+	color: black;
+}
+.Return {
+	font-size: 100%;
+	color: #c89;
+}
+.DetailColumn {
+	vertical-align: top;
+}
+.DetailImage img {
+	border: 3px solid #c82;
+}
+.DetailImageCell {
+	vertical-align: top;
+	width: 50%;
+}
+.DetailImage {
+	padding-top: 3px;
+}
+.ImageSourceLink {
+	text-align: center;
+}
+.SearchSite {
+	font-size: 105%;
+	color: #c73;
+}
+.Rank {
+	color: #7eb63d;
+	padding-right: 0px;
+	width: 1%;
+	white-space:nowrap;
+}
+.TaxonomyCell {
+	vertical-align: top;
+}
+.Queries a {
+	color: #c82;
+	vertical-align: top;
+}
+.SearchTerm {
+	color: #70a236;
+}
+.SearchSite {
+	color: #70a236;
+}
+
+.ExamplesTable td {
+	vertical-align: top;
+	padding-bottom: 15px;
+}
+.ExampleTitle {
+	font-size: 125%;
+	font-weight: bold;
+	font-style: italic;
+	color: #547a29;
+}
+#controlpanel {
+	display: none;
+	position: absolute;
+	border: solid black 1px;
+	padding: 0px;
+	background: white;
+}
+#controlpanel a {
+	text-decoration: none;
+	color: #c73;
+	padding: 0px;
+	margin: 0px;
+}
+.cpButton {
+	width: 100%;
+	margin: 0px;
+}
+.cpButton img {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding: 1px;
+}
+.faqButton {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding: 1px;
+}
+.detail-button {
+	margin: 0px;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+	padding-bottom: 3px;
+	padding-right: 2px;
+}
+.detail-button-back {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding-bottom: 3px;
+	padding-right: 2px;
+}
+.detail-button-search {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding-bottom: 3px;
+	padding-right: 2px;
+}
+.MenuRow {
+	width: 100%;
+	margin-right: 2px;
+	white-space: nowrap;
+}
+.MenuRow:hover {
+	background: #d94;
+	color: black;
+}
+.opener img {
+	cursor: pointer;
+	margin-left: 3px;
+	vertical-align: middle;
+	width: 15px;
+	height: 15px;
+	padding-left: 2px;
+	padding-right: 2px;
+	padding-bottom: 2px;
+}
+.tree-tree_root {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding: 3px;
+	padding-left: 1px;
+	padding-right: 4px;
+} 
+.tree-detail_first {
+	margin: 0px;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+	padding: 3px;
+	padding-left: 1px;
+	padding-right: 4px;
+}
+.tree-detail_indented {
+	margin: 0px;
+	vertical-align: middle;
+	width: 11px;
+	height: 11px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+	padding-right: 4px;
+	padding-left: 5px;
+}
+.tree-open_children {
+	margin: 0px;
+	vertical-align: middle;
+	width: 13px;
+	height: 13px;
+	padding-bottom: 1px;
+	padding-top: 1px;
+	padding-right: 4px;
+	padding-left: 4px;
+}
+.faqButton-detail_indented {
+	margin: 0px;
+	vertical-align: middle;
+	width: 13px;
+	height: 13px;
+	padding: 1px;
+}
+.faqButton-detail_first {
+	margin: 0px;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+	padding: 1px;
+}
+.star {
+	margin: 0px;
+	vertical-align: middle;
+	width: 13px;
+	height: 13px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+	padding-right: 4px;
+}
+.question {
+	margin: 0px;
+	vertical-align: middle;
+	width: 20px;
+	height: 20px;
+	padding-bottom: 1px;
+	padding-top: 1px;
+	padding-right: 2px;
+}
+.HugeCross {
+	color: red;
+	font-size: 150%;
+}
+
+.Node {
+	display:block; 
+	background:#d1e7b7; 
+	border-top:1px solid #466522;
+	border-bottom:3px solid #466522;
+	border-left:3px solid #466522;
+	border-right:2px solid #466522;
+	padding: 5px; 
+	border-radius: 25px 60px 5px 34px;
+}
+/* Font Styles */
+.Node {color: #628e2f; }
+.Node i {color: #628e2f; }
+.Node a { margin: 0px; padding: 0px; border: 0px; text-decoration: none; color:  #628e2f; vertical-align: middle;}
+.Node img {
+	vertical-align: middle;
+	border-radius: 5px 7px 0px 7px;
+	border-color: #f8fbf4;
+}
+
+.EntryLineTop {
+	padding-right: 20px;
+}
+
+.Thumb {
+	border: 1px solid #e8f3db; 
+	vertical-align: middle; 
+	margin-left: 2px;
+}
+
+.l {
+	border-left: 3px solid #466522;
+}
+.b {
+	border-bottom: 3px solid #466522;
+	width: 15px;
+}
+.t {
+	border-top: 3px solid #466522;
+}
+.n {
+	padding-bottom: 4px;
+}
+.Logo {
+	position: absolute;
+	right: 0;
+	top: -3px;
+	padding-right: 5px;
+}
+.Logo img {
+	width: 194px;
+	height: 25px;
+	border-radius: 0px;
+}
