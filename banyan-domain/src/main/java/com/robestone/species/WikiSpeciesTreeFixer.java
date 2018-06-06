@@ -45,6 +45,7 @@ public class WikiSpeciesTreeFixer {
 		//	and these aren't needed, they're just clutter
 		assignParent.put("Unikonta", null);
 		assignParent.put("Protista", null);
+		assignParent.put("Radiata", null);
 	}
 	
 	private SpeciesService speciesService;

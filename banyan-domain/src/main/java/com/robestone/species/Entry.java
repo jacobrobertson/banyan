@@ -58,6 +58,8 @@ public interface Entry extends Serializable {
 	void setCommonNameSharedWithSiblings(boolean shared);
 	
 	boolean isCollapsed();
+	boolean isPinned();
+	
 	/**
 	 * Meaning how many other entries were collapsed, not counting this one.
 	 */

@@ -39,7 +39,7 @@ public class TreeComponent extends AbstractTreeComponent {
 		List<Entry> node = null;
 		for (Entry child: entry.getChildren()) {
 			// if the child has loaded children, it will get its own node
-			if (child.getLoadedChildrenSize() == 0) {
+			if (child.getLoadedChildrenSize() == 0 || child.isPinned()) {
 				if (node == null) {
 					node = new ArrayList<Entry>();
 					nodes.add(node);
@@ -161,7 +161,15 @@ public class TreeComponent extends AbstractTreeComponent {
 		div.attribute("id", originalId);
 		Entry entry;
 		if (entries.length == 1) {
-			entry = renderNodeLines(writer, entries[0]);
+			
+			 // TODO here is probably the best candidate the render the pinned
+			if (entries[0].isPinned()) {
+				// ...
+				// ???
+				entry = null;
+			} else {
+				entry = renderNodeLines(writer, entries[0]);
+			}
 		} else {
 			entry = renderAggregatedChildNodeLines(writer, entries);
 		}

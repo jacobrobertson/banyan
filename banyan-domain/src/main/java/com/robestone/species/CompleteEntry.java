@@ -10,6 +10,7 @@ public class CompleteEntry implements Entry {
 	private CompleteEntry parent;
 	private EntryProperties props;
 	private int collapsedCount;
+	private boolean pinned;
 	
 	public CompleteEntry() {
 		props = new EntryProperties();
@@ -240,6 +241,12 @@ public class CompleteEntry implements Entry {
 	@Override
 	public int getCollapsedCount() {
 		return collapsedCount;
+	}
+	public boolean isPinned() {
+		return pinned;
+	}
+	public void setPinned(boolean pinned) {
+		this.pinned = pinned;
 	}
 	
 }

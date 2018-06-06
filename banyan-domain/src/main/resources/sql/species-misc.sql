@@ -1,7 +1,7 @@
 SELECT count(*) FROM species;
 SELECT count(*) FROM images;
 
-select * from species where latin_name in ('Arbor vitae');
+select * from species where latin_name in ('Cynognathus');
 
 
 select * from species where (rank = -1 or parent_latin_name is null) and (image_link is not null and common_name is not null);

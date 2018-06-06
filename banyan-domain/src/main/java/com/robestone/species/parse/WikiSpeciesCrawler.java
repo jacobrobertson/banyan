@@ -23,14 +23,12 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		
 		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = false;
-		boolean argIsParentTree = false;
+		boolean argIsParentTree = true;
 		boolean downstreamOnly = false;
-		int distance = 5;
+		int distance = 2;
 		//*
 		args = new String[] {
-				"Placentalia", "Theria",
-				"Aves", "Avialae",
-				"Chordata", "Deuterostomia"
+				"Cynognathus"
 		};
 		crawlAllStoredLinks = false;
 		//*/

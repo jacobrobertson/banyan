@@ -89,13 +89,14 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 		boolean assignIds = true;
 		// make sure it's not just exactly the children
 		if (!interesting.isEmpty() && interesting.size() == entry.getLoadedChildrenSize()) {
+			// TODO this is a bug - need the list of all ids
 			if (interesting.containsAll(entry.getChildren())) {
 				assignIds = false;
 			}
 		}
 		CrunchedIds ids = null;
 		if (assignIds && !interesting.isEmpty()) {
-			ids = new CrunchedIds(interesting, EntryUtilities.CRUNCHER);
+			ids = EntryUtilities.CRUNCHER.build(interesting, null);
 			logger.debug("assignInterestingSubspecies." + entry.getId() + "." + entry.getLatinName() + "." + ids);
 		}
 		String oldIds = null;

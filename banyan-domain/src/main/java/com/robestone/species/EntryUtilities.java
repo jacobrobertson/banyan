@@ -596,4 +596,8 @@ public class EntryUtilities {
 		return e;
 	}
 	
+	public void markPinned(List<Integer> pins, Entry root) {
+		// since pins are usually 
+	}
+	
 }

@@ -28,6 +28,8 @@ public class IdCruncher {
 	
 	public static final String R62_CHARS = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+	public static final char MASK_DELIMITER = '$';
+	
 	/**
 	 * 62 is for 0-9, a-z, A-Z.
 	 * 3 means padSize of 3.
@@ -287,12 +289,26 @@ public class IdCruncher {
 	public char toChar(int n) {
 		return chars.charAt(n);
 	}
+
+	public CrunchedIds parse(String crunchedIdsWithMask) {
+		int pos = crunchedIdsWithMask.indexOf(MASK_DELIMITER);
+		String mask;
+		String ids;
+		if (pos > 0) {
+			ids = crunchedIdsWithMask.substring(0, pos);
+			mask = crunchedIdsWithMask.substring(pos + 1);
+		} else {
+			ids = crunchedIdsWithMask;
+			mask = null;
+		}
+		return parse(ids, mask);
+	}
 	
 	public CrunchedIds parse(String crunchedIds, String pinnedIdsMask) {
 		List<Integer> idsList = toList(crunchedIds);
-		Set<Integer> pinnedIds = null;
+		List<Integer> pinnedIds = null;
 		if (pinnedIdsMask != null) {
-			pinnedIds = new HashSet<>();
+			pinnedIds = new ArrayList<>();
 			// we use a long, because we want to be able to pin many ids
 			long longMask = toLong(pinnedIdsMask);
 			for (int i = 0; i < idsList.size(); i++) {
@@ -301,24 +317,22 @@ public class IdCruncher {
 				}
 			}
 		}
-		Set<Integer> idsSet = new HashSet<>(idsList);
 		
-		return new CrunchedIds(idsSet, pinnedIds, crunchedIds, pinnedIdsMask);
+		return new CrunchedIds(idsList, pinnedIds, crunchedIds, pinnedIdsMask);
 	}
-	public CrunchedIds build(Collection<Integer> ids, Set<Integer> pinnedIds) {
+	public CrunchedIds build(Collection<Integer> ids, List<Integer> pinnedIds) {
 		
 		String crunchedIds = toString(ids);
 		String pinnedMask = null;
 		
-		Set<Integer> idsSet;
-		if (ids instanceof Set) {
-			idsSet = (Set<Integer>) ids;
+		List<Integer> idsList;
+		if (ids instanceof List) {
+			idsList = (List<Integer>) ids;
 		} else {
-			idsSet = new HashSet<>(ids);
+			idsList = new ArrayList<>(ids);
 		}
 		
 		if (pinnedIds != null) {
-			List<Integer> idsList = new ArrayList<>(ids);
 			Collections.sort(idsList);
 			long mask = 0;
 			for (int i = 0; i < idsList.size(); i++) {
@@ -329,7 +343,7 @@ public class IdCruncher {
 			pinnedMask = toString(mask, false);
 		}
 		
-		return new CrunchedIds(idsSet, pinnedIds, crunchedIds, pinnedMask);
+		return new CrunchedIds(idsList, pinnedIds, crunchedIds, pinnedMask);
 	}
 	
 }

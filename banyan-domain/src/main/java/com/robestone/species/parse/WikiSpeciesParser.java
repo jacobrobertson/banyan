@@ -20,7 +20,8 @@ public class WikiSpeciesParser {
 	private Pattern rankPattern = Pattern.compile("(?:\\s+|<dd>|<p>|<li>)†?" +
 			getRanksPatternPart(false) +
 			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?(?:<i>)?(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)");
-	private Pattern extinctPattern = Pattern.compile(":([\\s†]*)?(?:<i>|<b>)*([\\s†]*)<strong class=\"selflink\">");
+	private static Pattern extinctPattern = Pattern.compile(":([\\s†]*)?(?:<i>|<b>)*([\\s†]*)(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)");
+	
 	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?\\s*(.*?)\\s*(?:</div>|<br />)");
 	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");
 //	private Pattern depictedPattern = Pattern.compile("<div class=\"thumbcaption\">\\s*<div class=\"magnify\">\\s*<a href=\"/wiki/File:.*?\" class=\"internal\" title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<i><a href=\"/wiki/.*?\" title=\"(.*?)\">");
@@ -383,11 +384,7 @@ public class WikiSpeciesParser {
 		String latinName = selfLinkName;
 		String rank = getRank(latinName, text);
 
-		String extinct = getGroup(extinctPattern, text, 1);
-		if (extinct == null) {
-			extinct = getGroup(extinctPattern, text, 2);
-		}
-		extinct = StringUtils.trimToNull(extinct);
+		String extinct = getExtinct(text);
 		
 		CompleteEntry parent;
 		// I'm removing this logic, and instead will use the WikiSpeciesTreeFixer
@@ -776,5 +773,13 @@ public class WikiSpeciesParser {
 			fixedPage = fixedPage.replace(toReplace, replaceWith);
 		}
 		return fixedPage;
+	}
+	public static String getExtinct(String text) {
+		String extinct = getGroup(extinctPattern, text, 1);
+		if (extinct == null) {
+			extinct = getGroup(extinctPattern, text, 2);
+		}
+		extinct = StringUtils.trimToNull(extinct);
+		return extinct;
 	}
 }

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tapestry5.ioc.annotations.Inject;
 
+import com.robestone.species.CrunchedIds;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.IExamplesService;
@@ -80,12 +81,19 @@ public class SearchContext {
 	public void setCrunchedIds(String crunchedIds) {
 		LogHelper.speciesLogger.info("setCrunchedIds." + crunchedIds);
 		List<Integer> ids;
+		List<Integer> pinnedIds;
 		if (!StringUtils.isEmpty(crunchedIds)) {
-			ids = cruncher.toList(crunchedIds);
+			CrunchedIds cids = cruncher.parse(crunchedIds);
+			ids = cids.getIds();
+			pinnedIds = cids.getPinnedIds();
 		} else {
 			ids = new ArrayList<Integer>();
+			pinnedIds = null;
 		}
 		root = getService().findTreeForNodes(ids, null);
+		if (pinnedIds != null) {
+			
+		}
 		focusOnSearch = false;
 	}
 	public String getLeavesCrunchedIds() {

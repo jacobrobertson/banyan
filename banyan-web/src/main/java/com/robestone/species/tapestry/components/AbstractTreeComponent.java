@@ -1,6 +1,7 @@
 package com.robestone.species.tapestry.components;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.tapestry5.annotations.Parameter;
@@ -72,7 +73,7 @@ public class AbstractTreeComponent {
 		CrunchedIds cids = entry.getInterestingCrunchedIds();
 		
 		// find out if the crunched ids are a subset of the existing ids
-		Set<Integer> interestingIds = cids.getIds();
+		List<Integer> interestingIds = cids.getIds();
 		Set<Integer> currentTreeIds = EntryUtilities.getIds(getRoot());
 		if (currentTreeIds.containsAll(interestingIds)) {
 			return false;

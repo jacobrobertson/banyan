@@ -2,6 +2,7 @@ package com.robestone.species.tapestry.components;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.tapestry5.annotations.Parameter;
@@ -68,7 +69,7 @@ public class ControlPanelLinks extends AbstractTreeComponent {
 			Collection<Integer> rootIds = EntryUtilities.getLeavesIds(getRoot());
 //			logger.debug("getRenderShowMore >");
 //			logger.debug("getRenderShowMore.rootIds." + rootIds);
-			Set<Integer> moreIds = renderEntry.getInterestingCrunchedIds().getIds();
+			List<Integer> moreIds = renderEntry.getInterestingCrunchedIds().getIds();
 //			logger.debug("getRenderShowMore.moreIds." + moreIds);
 			Set<Integer> allIds = new HashSet<Integer>(moreIds);
 			allIds.addAll(rootIds);
@@ -95,7 +96,7 @@ public class ControlPanelLinks extends AbstractTreeComponent {
 	public String getRenderShowMoreCaption() {
 		if (isShowMoreNeeded(renderEntry)) {
 			Collection<Integer> rootIds = EntryUtilities.getIds(getRoot());
-			Set<Integer> moreIds = renderEntry.getInterestingCrunchedIds().getIds();
+			List<Integer> moreIds = renderEntry.getInterestingCrunchedIds().getIds();
 			Set<Integer> diffIds = new HashSet<Integer>(moreIds);
 			diffIds.removeAll(rootIds);
 			int len = diffIds.size();

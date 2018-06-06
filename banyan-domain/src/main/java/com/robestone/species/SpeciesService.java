@@ -1096,7 +1096,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			} else if (c.equalsIgnoreCase("interesting_crunched_ids")) {
 				String sids = getString(rs, c);
 				if (sids != null) {
-					CrunchedIds ids = new CrunchedIds(sids, EntryUtilities.CRUNCHER);
+					CrunchedIds ids = EntryUtilities.CRUNCHER.parse(sids);
 					entry.setInterestingCrunchedIds(ids);
 				}
 			} else if (c.equalsIgnoreCase("linked_image_id")) {

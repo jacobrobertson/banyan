@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.lang3.RandomUtils;
+
+import junit.framework.TestCase;
 
 public class IdCruncherTest extends TestCase {
 
@@ -32,7 +30,7 @@ public class IdCruncherTest extends TestCase {
 	// separate ids by -1 (everything after -1 is pinned)
 	private void doTestPinnedMaskSimple(String expect, int... ids) {
 		List<Integer> idsList = new ArrayList<>();
-		Set<Integer> pinnedIds = new HashSet<>();
+		List<Integer> pinnedIds = new ArrayList<>();
 		boolean isPinned = false;
 		for (int i = 0; i < ids.length; i++) {
 			if (ids[i] == -1) {
@@ -82,15 +80,15 @@ public class IdCruncherTest extends TestCase {
 		assertEquals(crunchedIds, parsed.getCrunchedIds());
 		assertEquals(mask, parsed.getPinnedMask());
 		assertEquals(pinnedIds.length, parsed.getPinnedIds().size());
-		Set<Integer> pinnedIdsSet = new HashSet<>();
+		List<Integer> pinnedIdsList = new ArrayList<>();
 		for (int i = 0; i < pinnedIds.length; i++) {
 			assertTrue(parsed.getPinnedIds().contains(pinnedIds[i]));
-			pinnedIdsSet.add(pinnedIds[i]);
+			pinnedIdsList.add(pinnedIds[i]);
 		}
 		assertEquals(idsList.size(), parsed.getIds().size());
 		
 		// now reverse the process
-		CrunchedIds built = ic.build(idsList, pinnedIdsSet);
+		CrunchedIds built = ic.build(idsList, pinnedIdsList);
 		assertEquals(crunchedIds, built.getCrunchedIds());
 		assertEquals(mask, built.getPinnedMask());
 	}
