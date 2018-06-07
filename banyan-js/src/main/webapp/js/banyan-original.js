@@ -15,7 +15,7 @@ $(document).ready(function() {
 });
 	*/
 
-this.getLeft = function(e, img) {
+function getLeft(e, img) {
 	var w = $("body").width();
 	var x = e.pageX;
 
@@ -30,7 +30,7 @@ this.getLeft = function(e, img) {
 		left = x + pointerOffset;
 	}
 	return left;
-};
+}
 this.getPreviewTop = function(e, img) {
 	var imageHeight = getImageHeight(img);
 	// to account for two rows of text
@@ -65,10 +65,10 @@ this.getHref = function(img) {
 	return imagePath() + "/preview/" + this.getImageAttribute(img).img;
 };
 this.getImageWidth = function(img) {
-	return this.getImageAttribute(img).width;
+	return this.getImageAttribute(img).pWidth;
 };
 this.getImageHeight = function(img) {
-	return this.getImageAttribute(img).height;
+	return this.getImageAttribute(img).pHeight;
 };
 this.getImageCaption = function(img) {
 	var e = this.getImageAttribute(img);
@@ -80,13 +80,7 @@ this.getImageCaption = function(img) {
 	return caption;
 };
 this.getImageAttribute = function(img) {
-	var id = img.name;
-	/* ???
-	if (!src) {
-		return 0;
-	}
-	*/
-	return getMapEntry(id);
+	return getMapEntry(img.name);
 };
 this.imagePreview = function() {
 	$("a.preview").hover(function(e) {
@@ -195,7 +189,7 @@ this.showMenu = function(e, img) {
 };
 this.hideMenu = function() {
 	isMenuActive = false;
-	// TODO put back $("#controlpanel").hide();
+	$("#controlpanel").hide();
 };
 var isMenuActive = false;
 var cancelerEvent = null;
@@ -247,12 +241,13 @@ function controlPanelClicked(aTag) {
 	var id = aTag.href.substring(pos + 1);
 	
 	if (action == "cpClose") {
+		hideMenu();
 		// this logic doesn't really make any sense yet
 		markNodeAsShown(id, false);
 		// TODO I need to fix the premise that I'm only rendering a sub-tree.
 		//		in the test code, change it from rendering a sub-tree, to marking all as hide, and just marking those nodes to show
 		//		and then when you show a node, always walk up the tree to mark parent nodes to show too
-		renderTree(id, true);
+		renderCurrentTree();
 	}
 }
 function addMenusToButtons() {

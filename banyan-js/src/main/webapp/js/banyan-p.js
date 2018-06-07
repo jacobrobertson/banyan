@@ -17,7 +17,7 @@ function markNodeAsShown(id, show) {
 // -------
 
 // ----- TEST functions -----
-var testFile = "1-1528250141737"; // "6691";
+var testFile = "1-1528329994535"; // "6691";
 function testLoadJson() {
 	log("Starting Test Function", 4);
 	loadJson(testFile, {}, true);
@@ -32,9 +32,18 @@ function testDeleteTreeNode(id) {
 }
 // util mostly for testing phase
 function addAllToRenderMap(e) {
-	dbEntryIdsToShow[e.id] = true;
+	addAllToRenderMapDownstream(e);
+	var p = e;
+	while (p) {
+		dbEntryIdsToShow[p.id] = true;
+		e = p;
+		p = p.parent;
+	}
+	return e.id;
+}
+function addAllToRenderMapDownstream(e) {
 	for (var i = 0; i < e.children.length; i++) {
-		addAllToRenderMap(e.children[i]);
+		addAllToRenderMapDownstream(e.children[i]);
 	}
 }
 function addChildTestFunction() {
@@ -42,11 +51,15 @@ function addChildTestFunction() {
 	testFunction();
 }
 // ------- end test functions
+function renderCurrentTree() {
+	// TODO the "1" is dumb - need better way
+	renderTree("1", true);
+}
 function renderTree(id, keepOnlyNew) { // from button
 	$("#tree").empty();
 	// for this test, we flag every entry as being rendered
 	if (!keepOnlyNew) {
-		addAllToRenderMap(getMapEntry(id));
+		id = addAllToRenderMap(getMapEntry(id));
 	}
 	var e = getMapEntry(id);
 	// we need to collapse nodes only once we know the map is done
@@ -182,7 +195,7 @@ function buildNodeEntryLine(h, e, depth) {
 	// image and link
 	var name = getEntryDisplayName(e);
 	span.append('<a class="preview" name="' + e.id + '" href="search.detail/' + e.href + '">' 
-		 + name + '<img alt="' + e.alt + '" height="' + e.height + '" width="' + e.width + '" src="' + 
+		 + name + '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
 		 	imagePath() + '/tiny/' + e.img + '" class="Thumb" /></a>');
 	// menu button
 	span.append('<a href="search.tree/TODO#' + e.id + '" name="' + e.id + '" class="opener">'
@@ -199,7 +212,7 @@ function imagePath() {
 	return "http://jacobrobertson.com/banyan-images"; // "images";
 }
 function iconPath() {
-	return "http://jacobrobertson.com/banyan/icons"; // "icons";
+	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
 }
 
 function addEntriesToMap(entries) {
@@ -293,10 +306,10 @@ function collapseNodes(e) {
 // this is temp until I start using actual data
 function enhanceEntryTemp(e) {
 	e.alt = "Endopterygota"; 
-	e.img = "15/Endopterygota.jpg";
+	//e.img = "15/Endopterygota.jpg";
 	e.href = e.id;// "Complete_Metamorphosis_Insects_Endopterygota_6691";
-	e.height = 16; // TODO these need to be tinyHeight and tinyWidth
-	e.width = 20;
+	//e.height = 16; // TODO these need to be tinyHeight and tinyWidth
+	//e.width = 20;
 	e.cpHide = "TODO";
 	e.cpFocus = "TODO";
 	e.cpClose = "TODO";
@@ -304,6 +317,7 @@ function enhanceEntryTemp(e) {
 	e.cpShowMore = "TODO";
 	e.showCaption = "TODO";
 	e.showMoreCaption = "TODO";
+	e.cpDetail = "TODO";
 }
 
 function getEntryDisplayName(e) {
