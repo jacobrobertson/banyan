@@ -887,30 +887,27 @@ function loadTreeFromURL() {
 }
 // TODO this isn't working anymore because I've reworked the callbacks to gather all entries first
 function loadAllChildren(id) {
-	var callback = function() { // TODO this needs to take "entries"
-		markChildrenAsShown(id, true);
-		renderCurrentTree();
-	};
-	var e = getMapEntry(id);
-	loadJson(e.childrenIds, false, callback);
+	var childrenIds = getMapEntry(id).childrenIds;
+	loadJsonThenMarkAllNewVisible(childrenIds);
 }
 function loadAllShowMore(id) { // TODO same issues here
-	var callback = function() {
-		markShowMoreAsShown(id);
-		renderCurrentTree();
-	};
 	var e = getMapEntry(id);
 	// build the full list
 	var allShowMoreIds = e.showMoreLeafIds.concat(e.showMoreOtherIds);
-	loadJson(allShowMoreIds, false, callback);
+	loadJsonThenMarkAllNewVisible(allShowMoreIds);
 }
 
+// TODO this is probably not working any more due to refactor
 function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
 	if (getRootEntry()) {
 		markEntryChildrenAsShown(getRootEntry(), false);
 	}
 	loadJsonThenMarkAllNewVisible(fileNamesOrIds);
 }
+// this is the master "load ids" method, and should be altered to accomodate the one or two scenarios we have
+// - load these nodes/files exactly, and then mark exactly those nodes visible in addition to current tree, then render tree
+// - load a brand new tree (? maybe already handled by calling method)
+// - load these nodes, but don't do anything else (? not sure that's a valid scenario)
 function loadJsonThenMarkAllNewVisible(fileNamesOrIds) {
 	var callback = function(entries) {
 		addEntriesToMap(entries);
@@ -926,7 +923,7 @@ function loadJson(fileNamesOrIds, markNewEntriesShown, callback) {
 	for (var i = 0; i < fileNamesOrIds.length; i++) {
 		var e = getMapEntry(fileNamesOrIds[i]);
 		if (!e) {
-			// TODO this might be a file name - need to track that separately
+			// TODO this might be a file name - need to track that separately so we don't reload files twice
 			temp.push(fileNamesOrIds[i]);
 		} else if (markNewEntriesShown) {
 			markEntryAsShown(e, true);
@@ -945,6 +942,8 @@ function loadJson(fileNamesOrIds, markNewEntriesShown, callback) {
 	// call the last function, it will cascade up
 	currentCallback(entries);
 }
+// this is a callback in the sense that it is part of a callback chain, 
+// even though this method itself will call json and need a callback
 function buildJsonCallback(id, parentCallback) {
 	return function(entries) {
 		return loadOneJsonDocument(id, entries, parentCallback);
@@ -965,13 +964,11 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 }
 function buildInnerJsonSuccessCallback(entries, callback) {
 	return function(data) {
+		// all we do is gather all the json data together into one large array
+		// any other processing will be handled by the final callback in the chain
 		for (var i = 0; i < data.entries.length; i++) {
 			entries.push(data.entries[i]);
-//			var e = data.entries[i];
-//			if (markNewEntriesShown) {
-//				markEntryAsShown(e, true);
-//			}
 		}
 		callback(entries);
-	}
+	};
 }
