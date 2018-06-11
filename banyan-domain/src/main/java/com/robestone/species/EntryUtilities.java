@@ -506,6 +506,9 @@ public class EntryUtilities {
 	public static List<Entry> collapseList(List<Entry> entries) {
 		return collapseList(entries, true);
 	}
+	/**
+	 * This converts a long chain of entries into the shortened chain
+	 */
 	public static List<Entry> collapseList(List<Entry> entries, boolean isFirstAndLastInList) {
 		int size = entries.size();
 		if ((isFirstAndLastInList && size < 5) || size < 3) {
