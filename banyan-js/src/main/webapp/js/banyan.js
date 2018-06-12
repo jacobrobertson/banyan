@@ -5,10 +5,14 @@ $(document).ready(function() {
 	});
 	initContextMenu();
 	$(document).ready(function() {
-		loadTreeFromURL();
+		initData();
 	});
 });
-
+function initData() {
+	loadPartitionIndex(function() {
+		loadTreeFromURL();
+	});
+}
 /* TODO we need to put these back later - for now we don't have these
 $(document).ready(function() {
 	$("#textfield").focus(function() {
@@ -27,6 +31,7 @@ $(document).ready(function() {
 function __GlobalVars(){}
 var dbMap = {};
 var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't show
+var dbPartitions;
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -440,6 +445,10 @@ function addEntriesToMap(entries) {
 			}
 		}
 	}
+	for (i = 0; i < entries.length; i++) {
+		e = entries[i];
+		initPartitionPath(e);
+	}
 }
 function getRootFromId(id) {
 	var e = getMapEntry(id);
@@ -665,7 +674,24 @@ function initEntry(e) {
 	e.collapsed = [];
 	if (e.cnames) {
 		e.cname = e.cnames[0];
-	} 
+	}
+}
+function initPartitionPath(e) {
+	if (e.partitionPath) {
+		// TODO kind of dumb too - maybe need a way to traverse the tree instead?
+		return;
+	}
+	var p = e.parent;
+	if (!p) {
+		e.partitionPath = "0";
+	} else {
+		if (!p.partitionPath) {
+			// TODO this is a dumb way to do it
+			initPartitionPath(p);
+		}
+		var index = indexOf(p.childrenIds, e.id);
+		e.partitionPath = p.partitionPath + "" + index; // to ensure by string
+	}
 }
 function getEntryDisplayName(e) {
 	if (e.cname) {
@@ -911,6 +937,7 @@ function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
 function loadJsonThenMarkAllNewVisible(fileNamesOrIds) {
 	var callback = function(entries) {
 		addEntriesToMap(entries);
+		tempTestPartitionNames();
 		markEntriesAsShown(entries, true);
 		renderCurrentTree();
 	};
@@ -958,7 +985,7 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	} else if (jsonId.charAt(0) == 'p') {
 			subfolder = "p";
 	} else {
-		subfolder = Math.ceil(jsonId / 100);
+		subfolder = "n" + "/" + Math.ceil(jsonId / 100);
 	}
 	var url = "json/" + subfolder + "/" + jsonId + ".json";
 	var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
@@ -973,4 +1000,46 @@ function buildInnerJsonSuccessCallback(entries, callback) {
 		}
 		callback(entries);
 	};
+}
+function loadPartitionIndex(callback) {
+	return $.getJSON("json/p/index.json", 
+		function(data) {
+			loadIndexToArray(data);
+			callback();
+		});
+}
+function loadIndexToArray(data) {
+	dbPartitions = data.keys;
+	dbPartitions.sort();
+}
+// TODO this is kind of bad, and could be improved dramatically by creating a tree of partitions
+function findPartitionFile(e) {
+	if (!e) {
+		return false;
+	}
+	var pname = e.partitionPath;
+	if (pname.length == 0) {
+		return false;
+	}
+	var index = indexOf(dbPartitions, pname);
+	if (index < 0) {
+		pname = pname.substring(0, pname.length - 1);
+		return findPartitionFile(e.parent);
+	} else {
+		return dbPartitions[index];
+	}
+}
+function indexOf(array, item) {
+    var i = array.length;
+    while (i--) {
+       if (array[i] == item) {
+           return i;
+       }
+    }
+    return -1;
+}
+function tempTestPartitionNames() {
+	var e = getMapEntry(7174);
+	var partitionFile = findPartitionFile(e);
+	partitionFile = "p/p-" + partitionFile + ".json";
 }

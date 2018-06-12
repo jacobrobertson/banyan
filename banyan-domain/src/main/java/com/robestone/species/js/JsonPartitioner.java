@@ -256,4 +256,33 @@ public class JsonPartitioner {
 			testAllNodesCanFindTheirPartition(child);
 		}
 	}
+	
+	public String getPartitionIndexFile(Node node) {
+		List<String> names = new ArrayList<>();
+		getPartitionJsonFile(node, names);
+		StringBuilder buf = new StringBuilder();
+		
+		buf.append("{\"keys\": [");
+		boolean first = true;
+		for (String name : names) {
+			if (!first) {
+				buf.append(", ");
+			} else {
+				first = false;
+			}
+			buf.append("\"");
+			buf.append(name);
+			buf.append("\"");
+		}
+		buf.append("]}");
+		return buf.toString();
+	}
+	public void getPartitionJsonFile(Node node, List<String> names) {
+		if (!node.getPartition().isEmpty()) {
+			names.add(node.getFileKey());
+		}
+		for (Node child : node.getChildren()) {
+			getPartitionJsonFile(child, names);
+		}
+	}
 }

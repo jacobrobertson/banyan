@@ -3,6 +3,7 @@ package com.robestone.species.js;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -25,23 +26,29 @@ public class JsonBuilder extends AbstractWorker {
 		new JsonBuilder().partitionFromFileSystem();
 	}
 	
-	private String outputDir = "D:\\eclipse-workspaces\\git\\banyan-parent\\banyan-js\\src\\main\\webapp\\json";
+	private String outputDir = "../banyan-js/src/main/webapp/json";
 	
 	public void partitionFromDB() throws Exception {
 		Node root = buildTree();
-		new JsonPartitioner().partition(root);
-		outputPartitions(root);
+		partitionAndSave(root);
 	}
 	public void partitionFromFileSystem() throws Exception {
 		Node root = new JsonParser().parseRecursive(1);
-		new JsonPartitioner().partition(root);
+		partitionAndSave(root);
+	}
+	public void partitionAndSave(Node root) throws Exception {
+		JsonPartitioner partitioner = new JsonPartitioner();
+		partitioner.partition(root);
 		outputPartitions(root);
+		String index = partitioner.getPartitionIndexFile(root);
+		String folder = outputDir + "/p/index.json";
+		File file = new File(folder);
+		FileUtils.writeStringToFile(file, index);
 	}
 	
 	public void outputPartitions(Node node) throws Exception {
-		outputDir = System.getProperty("user.home") + "/Desktop/json-partitions/p";
 		if (!node.getPartition().isEmpty()) {
-			String fileName = "p-" + node.getFileKey() + ".json";
+			String fileName = "p/p-" + node.getFileKey() + ".json";
 			List<JsonEntry> entries = new ArrayList<>();
 			for (Node pn : node.getPartition()) {
 				JsonEntry entry = pn.getEntry();
@@ -266,6 +273,8 @@ public class JsonBuilder extends AbstractWorker {
 			je.setpWidth(e.getImage().getPreviewWidth());
 		}
 		je.setChildrenIds(new ArrayList<Integer>(getChildrenIds(e)));
+		Collections.sort(je.getChildrenIds()); // for indexing in js
+		
 		ShowMore showMoreIds = getShowMoreIds(e);
 		je.setShowMoreLeafIds(showMoreIds.leafIds);
 		je.setShowMoreOtherIds(showMoreIds.otherIds);
