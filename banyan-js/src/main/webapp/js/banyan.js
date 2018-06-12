@@ -955,6 +955,8 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	var subfolder;
 	if (jsonId.charAt(0) == 'f') {
 		subfolder = "f";
+	} else if (jsonId.charAt(0) == 'p') {
+			subfolder = "p";
 	} else {
 		subfolder = Math.ceil(jsonId / 100);
 	}

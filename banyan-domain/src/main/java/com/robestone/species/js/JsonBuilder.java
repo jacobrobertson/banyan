@@ -22,13 +22,36 @@ public class JsonBuilder extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 //		new JsonBuilder().runExamples();
 //		new JsonBuilder().runOneId(1, 6);
-		new JsonBuilder().partition();
+		new JsonBuilder().partitionFromFileSystem();
 	}
 	
-	public void partition() throws Exception {
-		
+	private String outputDir = "D:\\eclipse-workspaces\\git\\banyan-parent\\banyan-js\\src\\main\\webapp\\json";
+	
+	public void partitionFromDB() throws Exception {
 		Node root = buildTree();
 		new JsonPartitioner().partition(root);
+		outputPartitions(root);
+	}
+	public void partitionFromFileSystem() throws Exception {
+		Node root = new JsonParser().parseRecursive(1);
+		new JsonPartitioner().partition(root);
+		outputPartitions(root);
+	}
+	
+	public void outputPartitions(Node node) throws Exception {
+		outputDir = System.getProperty("user.home") + "/Desktop/json-partitions/p";
+		if (!node.getPartition().isEmpty()) {
+			String fileName = "p-" + node.getFileKey() + ".json";
+			List<JsonEntry> entries = new ArrayList<>();
+			for (Node pn : node.getPartition()) {
+				JsonEntry entry = pn.getEntry();
+				entries.add(entry);
+			}
+			saveByFileName(fileName, entries);
+		}
+		for (Node child : node.getChildren()) {
+			outputPartitions(child);
+		}
 	}
 	
 	private Node buildTree() {
@@ -36,15 +59,16 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	private Node buildNodeRecursively(Integer id, int depth) {
 		Collection<Integer> ids = speciesService.findChildrenIds(id);
-		Node node = new Node(id, new ArrayList<>(ids));
+		Node node = new Node(null, id, new ArrayList<>(ids));
 		int descendants = ids.size();
 		for (Integer cid : ids) {
 			Node cnode = buildNodeRecursively(cid, depth + 1);
 			node.getChildren().add(cnode);
+			cnode.setParent(node);
 			descendants += cnode.getTotalDescendants();
 		}
-		System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
-				", children=" + node.getChildIds().size() + ", desc=" + descendants);
+//		System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
+//				", children=" + node.getChildIds().size() + ", desc=" + descendants);
 		node.setTotalDescendants(descendants);
 		return node;
 	}
@@ -137,25 +161,39 @@ public class JsonBuilder extends AbstractWorker {
 		
 		save(e.getId().toString(), e);
 	}
+	public static int getSubFolder(int id) {
+		double d = id;
+		d = d / 100d;
+		d = Math.ceil(d);
+		int i = (int) d;
+		return i;
+	}
 	private void save(String name, Entry... entries) throws Exception {
-		String json = toJson(entries);
+		List<JsonEntry> jentries = new ArrayList<>();
+		for (Entry e : entries) {
+			JsonEntry je = toJsonEntry(e);
+			jentries.add(je);
+		}
+		saveByFolders(name, jentries);
+	}
+	private void saveByFolders(String name, List<JsonEntry> entries) throws Exception {
 		// convention because javascript is tricky this way
 		String subfolder;
 		if (name.charAt(0) == 'f') {
 			subfolder = "f";
 		} else {
-			double d = Integer.parseInt(name);
-			d = d / 100d;
-			d = Math.ceil(d);
-			int i = (int) d;
-			subfolder = String.valueOf(i);
+			int id = Integer.parseInt(name);
+			subfolder = String.valueOf(getSubFolder(id));
 		}
+		String fileName = subfolder + "/" + name + ".json";
+		saveByFileName(fileName, entries);
+	}
+	private void saveByFileName(String fileName, List<JsonEntry> entries) throws Exception {
+		String json = toJsonString(entries);
 		
 		System.out.println(json);
-		String folder = 
-				"D:\\eclipse-workspaces\\git\\banyan-parent\\banyan-js\\src\\main\\webapp\\"
-				+ "json\\" + subfolder + "\\" + name + ".json";
-				;
+		String folder = outputDir + "\\" + fileName;
+		
 		File file = new File(folder);
 		FileUtils.writeStringToFile(file, json);
 	}
@@ -164,18 +202,26 @@ public class JsonBuilder extends AbstractWorker {
 	//	"img": "15/Endopterygota.jpg", "href": "Complete_Metamorphosis_Insects_Endopterygota_6691", 
 	// "height": 16, "width": 20},
 	public String toJson(Entry... entries) {
+		List<JsonEntry> jentries = new ArrayList<>();
+		for (Entry e : entries) {
+			JsonEntry je = toJsonEntry(e);
+			jentries.add(je);
+		}
+		return toJsonString(jentries);
+	}
+	public String toJsonString(List<JsonEntry> entries) {
 		boolean firstEntry = true;
 		StringBuilder buf = new StringBuilder("{\"entries\": [");
-		for (Entry e : entries) {
+		for (JsonEntry e : entries) {
 			if (!firstEntry) {
-				buf.append(", ");
+				buf.append(",\n");
 			}
 			firstEntry = false;
 			buf.append('{');
 			append(buf, false, "id", e.getId()); // first is always no comma, and id is always there
 			
-			append(buf, true, "cnames", getCommonNames(e));
-			append(buf, true, "lname", e.getLatinName());
+			append(buf, true, "cnames", e.getCnames());
+			append(buf, true, "lname", e.getLname());
 			append(buf, true, "parentId", e.getParentId());
 			if (e.isExtinct()) {
 				String extinct = "true";
@@ -185,29 +231,46 @@ public class JsonBuilder extends AbstractWorker {
 				append(buf, true, "extinct", extinct);
 			}
 	
-			// TODO alt and href can be calculated on browser
-//			append(buf, true, "alt", "TBD");
-			// append(buf, true, "href", "TBD");
-			
-			if (e.getImage() != null) {
-				append(buf, true, "img", e.getImage().getImagePathPart());
-				append(buf, true, "tHeight", e.getImage().getTinyHeight());
-				append(buf, true, "tWidth", e.getImage().getTinyWidth());
-				append(buf, true, "pHeight", e.getImage().getPreviewHeight());
-				append(buf, true, "pWidth", e.getImage().getPreviewWidth());
+			if (e.getImg() != null) {
+				append(buf, true, "img", e.getImg());
+				append(buf, true, "tHeight", e.gettHeight());
+				append(buf, true, "tWidth", e.gettWidth());
+				append(buf, true, "pHeight", e.getpHeight());
+				append(buf, true, "pWidth", e.getpWidth());
 			}
 	
-			append(buf, true, "childrenIds", getChildrenIds(e));
+			append(buf, true, "childrenIds", e.getChildrenIds());
 			
-			ShowMore showMoreIds = getShowMoreIds(e);
-			
-			append(buf, true, "showMoreLeafIds", showMoreIds.leafIds);
-			append(buf, true, "showMoreOtherIds", showMoreIds.otherIds);
+			append(buf, true, "showMoreLeafIds", e.getShowMoreLeafIds());
+			append(buf, true, "showMoreOtherIds", e.getShowMoreOtherIds());
 
 			buf.append("}");
 		}
 		buf.append("]}");
 		return buf.toString();
+	}
+	public JsonEntry toJsonEntry(Entry e) {
+		JsonEntry je = new JsonEntry();
+		je.setId(e.getId());
+		je.setCnames(getCommonNames(e));
+		je.setLname(e.getLatinName());
+		je.setParentId(e.getParentId());
+		je.setExtinct(e.isExtinct());
+		je.setAncestorExtinct(e.isAncestorExtinct());
+	
+		if (e.getImage() != null) {
+			je.setImg(e.getImage().getImagePathPart());
+			je.settHeight(e.getImage().getTinyHeight());
+			je.settWidth(e.getImage().getTinyWidth());
+			je.setpHeight(e.getImage().getPreviewHeight());
+			je.setpWidth(e.getImage().getPreviewWidth());
+		}
+		je.setChildrenIds(new ArrayList<Integer>(getChildrenIds(e)));
+		ShowMore showMoreIds = getShowMoreIds(e);
+		je.setShowMoreLeafIds(showMoreIds.leafIds);
+		je.setShowMoreOtherIds(showMoreIds.otherIds);
+		
+		return je;
 	}
 	private List<String> getCommonNames(Entry e) {
 		List<String> cnames = e.getCommonNames();
@@ -259,7 +322,7 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		buf.append("]");
 	}
-//	private void appendStrings(StringBuilder buf, boolean comma, Object key, Collection<String> vals) {
+//	private void appendStrings(StringBuilder buf, boolean comma, Object key, Collection vals) {
 //		if (vals == null || vals.isEmpty()) {
 //			return;
 //		}
