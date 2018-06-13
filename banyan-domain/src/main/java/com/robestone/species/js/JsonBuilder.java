@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -23,7 +24,7 @@ public class JsonBuilder extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 //		new JsonBuilder().runExamples();
 //		new JsonBuilder().runOneId(1, 6);
-		new JsonBuilder().partitionFromFileSystem();
+		new JsonBuilder().partitionFromDB();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
@@ -37,10 +38,14 @@ public class JsonBuilder extends AbstractWorker {
 		partitionAndSave(root);
 	}
 	public void partitionAndSave(Node root) throws Exception {
+		
 		JsonPartitioner partitioner = new JsonPartitioner();
 		partitioner.partition(root);
+		
+		Map<String, String> pMap = partitioner.getAndApplyPartitionMap(root);
+		
 		outputPartitions(root);
-		String index = partitioner.getPartitionIndexFile(root);
+		String index = partitioner.getPartitionIndexFile(pMap);
 		String folder = outputDir + "/p/index.json";
 		File file = new File(folder);
 		FileUtils.writeStringToFile(file, index);
@@ -48,10 +53,11 @@ public class JsonBuilder extends AbstractWorker {
 	
 	public void outputPartitions(Node node) throws Exception {
 		if (!node.getPartition().isEmpty()) {
-			String fileName = "p/p-" + node.getFileKey() + ".json";
+			String fileName = "p/" + node.getFilePath() + ".json";
 			List<JsonEntry> entries = new ArrayList<>();
 			for (Node pn : node.getPartition()) {
-				JsonEntry entry = pn.getEntry();
+				Entry eentry = speciesService.findEntry(pn.getId());
+				JsonEntry entry = toJsonEntry(eentry);
 				entries.add(entry);
 			}
 			saveByFileName(fileName, entries);
@@ -87,7 +93,7 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void runExamples() throws Exception {
-		int exampleDepth = 5;
+		int exampleDepth = 0;
 		Set<Integer> idsRun = new HashSet<>();
 		List<ExampleGroup> egs = examplesService.findExampleGroups();
 		for (ExampleGroup eg : egs) {
@@ -102,7 +108,9 @@ public class JsonBuilder extends AbstractWorker {
 				for (Entry e : entries) {
 					array[index++] = e;
 					// save all descendants files so I can test opening those
-					runRecursively(e, 0, exampleDepth, idsRun);
+					if (exampleDepth > 0) {
+						runRecursively(e, 0, exampleDepth, idsRun);
+					}
 				}
 				// save one "fat" file for the example
 				save("f-example-" + ex.getId(), array);
@@ -190,7 +198,7 @@ public class JsonBuilder extends AbstractWorker {
 			subfolder = "f";
 		} else {
 			int id = Integer.parseInt(name);
-			subfolder = String.valueOf(getSubFolder(id));
+			subfolder = "n/" + String.valueOf(getSubFolder(id));
 		}
 		String fileName = subfolder + "/" + name + ".json";
 		saveByFileName(fileName, entries);
@@ -288,9 +296,6 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		if (cnames.isEmpty() && e.getCommonName() != null) {
 			cnames.add(e.getCommonName());
-		}
-		if (cnames.size() > 1) {
-			System.out.println(">>>>>>>>>>>>>>>");
 		}
 		return cnames;
 	}

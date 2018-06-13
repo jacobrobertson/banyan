@@ -13,17 +13,12 @@ import java.util.Map;
  */
 public class JsonPartitioner {
 
-	private int maxPartitionSize = 150;
+	private int maxPartitionSize = 300;
 	private String pathChars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 	public void partition(Node node) {
 		assignParents(node);
-		boolean doPartition = false;
-		if (doPartition) {
-			partitionNext(node);
-		} else {
-			assignSinglePartitions(node);
-		}
+		assignSinglePartitions(node);
 		new Stats().analyze(node).output();
 		System.out.println("------------------");
 		mergeMiscPartitions(node);
@@ -90,7 +85,8 @@ public class JsonPartitioner {
 		for (Node child : byPartitionSize) {
 			int nSize = node.getPartition().size();
 			int cSize = child.getPartition().size();
-			if (cSize > 0 && nSize + cSize <= maxPartitionSize) {
+			boolean isChildLeaf = child.getChildIds().isEmpty();
+			if ((cSize > 0 && nSize + cSize <= maxPartitionSize) || isChildLeaf) {
 				node.getPartition().addAll(child.getPartition());
 				child.getPartition().clear();
 			}
@@ -110,74 +106,12 @@ public class JsonPartitioner {
 			return n1.getId() - n2.getId();
 		}
 	}
-	private void partitionNext(Node node) {
-		
-		List<Node> allGathered = new ArrayList<>();
-		
-		List<Node> initialChildren = new ArrayList<>();
-		initialChildren.add(node);
-		List<List<Node>> nextResults = new ArrayList<>();
-		List<Node> lastGathered = null;
-		List<Node> lastRemaining = null;
-		
-		nextResults.add(initialChildren);
-		nextResults.add(new ArrayList<>());
-		
-		while (true) {
-			lastGathered = nextResults.get(0);
-			lastRemaining = nextResults.get(1);
-
-			allGathered.addAll(lastGathered);
-			if (allGathered.size() >= maxPartitionSize || lastGathered.isEmpty()) {
-				break;
-			}
-			
-			nextResults = gather(lastGathered, maxPartitionSize - allGathered.size());
-		}
-		// partition should be empty
-		node.getPartition().addAll(allGathered);
-
-		// the last gathered will only need their children recursed, 
-		// because they themselves are in this partition
-		for (Node child : lastGathered) {
-			for (Node gchild : child.getChildren()) {
-				partitionNext(gchild);
-			}
-		}
-
-		// the last remaining will need to be themselves recursed, because they are not in a partition
-		for (Node child : lastRemaining) {
-			partitionNext(child);
-		}
-		
-	}
 	
-	/**
-	 * 0. gathered
-	 * 1. remaining
-	 */
-	private List<List<Node>> gather(List<Node> children, int maxToGather) {
-		List<Node> gathered = new ArrayList<>();
-		List<Node> remaining = new ArrayList<>();
-		for (Node child : children) {
-			for (Node gchild : child.getChildren()) {
-				if (maxToGather < 0 || gathered.size() < maxToGather) {
-					gathered.add(gchild);
-				} else {
-					remaining.add(gchild);
-				}
-			}
-		}
-		List<List<Node>> results = new ArrayList<>();
-		results.add(gathered);
-		results.add(remaining);
-		return results;
-	}
-
 	private class Stats {
 		private int partitionSizeFactor = 10;
 		private Map<Integer, Integer> partitionSizeCounts = new HashMap<Integer, Integer>();
 		
+		private int mostChildrenId;
 		private int mostChildren = 0;
 		private int largestPartition = 0;
 		private int totalNodes = 0;
@@ -191,6 +125,7 @@ public class JsonPartitioner {
 			int children = node.getChildren().size();
 			if (children > mostChildren) {
 				mostChildren = children;
+				mostChildrenId = node.getId();
 			}
 			int pSize = node.getPartition().size();
 			if (pSize > 0) {
@@ -223,7 +158,7 @@ public class JsonPartitioner {
 					", nodesInPartitions: " + nodesInPartitions + 
 					", totalPartitions: " + totalPartitions + 
 					", totalMiscPartitions: " + totalMiscPartitions + 
-					", mostChildren: " + mostChildren + 
+					", mostChildren: " + mostChildren + "/" + mostChildrenId +
 					", partitionSizeCounts: " + partitionSizeCounts + 
 					", largestPartition: " + largestPartition
 					);
@@ -257,14 +192,55 @@ public class JsonPartitioner {
 		}
 	}
 	
-	public String getPartitionIndexFile(Node node) {
-		List<String> names = new ArrayList<>();
-		getPartitionJsonFile(node, names);
+	public Map<String, String> getAndApplyPartitionMap(Node node) {
+		// build up the list of path Keys
+		// sort them (not that important though)
+		// the index is a map, and will allow us to lookup the file name by fileKey
+		// the file name is split up into 10 folders
+		
+		List<String> keys = new ArrayList<>();
+		getAllPartitionKeys(node, keys);
+		
+		Collections.sort(keys);
+		int max = keys.size();
+		int numberOfBuckets = 10;
+		int bucketSize = max / numberOfBuckets + 1;
+		
+		Map<String, String> map = new HashMap<>();
+		
+		for (int i = 0; i < max; i++) {
+			int bucket = i / bucketSize;
+			map.put(keys.get(i), bucket + "/" + keys.get(i));
+		}
+		
+		applyPartitionPaths(node, map);
+		
+		return map;
+	}
+	private void getAllPartitionKeys(Node node, List<String> keys) {
+		if (!node.getPartition().isEmpty()) {
+			keys.add(node.getFileKey());
+		}
+		for (Node child : node.getChildren()) {
+			getAllPartitionKeys(child, keys);
+		}
+	}
+	private void applyPartitionPaths(Node node, Map<String, String> map) {
+		if (!node.getPartition().isEmpty()) {
+			String path = map.get(node.getFileKey());
+			node.setFilePath(path);
+		}
+		for (Node child : node.getChildren()) {
+			applyPartitionPaths(child, map);
+		}
+	}
+	
+	public String getPartitionIndexFile(Map<String, String> keys) {
 		StringBuilder buf = new StringBuilder();
 		
-		buf.append("{\"keys\": [");
+		buf.append("{");
 		boolean first = true;
-		for (String name : names) {
+		for (String name : keys.keySet()) {
 			if (!first) {
 				buf.append(", ");
 			} else {
@@ -272,17 +248,11 @@ public class JsonPartitioner {
 			}
 			buf.append("\"");
 			buf.append(name);
+			buf.append("\": \"");
+			buf.append(keys.get(name));
 			buf.append("\"");
 		}
-		buf.append("]}");
+		buf.append("}");
 		return buf.toString();
-	}
-	public void getPartitionJsonFile(Node node, List<String> names) {
-		if (!node.getPartition().isEmpty()) {
-			names.add(node.getFileKey());
-		}
-		for (Node child : node.getChildren()) {
-			getPartitionJsonFile(child, names);
-		}
 	}
 }

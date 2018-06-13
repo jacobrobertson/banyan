@@ -8,6 +8,7 @@ public class Node {
 	private Integer id;
 	private List<Integer> childIds;
 	private String fileKey;
+	private String filePath;
 	private Node parent;
 	private JsonEntry entry;
 	
@@ -51,6 +52,13 @@ public class Node {
 	}
 	public void setFileKey(String fileKey) {
 		this.fileKey = fileKey;
+	}
+	
+	public String getFilePath() {
+		return filePath;
+	}
+	public void setFilePath(String filePath) {
+		this.filePath = filePath;
 	}
 	public Node getParent() {
 		return parent;

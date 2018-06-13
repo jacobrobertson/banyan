@@ -937,7 +937,6 @@ function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
 function loadJsonThenMarkAllNewVisible(fileNamesOrIds) {
 	var callback = function(entries) {
 		addEntriesToMap(entries);
-		tempTestPartitionNames();
 		markEntriesAsShown(entries, true);
 		renderCurrentTree();
 	};
@@ -980,14 +979,16 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
 	log("loadOneJsonDocument: " + jsonId, 1);
 	var subfolder;
+	var url = "json/"
 	if (jsonId.charAt(0) == 'f') {
-		subfolder = "f";
+		 url = url + "f/" + jsonId + ".json";
 	} else if (jsonId.charAt(0) == 'p') {
-			subfolder = "p";
+		url = url + "p/" + jsonId.subtring(2) + ".json";
 	} else {
-		subfolder = "n" + "/" + Math.ceil(jsonId / 100);
+		// subfolder = "n" + "/" + Math.ceil(jsonId / 100);
+		var e = getMapEntry(jsonId);
+		subfolder = "p" + "/" + findPartitionFile(e)
 	}
-	var url = "json/" + subfolder + "/" + jsonId + ".json";
 	var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
 	return $.getJSON(url, innerSuccessCallback);
 }
@@ -1004,15 +1005,13 @@ function buildInnerJsonSuccessCallback(entries, callback) {
 function loadPartitionIndex(callback) {
 	return $.getJSON("json/p/index.json", 
 		function(data) {
-			loadIndexToArray(data);
+			loadPartitionIndexDb(data);
 			callback();
 		});
 }
-function loadIndexToArray(data) {
-	dbPartitions = data.keys;
-	dbPartitions.sort();
+function loadPartitionIndexDb(data) {
+	dbPartitions = data;
 }
-// TODO this is kind of bad, and could be improved dramatically by creating a tree of partitions
 function findPartitionFile(e) {
 	if (!e) {
 		return false;
@@ -1021,13 +1020,13 @@ function findPartitionFile(e) {
 	if (pname.length == 0) {
 		return false;
 	}
-	var index = indexOf(dbPartitions, pname);
-	if (index < 0) {
+	var path = dbPartitions[pname]; 
+	while (!path) {
 		pname = pname.substring(0, pname.length - 1);
-		return findPartitionFile(e.parent);
-	} else {
-		return dbPartitions[index];
+		path = dbPartitions[pname];
 	}
+	path = "p/" + path + ".json";
+	return path;
 }
 function indexOf(array, item) {
     var i = array.length;
@@ -1037,9 +1036,4 @@ function indexOf(array, item) {
        }
     }
     return -1;
-}
-function tempTestPartitionNames() {
-	var e = getMapEntry(7174);
-	var partitionFile = findPartitionFile(e);
-	partitionFile = "p/p-" + partitionFile + ".json";
 }
