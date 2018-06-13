@@ -32,6 +32,8 @@ function __GlobalVars(){}
 var dbMap = {};
 var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't show
 var dbPartitions;
+var dbChildIdsToParents = {};
+var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -379,6 +381,7 @@ function markChildrenAsShown(id, show) {
 	markEntryChildrenAsShown(getMapEntry(id), show);
 }
 // just these ids, nothing else
+// TODO probably have to show parent ids too, because some of the callers hide those first
 function markEntriesAsShown(entries, show) {
 	for (var i = 0; i < entries.length; i++) {
 		dbEntryIdsToShow[entries[i].id] = show;
@@ -416,7 +419,12 @@ function addEntriesToMap(entries) {
 		e.children = [];
 		initEntry(e);
 		map[e.id] = e;
+		// add the g-children to that map
+		for (var j = 0; j < e.childrenIds.length; j++) {
+			dbChildIdsToParents[e.childrenIds[j]] = e;
+		}
 	}
+	
 	
 	// link each child to its parent
 	for (i = 0; i < entries.length; i++) {
@@ -911,19 +919,17 @@ function loadTreeFromURL() {
 		}
 	}
 }
-// TODO this isn't working anymore because I've reworked the callbacks to gather all entries first
 function loadAllChildren(id) {
 	var childrenIds = getMapEntry(id).childrenIds;
 	loadJsonThenMarkAllNewVisible(childrenIds);
 }
-function loadAllShowMore(id) { // TODO same issues here
+function loadAllShowMore(id) {
 	var e = getMapEntry(id);
 	// build the full list
 	var allShowMoreIds = e.showMoreLeafIds.concat(e.showMoreOtherIds);
 	loadJsonThenMarkAllNewVisible(allShowMoreIds);
 }
 
-// TODO this is probably not working any more due to refactor
 function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
 	if (getRootEntry()) {
 		markEntryChildrenAsShown(getRootEntry(), false);
@@ -940,33 +946,50 @@ function loadJsonThenMarkAllNewVisible(fileNamesOrIds) {
 		markEntriesAsShown(entries, true);
 		renderCurrentTree();
 	};
-	loadJson(fileNamesOrIds, true, callback);
+	loadJson(fileNamesOrIds, callback);
 }
 // ids would come from "open children" for example
-function loadJson(fileNamesOrIds, markNewEntriesShown, callback) {
+function loadJson(fileNamesOrIds, callback) {
 	// build actual list of ids based on what we don't have already
-	var temp = [];
+	var idsToProcess = [];
+	var idsWithoutParents = [];
 	for (var i = 0; i < fileNamesOrIds.length; i++) {
-		var e = getMapEntry(fileNamesOrIds[i]);
-		if (!e) {
-			// TODO this might be a file name - need to track that separately so we don't reload files twice
-			temp.push(fileNamesOrIds[i]);
-		} else if (markNewEntriesShown) {
-			markEntryAsShown(e, true);
+		var id = fileNamesOrIds[i];
+		if (isFileName(id)) {
+			idsToProcess.push(id);
+		} else {
+			var e = getMapEntry(id);
+			if (!e) {
+				if (dbChildIdsToParents[id]) {
+					idsToProcess.push(id);
+				} else {
+					idsWithoutParents.push(id);
+				}
+			}
 		}
 	}
-	fileNamesOrIds = temp;
-	
+	var currentCallback = callback;
+	if (idsWithoutParents.length > 0) {
+		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback);
+	}
 	var entries = [];
 	// build list of functions - we don't care which order
-	var currentCallback = callback;
-	for (var j = 0; j < fileNamesOrIds.length; j++) {
+	for (var j = 0; j < idsToProcess.length; j++) {
 		var parentCallback = currentCallback;
-		var thisCallback = buildJsonCallback(fileNamesOrIds[j], parentCallback);
+		var thisCallback = buildJsonCallback(idsToProcess[j], parentCallback);
 		currentCallback = thisCallback;
 	}
 	// call the last function, it will cascade up
 	currentCallback(entries);
+}
+function isFileName(name) {
+	name = "" + name;
+	return name.startsWith("p-") || name.startsWith("f-");
+}
+function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback) {
+	return function() {
+		loadJson(idsWithoutParents, callback);
+	};
 }
 // this is a callback in the sense that it is part of a callback chain, 
 // even though this method itself will call json and need a callback
@@ -978,16 +1001,14 @@ function buildJsonCallback(id, parentCallback) {
 function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
 	log("loadOneJsonDocument: " + jsonId, 1);
-	var subfolder;
-	var url = "json/"
+	var url = "json/";
 	if (jsonId.charAt(0) == 'f') {
 		 url = url + "f/" + jsonId + ".json";
 	} else if (jsonId.charAt(0) == 'p') {
+		// would require the full path key to be present 
 		url = url + "p/" + jsonId.subtring(2) + ".json";
 	} else {
-		// subfolder = "n" + "/" + Math.ceil(jsonId / 100);
-		var e = getMapEntry(jsonId);
-		subfolder = "p" + "/" + findPartitionFile(e)
+		url = buildPartitionFilePath(jsonId);
 	}
 	var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
 	return $.getJSON(url, innerSuccessCallback);
@@ -1012,20 +1033,28 @@ function loadPartitionIndex(callback) {
 function loadPartitionIndexDb(data) {
 	dbPartitions = data;
 }
-function findPartitionFile(e) {
-	if (!e) {
-		return false;
-	}
-	var pname = e.partitionPath;
-	if (pname.length == 0) {
-		return false;
-	}
+function buildPartitionFilePath(id) {
+	var parent = dbChildIdsToParents[id];
+	var pname = parent.partitionPath;
+	
+	var index = indexOf(parent.childrenIds, id);
+	pname = pname + "" + getPartitionPathPart(index); // to ensure we concatenate
+	
 	var path = dbPartitions[pname]; 
-	while (!path) {
+	while (!path && pname.length > 0) {
 		pname = pname.substring(0, pname.length - 1);
 		path = dbPartitions[pname];
 	}
 	path = "p/" + path + ".json";
+	return path;
+}
+function getPartitionPathPart(index) {
+	var path = "";
+	while (index >= partitionSymbols.length) {
+		index = index - partitionSymbols.length;
+		path = path + "_";
+	}
+	path = path + partitionSymbols.charAt(index);
 	return path;
 }
 function indexOf(array, item) {
