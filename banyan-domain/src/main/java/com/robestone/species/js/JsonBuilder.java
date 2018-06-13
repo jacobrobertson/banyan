@@ -154,7 +154,8 @@ public class JsonBuilder extends AbstractWorker {
 					}
 				}
 				// save one "fat" file for the example
-				save("f-example-" + ex.getId(), array);
+				// TODO add a "file name" key to the DB and use that
+				save("example-" + ex.getId(), array);
 			}
 		}
 	}

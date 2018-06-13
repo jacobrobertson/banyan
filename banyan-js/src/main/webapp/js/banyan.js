@@ -274,15 +274,6 @@ function getTop(e, popupHeight, bottomFudge) {
 	return top;
 }
 function getHref(img) {
-	// TODO I won't need to do this because the attribute is already in the entry
-	// for example http://bi.robestone.com/tiny/we/Homininae.jpg
-	/*
-	var src = $(e).find(".Thumb").attr("src");
-	var pos = src.indexOf("/tiny/");
-	var left = src.substring(0, pos);
-	var right = src.substring(pos + 6);
-	var href = left + "/preview/" + right;
-	*/
 	return imagePath() + "/preview/" + this.getImageAttribute(img).img;
 }
 function getImageWidth(img) {
@@ -668,12 +659,6 @@ function countVisible(ids) {
 }
 // only those things that need to be done exactly one time when first loaded
 function initEntry(e) {
-	if (e.cname) {
-		// TODO will be first in array later (cnames)
-		e.alt = e.cname;
-	}  else {
-		e.alt = e.lname;
-	}
 	e.href = e.id;// "Complete_Metamorphosis_Insects_Endopterygota_6691";
 	e.cpDetail = "TODO"; // should just be true?
 	if (!e.childrenIds) {
@@ -693,6 +678,11 @@ function initEntry(e) {
 	e.collapsed = [];
 	if (e.cnames) {
 		e.cname = e.cnames[0];
+	}
+	if (e.cname) {
+		e.alt = e.cname;
+	}  else {
+		e.alt = e.lname;
 	}
 }
 function initPartitionPath(e) {
@@ -791,34 +781,31 @@ function buildRowsForTree(table, e) {
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
-	// TODO I need to know right here if I can render all the siblings too
 	appendEntryLinesElement(td, e, showLine);
-//	if (entries.length == 1) {
-		// skip this section if we decided to append all within the first siblings element
-		var lastIndex = children.length - 1;
-		for (var index = 0; index < children.length; index++) {
-			var firstChild = (index == 0);
-			if (!firstChild) {
-				tr = $("<tr></tr>").appendTo(table);
-			}
-			// a blank td for the line segments
-			var blankClass = "b";
-			if (!firstChild) {
-				blankClass += " l";
-			}
-			tr.append("<td class='" + blankClass + "'>&nbsp</td>");
-			// this td holds the given child
-			var childTd = $("<td rowspan='2'></td>").appendTo(tr);
-			// render recursively
-			buildTree(childTd, children[index]);
-			if (index != lastIndex) {
-				blankClass = " class='l'";
-			} else {
-				blankClass = "";
-			}
-			table.append("<tr><td" + blankClass + ">&nbsp;</td></tr>");
+
+	var lastIndex = children.length - 1;
+	for (var index = 0; index < children.length; index++) {
+		var firstChild = (index == 0);
+		if (!firstChild) {
+			tr = $("<tr></tr>").appendTo(table);
 		}
-//	}
+		// a blank td for the line segments
+		var blankClass = "b";
+		if (!firstChild) {
+			blankClass += " l";
+		}
+		tr.append("<td class='" + blankClass + "'>&nbsp</td>");
+		// this td holds the given child
+		var childTd = $("<td rowspan='2'></td>").appendTo(tr);
+		// render recursively
+		buildTree(childTd, children[index]);
+		if (index != lastIndex) {
+			blankClass = " class='l'";
+		} else {
+			blankClass = "";
+		}
+		table.append("<tr><td" + blankClass + ">&nbsp;</td></tr>");
+	}
 }
 /**
  * This is just the table element that holds the Entry Lines
@@ -928,7 +915,8 @@ function loadTreeFromURL() {
 			if (isFileName(id)) {
 				loadExampleFile(id);
 			} else {
-				var ids = id.split(",");
+				// should be in the form i:1,23,223
+				var ids = id.substring(2).split(",");
 				loadJsonThenMarkOnlyNewVisible(ids);
 			}
 		}
@@ -969,6 +957,7 @@ function build_loadJsonThenMarkNewIdsVisible_callback(newIds) {
 		} else {
 			markEntriesAsShown(newIds, true);
 		}
+		// TODO right here change the HREF to all visible ids
 		renderCurrentTree();
 	};
 }
@@ -1008,7 +997,7 @@ function loadJson(fileNamesOrIds, callback) {
 }
 function isFileName(name) {
 	name = "" + name;
-	return name.startsWith("p-") || name.startsWith("f-");
+	return name.startsWith("f:");
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback) {
 	return function() {
@@ -1026,11 +1015,8 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
 	log("loadOneJsonDocument: " + jsonId, 1);
 	var url = "json/";
-	if (jsonId.charAt(0) == 'f') {
-		 url = url + "f/" + jsonId + ".json";
-	} else if (jsonId.charAt(0) == 'p') {
-		// would require the full path key to be present 
-		url = url + "p/" + jsonId.subtring(2) + ".json";
+	if (isFileName(jsonId)) {
+		 url = url + "f/" + jsonId.substring(2) + ".json";
 	} else {
 		url = url + buildPartitionFilePath(jsonId);
 	}
