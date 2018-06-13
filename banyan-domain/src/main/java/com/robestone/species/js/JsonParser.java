@@ -37,6 +37,9 @@ public class JsonParser {
 		if (!file.exists()) {
 			return null;
 		}
+		return parseFile(file);
+	}
+	public Node parseFile(File file) throws Exception {
 		String s = FileUtils.readFileToString(file);
 		Map<Integer, Node> nodes = parseString(s);
 		Node root = null;

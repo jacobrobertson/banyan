@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -24,17 +25,54 @@ public class JsonBuilder extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 //		new JsonBuilder().runExamples();
 //		new JsonBuilder().runOneId(1, 6);
-		new JsonBuilder().partitionFromDB();
+		new JsonBuilder().partitionFromFileSystem2();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
+	private JsonParser parser = new JsonParser();
 	
 	public void partitionFromDB() throws Exception {
 		Node root = buildTree();
 		partitionAndSave(root);
 	}
+	// scans all files in a dir, ignoring "index.json"
+	public void partitionFromFileSystem2() throws Exception {
+		Map<Integer, Node> nodes = new HashMap<Integer, Node>();
+		File dir = new File(outputDir + "-1");
+		loadAllJsonFiles(dir, nodes);
+		Node root = null;
+		
+		for (Integer id : nodes.keySet()) {
+			Node n = nodes.get(id);
+			n.getChildren().clear();
+		}
+		for (Integer id : nodes.keySet()) {
+			Node n = nodes.get(id);
+			Node p = nodes.get(n.getEntry().getParentId());
+			if (p == null) {
+				root = n;
+			} else {
+				n.setParent(p);
+				p.getChildren().add(n);
+			}
+		}
+		
+		partitionAndSave(root);
+	}
+	private void loadAllJsonFiles(File dir, Map<Integer, Node> map) throws Exception {
+		File[] files = dir.listFiles();
+		for (File file : files) {
+			if (file.isDirectory()) {
+				loadAllJsonFiles(file, map);
+			} else if (!"index.json".equals(file.getName())) {
+				Node node = parser.parseFile(file);
+				map.put(node.getId(), node);
+			}
+		}
+	}
+	// recursively starts with one file
 	public void partitionFromFileSystem() throws Exception {
-		Node root = new JsonParser().parseRecursive(1);
+		Node root = parser.parseRecursive(1);
 		partitionAndSave(root);
 	}
 	public void partitionAndSave(Node root) throws Exception {
@@ -56,9 +94,12 @@ public class JsonBuilder extends AbstractWorker {
 			String fileName = "p/" + node.getFilePath() + ".json";
 			List<JsonEntry> entries = new ArrayList<>();
 			for (Node pn : node.getPartition()) {
-				Entry eentry = speciesService.findEntry(pn.getId());
-				JsonEntry entry = toJsonEntry(eentry);
-				entries.add(entry);
+				JsonEntry jentry = pn.getEntry();
+				if (jentry == null) {
+					Entry eentry = speciesService.findEntry(pn.getId());
+					jentry = toJsonEntry(eentry);
+				}
+				entries.add(jentry);
 			}
 			saveByFileName(fileName, entries);
 		}

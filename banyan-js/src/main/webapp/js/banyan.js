@@ -85,10 +85,10 @@ function contextMenuClicked(aTag) {
 	hideContextMenu();
 	
 	if (action == "cpClose") {
-		markNodeAsShown(id, false);
+		markIdAsShown(id, false);
 		renderCurrentTree();
 	} else if (action == "cpHide") {
-		closeNode(id);
+		hideChildren(id);
 	} else if (action == "cpShowChildren") {
 		loadAllChildren(id);
 	} else if (action == "cpShowMore") {
@@ -205,14 +205,14 @@ function initAllImagePreviewEvents() {
 		}, timeout);
     });
 }
-function closeNode(id) {
-	var ids = getAllVisibleNodeIds();
-	var pos = ids.indexOf(id);
-	ids = ids.splice(pos, 1);
-	setUrlIds(ids);
+function hideChildren(id) {
+//	var ids = getAllVisibleNodeIds();
+//	var pos = ids.indexOf(id);
+//	ids = ids.splice(pos, 1);
+//	setUrlIds(ids);
 	// this way is working
-//	markChildrenAsShown(id, false);
-//	renderCurrentTree();
+	markChildrenAsShown(id, false);
+	renderCurrentTree();
 }
 function setUrlIds(ids) {
 	var url = window.location.href;
@@ -359,7 +359,12 @@ function focusOnNodeParent(p, e) {
 		focusOnNodeParent(p.parent, p);
 	}
 }
-function markNodeAsShown(id, show) {
+function hideAllNodes() {
+	if (getRootEntry()) {
+		markEntryChildrenAsShown(getRootEntry(), false);
+	}
+}
+function markIdAsShown(id, show) {
 	markEntryAsShown(getMapEntry(id), show);
 }
 function markEntryAsShown(e, show) {
@@ -371,10 +376,10 @@ function markEntryAsShown(e, show) {
 function markShowMoreAsShown(id) {
 	var e = getMapEntry(id);
 	for (var i = 0; i < e.showMoreLeafIds.length; i++) {
-		markNodeAsShown(e.showMoreLeafIds[i], true);
+		markIdAsShown(e.showMoreLeafIds[i], true);
 	}
 	for (var i = 0; i < e.showMoreOtherIds.length; i++) {
-		markNodeAsShown(e.showMoreOtherIds[i], true);
+		markIdAsShown(e.showMoreOtherIds[i], true);
 	}
 }
 function markChildrenAsShown(id, show) {
@@ -382,9 +387,14 @@ function markChildrenAsShown(id, show) {
 }
 // just these ids, nothing else
 // TODO probably have to show parent ids too, because some of the callers hide those first
-function markEntriesAsShown(entries, show) {
-	for (var i = 0; i < entries.length; i++) {
-		dbEntryIdsToShow[entries[i].id] = show;
+function markEntriesAsShown(entriesOrIds, show) {
+	for (var i = 0; i < entriesOrIds.length; i++) {
+		var entryOrId = entriesOrIds[i];
+		if (entryOrId.childrenIds) {
+			dbEntryIdsToShow[entryOrId.id] = show;
+		} else {
+			dbEntryIdsToShow[entryOrId] = show;
+		}
 	}
 }
 function markEntryChildrenAsShown(e, show) {
@@ -401,6 +411,7 @@ function markEntryChildrenAsShown(e, show) {
 function addEntriesToMap(entries) {
 	var e;
 	var i;
+	var j;
 	
 	// skip all that we already have - we never need to load from server twice
 	var temp = [];
@@ -420,7 +431,7 @@ function addEntriesToMap(entries) {
 		initEntry(e);
 		map[e.id] = e;
 		// add the g-children to that map
-		for (var j = 0; j < e.childrenIds.length; j++) {
+		for (j = 0; j < e.childrenIds.length; j++) {
 			dbChildIdsToParents[e.childrenIds[j]] = e;
 		}
 	}
@@ -435,7 +446,7 @@ function addEntriesToMap(entries) {
 			var dname = getEntrySimpleDisplayName(e);
 			var foundPos = false;
 			var foundSame = false;
-			for (var j = 0; j < p.children.length; j++) {
+			for (j = 0; j < p.children.length; j++) {
 				var c = p.children[j];
 				var dname2 = getEntrySimpleDisplayName(c);
 				if (dname < dname2) {
@@ -722,14 +733,14 @@ function getEntrySimpleDisplayName(e) {
 }
 function getAllVisibleNodeIds() {
 	var ids = [];
-	getVisibleNodes(getRootEntry(), ids);
-	return nodes;
+	getVisibleNodeIds(getRootEntry(), ids);
+	return ids;
 }
-function getVisibleNodeIds(e, nodes) {
+function getVisibleNodeIds(e, ids) {
 	if (isEntryShown(e.id)) {
 		ids.push(e.id);
 		for (var i = 0; i < e.children.length; i++) {
-			getVisibleNodes(e.children[i], ids);
+			getVisibleNodeIds(e.children[i], ids);
 		}
 	}
 }
@@ -914,39 +925,52 @@ function loadTreeFromURL() {
 	if (index > 0) {
 		var id = url.substring(index + 1);
 		if (id.length > 0) {
-			var ids = id.split(",");
-			loadJsonThenMarkOnlyNewVisible(ids);
+			if (isFileName(id)) {
+				loadExampleFile(id);
+			} else {
+				var ids = id.split(",");
+				loadJsonThenMarkOnlyNewVisible(ids);
+			}
 		}
 	}
 }
+function loadExampleFile(file) {
+	loadJsonThenMarkOnlyNewVisible([file]);
+}
 function loadAllChildren(id) {
 	var childrenIds = getMapEntry(id).childrenIds;
-	loadJsonThenMarkAllNewVisible(childrenIds);
+	loadJsonThenMarkNewIdsVisible(childrenIds);
 }
 function loadAllShowMore(id) {
 	var e = getMapEntry(id);
 	// build the full list
 	var allShowMoreIds = e.showMoreLeafIds.concat(e.showMoreOtherIds);
-	loadJsonThenMarkAllNewVisible(allShowMoreIds);
+	loadJsonThenMarkNewIdsVisible(allShowMoreIds);
 }
 
 function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
-	if (getRootEntry()) {
-		markEntryChildrenAsShown(getRootEntry(), false);
-	}
-	loadJsonThenMarkAllNewVisible(fileNamesOrIds);
+	hideAllNodes();
+	loadJsonThenMarkNewIdsVisible(fileNamesOrIds);
 }
 // this is the master "load ids" method, and should be altered to accomodate the one or two scenarios we have
 // - load these nodes/files exactly, and then mark exactly those nodes visible in addition to current tree, then render tree
 // - load a brand new tree (? maybe already handled by calling method)
 // - load these nodes, but don't do anything else (? not sure that's a valid scenario)
-function loadJsonThenMarkAllNewVisible(fileNamesOrIds) {
-	var callback = function(entries) {
+function loadJsonThenMarkNewIdsVisible(fileNamesOrIds) {
+	var callback = build_loadJsonThenMarkNewIdsVisible_callback(fileNamesOrIds);
+	loadJson(fileNamesOrIds, callback);
+}
+function build_loadJsonThenMarkNewIdsVisible_callback(newIds) {
+	return function(entries) {
 		addEntriesToMap(entries);
-		markEntriesAsShown(entries, true);
+		if (newIds.length > 0 && isFileName(newIds[0])) {
+			// then we need to mark all new entries shown instead
+			markEntriesAsShown(entries, true);
+		} else {
+			markEntriesAsShown(newIds, true);
+		}
 		renderCurrentTree();
 	};
-	loadJson(fileNamesOrIds, callback);
 }
 // ids would come from "open children" for example
 function loadJson(fileNamesOrIds, callback) {
@@ -969,7 +993,7 @@ function loadJson(fileNamesOrIds, callback) {
 		}
 	}
 	var currentCallback = callback;
-	if (idsWithoutParents.length > 0) {
+	if (idsWithoutParents.length > 0 && idsToProcess.length > 0) {
 		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback);
 	}
 	var entries = [];
@@ -1008,7 +1032,7 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 		// would require the full path key to be present 
 		url = url + "p/" + jsonId.subtring(2) + ".json";
 	} else {
-		url = buildPartitionFilePath(jsonId);
+		url = url + buildPartitionFilePath(jsonId);
 	}
 	var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
 	return $.getJSON(url, innerSuccessCallback);
