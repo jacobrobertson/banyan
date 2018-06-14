@@ -1075,7 +1075,6 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 		var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
 		return $.getJSON(url, innerSuccessCallback);
 	} else {
-		// TODO add the file ids assignment to an inner callback here
 		callback(entries);
 	}
 }
