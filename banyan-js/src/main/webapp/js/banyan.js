@@ -10,7 +10,10 @@ $(document).ready(function() {
 });
 function initData() {
 	loadPartitionIndex(function() {
-		loadTreeFromURL();
+		// TODO choose correct file
+		loadJsonOnly([defaultTree], function() {
+			loadTreeFromURL();
+		});
 	});
 }
 /* TODO we need to put these back later - for now we don't have these
@@ -33,7 +36,9 @@ var dbMap = {};
 var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't show
 var dbPartitions;
 var dbChildIdsToParents = {};
+var dbFileIds = {};
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
+var defaultTree = "f:example-104";
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -227,6 +232,27 @@ function setUrlIds(ids) {
 		}
 		url = url + ids[i];
 	}
+}
+function setUrlToAllVisibleIds() {
+	var ids = buildAllVisibleIdsListForUrl();
+	var href = window.location.href;
+	var pos = href.indexOf("#");
+	if (pos > 0) {
+		href = href.substring(0, pos);
+	}
+	window.location.href = href + "#i:" + ids;
+}
+function buildAllVisibleIdsListForUrl() {
+	var list = "";
+	for (var id in dbEntryIdsToShow) {
+		if (dbEntryIdsToShow[id]) {
+			if (list.length > 0) {
+				list += ",";
+			}
+			list += id;
+		}
+	}
+	return list;
 }
 // ------ General Utils
 function __GeneralUtils() {}
@@ -699,7 +725,7 @@ function initPartitionPath(e) {
 			initPartitionPath(p);
 		}
 		var index = indexOf(p.childrenIds, e.id);
-		e.partitionPath = p.partitionPath + "" + index; // to ensure by string
+		e.partitionPath = p.partitionPath + "" + getPartitionPathPart(index); // to ensure by string
 	}
 }
 function getEntryDisplayName(e) {
@@ -909,17 +935,19 @@ function __JsonFunctions() {}
 function loadTreeFromURL() {
 	var url = window.location.href;
 	var index = url.indexOf("#");
+	var id;
 	if (index > 0) {
-		var id = url.substring(index + 1);
-		if (id.length > 0) {
-			if (isFileName(id)) {
-				loadExampleFile(id);
-			} else {
-				// should be in the form i:1,23,223
-				var ids = id.substring(2).split(",");
-				loadJsonThenMarkOnlyNewVisible(ids);
-			}
-		}
+		id = url.substring(index + 1);
+	} else {
+		// we will never just load nothing
+		id = defaultTree;
+	}
+	if (isFileName(id)) {
+		loadExampleFile(id);
+	} else {
+		// should be in the form i:1,23,223
+		var ids = id.substring(2).split(",");
+		loadJsonThenMarkOnlyNewVisible(ids);
 	}
 }
 function loadExampleFile(file) {
@@ -938,31 +966,45 @@ function loadAllShowMore(id) {
 
 function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
 	hideAllNodes();
-	loadJsonThenMarkNewIdsVisible(fileNamesOrIds);
+	loadJsonThenAddEntries(fileNamesOrIds, true);
 }
-// this is the master "load ids" method, and should be altered to accomodate the one or two scenarios we have
+// these are the master "load ids" methods, and should be altered to accomodate the one or two scenarios we have
 // - load these nodes/files exactly, and then mark exactly those nodes visible in addition to current tree, then render tree
 // - load a brand new tree (? maybe already handled by calling method)
 // - load these nodes, but don't do anything else (? not sure that's a valid scenario)
-function loadJsonThenMarkNewIdsVisible(fileNamesOrIds) {
-	var callback = build_loadJsonThenMarkNewIdsVisible_callback(fileNamesOrIds);
+function loadJsonOnly(fileNamesOrIds, callback) {
+	loadJsonThenAddEntries(fileNamesOrIds, false, callback);
+}
+function loadJsonThenMarkNewIdsVisible(fileNamesOrIds, callback) {
+	loadJsonThenAddEntries(fileNamesOrIds, true, callback);
+}
+function loadJsonThenAddEntries(fileNamesOrIds, showTree, outerCallback) {
+	var callback = build_loadJsonThenAddEntries_callback(fileNamesOrIds, showTree, outerCallback);
 	loadJson(fileNamesOrIds, callback);
 }
-function build_loadJsonThenMarkNewIdsVisible_callback(newIds) {
+function build_loadJsonThenAddEntries_callback(newIds, showTree, callback) {
 	return function(entries) {
-		addEntriesToMap(entries);
-		if (newIds.length > 0 && isFileName(newIds[0])) {
-			// then we need to mark all new entries shown instead
-			markEntriesAsShown(entries, true);
-		} else {
-			markEntriesAsShown(newIds, true);
+		if (showTree) {
+			if (newIds.length > 0 && isFileName(newIds[0])) {
+				// then we need to mark all new entries shown instead
+				markEntriesAsShown(entries, true);
+			} else {
+				markEntriesAsShown(newIds, true);
+			}
+			//setUrlToAllVisibleIds(); // TODO get this working - it seemed to break things
+			renderCurrentTree();
 		}
-		// TODO right here change the HREF to all visible ids
-		renderCurrentTree();
+		if (callback) {
+			callback();
+		}
 	};
 }
 // ids would come from "open children" for example
 function loadJson(fileNamesOrIds, callback) {
+	var entries = [];
+	loadJsonInner(fileNamesOrIds, callback, entries);
+}
+function loadJsonInner(fileNamesOrIds, callback, entries) {
 	// build actual list of ids based on what we don't have already
 	var idsToProcess = [];
 	var idsWithoutParents = [];
@@ -983,9 +1025,8 @@ function loadJson(fileNamesOrIds, callback) {
 	}
 	var currentCallback = callback;
 	if (idsWithoutParents.length > 0 && idsToProcess.length > 0) {
-		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback);
+		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries);
 	}
-	var entries = [];
 	// build list of functions - we don't care which order
 	for (var j = 0; j < idsToProcess.length; j++) {
 		var parentCallback = currentCallback;
@@ -999,9 +1040,9 @@ function isFileName(name) {
 	name = "" + name;
 	return name.startsWith("f:");
 }
-function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback) {
+function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries) {
 	return function() {
-		loadJson(idsWithoutParents, callback);
+		loadJson(idsWithoutParents, callback, entries);
 	};
 }
 // this is a callback in the sense that it is part of a callback chain, 
@@ -1015,18 +1056,46 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
 	log("loadOneJsonDocument: " + jsonId, 1);
 	var url = "json/";
+	var loadNeeded = true;
+	var isFile = false;
 	if (isFileName(jsonId)) {
-		 url = url + "f/" + jsonId.substring(2) + ".json";
+		url = url + "f/" + jsonId.substring(2) + ".json";
+		isFile = true;
 	} else {
+		// we might have already loaded this id in a call chain, no need to look it up
+		if (dbMap[jsonId]) {
+			loadNeeded = false;
+		}
 		url = url + buildPartitionFilePath(jsonId);
 	}
-	var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
-	return $.getJSON(url, innerSuccessCallback);
+	if (loadNeeded) {
+		callback = buildAssignFileIdsCallback(jsonId, callback);
+	}
+	if (loadNeeded) {
+		var innerSuccessCallback = buildInnerJsonSuccessCallback(entries, callback);
+		return $.getJSON(url, innerSuccessCallback);
+	} else {
+		// TODO add the file ids assignment to an inner callback here
+		callback(entries);
+	}
+}
+function buildAssignFileIdsCallback(fileName, callback) {
+	return function(entries) {
+		var ids = [];
+		for (var i = 0; i < entries.length; i++) {
+			ids.push(entries[i].id);
+		}
+		dbFileIds[fileName] = ids;
+		callback(entries);
+	};
 }
 function buildInnerJsonSuccessCallback(entries, callback) {
 	return function(data) {
+		// TODO need to process it right now - this means we don't need to pass entries around????
+		//		yes we do because when it's a file, we need to grab them
 		// all we do is gather all the json data together into one large array
 		// any other processing will be handled by the final callback in the chain
+		addEntriesToMap(data.entries);
 		for (var i = 0; i < data.entries.length; i++) {
 			entries.push(data.entries[i]);
 		}

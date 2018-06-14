@@ -23,9 +23,9 @@ import com.robestone.species.parse.AbstractWorker;
 public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-//		new JsonBuilder().runExamples();
+		new JsonBuilder().runExamples();
 //		new JsonBuilder().runOneId(1, 6);
-		new JsonBuilder().partitionFromFileSystem2();
+//		new JsonBuilder().partitionFromFileSystem2();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
@@ -80,7 +80,7 @@ public class JsonBuilder extends AbstractWorker {
 		JsonPartitioner partitioner = new JsonPartitioner();
 		partitioner.partition(root);
 		
-		Map<String, String> pMap = partitioner.getAndApplyPartitionMap(root);
+		Map<String, String> pMap = partitioner.getAndAssignPartitionMap(root);
 		
 		outputPartitions(root);
 		String index = partitioner.getPartitionIndexFile(pMap);
@@ -236,7 +236,7 @@ public class JsonBuilder extends AbstractWorker {
 	private void saveByFolders(String name, List<JsonEntry> entries) throws Exception {
 		// convention because javascript is tricky this way
 		String subfolder;
-		if (name.charAt(0) == 'f') {
+		if (name.charAt(0) == 'e') {
 			subfolder = "f";
 		} else {
 			int id = Integer.parseInt(name);

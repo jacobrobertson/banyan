@@ -25,10 +25,10 @@ public class JsonPartitioner {
 		new Stats().analyze(node).output();
 		System.out.println("------------------");
 		node.setFileKey(getPathToken(0));
-		createPaths(node);
+		assignPaths(node);
 		testAllNodesCanFindTheirPartition(node);
 	}
-	private void createPaths(Node node) {
+	private void assignPaths(Node node) {
 		String pathPart = node.getFileKey();
 		List<Node> byNodeId = new ArrayList<>(node.getChildren());
 		Collections.sort(byNodeId, NodeIdComparator);
@@ -36,7 +36,7 @@ public class JsonPartitioner {
 		for (Node child : byNodeId) {
 			child.setFileKey(pathPart + getPathToken(pos));
 			pos++;
-			createPaths(child);
+			assignPaths(child);
 		}
 //		System.out.println("createPaths." + node.getId() + "." + node.getFileKey());
 	}
@@ -192,7 +192,7 @@ public class JsonPartitioner {
 		}
 	}
 	
-	public Map<String, String> getAndApplyPartitionMap(Node node) {
+	public Map<String, String> getAndAssignPartitionMap(Node node) {
 		// build up the list of path Keys
 		// sort them (not that important though)
 		// the index is a map, and will allow us to lookup the file name by fileKey
@@ -213,7 +213,7 @@ public class JsonPartitioner {
 			map.put(keys.get(i), bucket + "/" + keys.get(i));
 		}
 		
-		applyPartitionPaths(node, map);
+		assignPartitionPaths(node, map);
 		
 		return map;
 	}
@@ -225,13 +225,13 @@ public class JsonPartitioner {
 			getAllPartitionKeys(child, keys);
 		}
 	}
-	private void applyPartitionPaths(Node node, Map<String, String> map) {
+	private void assignPartitionPaths(Node node, Map<String, String> map) {
 		if (!node.getPartition().isEmpty()) {
 			String path = map.get(node.getFileKey());
 			node.setFilePath(path);
 		}
 		for (Node child : node.getChildren()) {
-			applyPartitionPaths(child, map);
+			assignPartitionPaths(child, map);
 		}
 	}
 	
