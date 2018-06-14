@@ -1,12 +1,8 @@
 // ------ Document Init Methods
 $(document).ready(function() {
-	$(window).on('hashchange', function() {
-		loadTreeFromURL();
-	});
+	$(window).on('hashchange', onHashChange);
 	initContextMenu();
-	$(document).ready(function() {
-		initData();
-	});
+	$(document).ready(initData);
 });
 function initData() {
 	loadPartitionIndex(function() {
@@ -48,11 +44,20 @@ var maxWidthShowChildren = 163;
 var maxWidthShowMore = 159;
 var digitWidth = 9;
 
+var isHashChangeListening = true;
 var isMenuActive = false;
 var cancelerEvent = null;
 
 // ------ GUI Events/Behavior/Menus
 function __EventsBehaviorMenus() {}
+function onHashChange() {
+	if (isHashChangeListening) {
+		loadTreeFromURL();
+	} else {
+		// we set this back because this will execute after an event
+		isHashChangeListening = true;
+	}
+}
 function hideContextMenu() {
 	isMenuActive = false;
 	$("#controlpanel").hide();
@@ -90,8 +95,7 @@ function contextMenuClicked(aTag) {
 	hideContextMenu();
 	
 	if (action == "cpClose") {
-		markIdAsShown(id, false);
-		renderCurrentTree();
+		closeNode(id);
 	} else if (action == "cpHide") {
 		hideChildren(id);
 	} else if (action == "cpShowChildren") {
@@ -99,9 +103,12 @@ function contextMenuClicked(aTag) {
 	} else if (action == "cpShowMore") {
 		loadAllShowMore(id);
 	} else if (action == "cpFocus") {
-		focusOnNode(id, true);
-		renderCurrentTree();
+		focusOnNode(id);
 	}
+}
+function closeNode(id) {
+	markIdAsShown(id, false);
+	renderCurrentTree();
 }
 function showContextMenu(e, img) {
 	var imgId = img.name;
@@ -211,48 +218,19 @@ function initAllImagePreviewEvents() {
     });
 }
 function hideChildren(id) {
-//	var ids = getAllVisibleNodeIds();
-//	var pos = ids.indexOf(id);
-//	ids = ids.splice(pos, 1);
-//	setUrlIds(ids);
-	// this way is working
 	markChildrenAsShown(id, false);
 	renderCurrentTree();
 }
-function setUrlIds(ids) {
-	var url = window.location.href;
-	var index = url.indexOf("#");
-	if (index > 0) {
-		url = url.substring(0, index);
-	}
-	url = url + "#";
-	for (var i = 0; i < ids.length; i++) {
-		if (i > 0) {
-			url = url + ",";
-		}
-		url = url + ids[i];
-	}
-}
 function setUrlToAllVisibleIds() {
-	var ids = buildAllVisibleIdsListForUrl();
+	var ids = getAllVisibleNodeIds();
+	var cids = crunch(ids);
 	var href = window.location.href;
 	var pos = href.indexOf("#");
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
-	window.location.href = href + "#i:" + ids;
-}
-function buildAllVisibleIdsListForUrl() {
-	var list = "";
-	for (var id in dbEntryIdsToShow) {
-		if (dbEntryIdsToShow[id]) {
-			if (list.length > 0) {
-				list += ",";
-			}
-			list += id;
-		}
-	}
-	return list;
+	isHashChangeListening = false;
+	window.location.href = href + "#c:" + cids;
 }
 // ------ General Utils
 function __GeneralUtils() {}
@@ -345,6 +323,24 @@ function getWindowLeft() {
 
 // ------ Entry Functions
 function __EntryFunctions() {}
+function isEntryShown(entryOrId) {
+	if (entryOrId.id) {
+		entryOrId = entryOrId.id;
+	}
+	return (dbEntryIdsToShow[entryOrId] == true);
+}
+function setEntryShownAs(entryOrId, shown) {
+	if (entryOrId.id) {
+		entryOrId = entryOrId.id;
+	}
+	dbEntryIdsToShow[entryOrId] = shown;
+}
+function setEntryShown(entryOrId) {
+	setEntryShownAs(entryOrId, true);
+}
+function setEntryHidden(entryOrId) {
+	setEntryShownAs(entryOrId, false);
+}
 function getRootEntry() {
 	for (var id in dbMap) {
 		return getRootFromId(id);
@@ -357,13 +353,11 @@ function getGlobalMap() {
 function getMapEntry(key) {
 	return dbMap[key];
 }
-function isEntryShown(id) {
-	return (dbEntryIdsToShow[id] == true);
-}
 function focusOnNode(id) {
 	var e = getMapEntry(id);
 	var p = e.parent;
 	focusOnNodeParent(p, e);
+	renderCurrentTree();
 }
 function focusOnNodeParent(p, e) {
 	for (var i = 0; i < p.children.length; i++) {
@@ -385,7 +379,7 @@ function markIdAsShown(id, show) {
 	markEntryAsShown(getMapEntry(id), show);
 }
 function markEntryAsShown(e, show) {
-	dbEntryIdsToShow[e.id] = show;
+	setEntryShownAs(e, show);
 	if (!show) {
 		markEntryChildrenAsShown(e, false);
 	}
@@ -408,16 +402,16 @@ function markEntriesAsShown(entriesOrIds, show) {
 	for (var i = 0; i < entriesOrIds.length; i++) {
 		var entryOrId = entriesOrIds[i];
 		if (entryOrId.childrenIds) {
-			dbEntryIdsToShow[entryOrId.id] = show;
+			setEntryShownAs(entryOrId.id, show);
 		} else {
-			dbEntryIdsToShow[entryOrId] = show;
+			setEntryShownAs(entryOrId, show);
 		}
 	}
 }
 function markEntryChildrenAsShown(e, show) {
 	for (var i = 0; i < e.children.length; i++) {
 		var c = e.children[i];
-		dbEntryIdsToShow[c.id] = show;
+		setEntryShownAs(c.id, show);
 		if (!show) {
 			// in this case we want to hide all children now,
 			// it makes other logic simpler
@@ -677,7 +671,7 @@ function getShowCaption(visibleCount, hiddenCount, label1, labelPlural) {
 function countVisible(ids) {
 	var count = 0;
 	for (var i = 0; i < ids.length; i++) {
-		if (dbEntryIdsToShow[ids[i]]) {
+		if (isEntryShown(ids[i])) {
 			count++;
 		}
 	}
@@ -765,14 +759,14 @@ function addAllToRenderMap(e) {
 	addAllToRenderMapDownstream(e);
 	var p = e;
 	while (p) {
-		dbEntryIdsToShow[p.id] = true;
+		setEntryShown(p.id);
 		e = p;
 		p = p.parent;
 	}
 	return e.id;
 }
 function addAllToRenderMapDownstream(e) {
-	dbEntryIdsToShow[e.id] = true;
+	setEntryShown(e.id);
 	for (var i = 0; i < e.children.length; i++) {
 		addAllToRenderMapDownstream(e.children[i]);
 	}
@@ -781,6 +775,7 @@ function addAllToRenderMapDownstream(e) {
 function __TreeHtmlRendering() {}
 function renderCurrentTree() {
 	renderTree(getRootEntry().id, true);
+	setUrlToAllVisibleIds();
 }
 function renderTree(id, keepOnlyNew) {
 	$("#tree").empty();
@@ -913,7 +908,7 @@ function renderNodeEntryLine(h, e, depth) {
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	span.append('<a href="search.tree/TODO#' + e.id + '" name="' + e.id + '" class="opener">'
+	span.append('<a href="search.tree/CRUNCHED#' + e.id + '" name="' + e.id + '" class="opener">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu"></a>');
 }
 function getNbsps(count) {
@@ -945,8 +940,14 @@ function loadTreeFromURL() {
 	if (isFileName(id)) {
 		loadExampleFile(id);
 	} else {
-		// should be in the form i:1,23,223
-		var ids = id.substring(2).split(",");
+		var ids;
+		if (id.startsWith("i")) {
+			// should be in the form i:1,23,223
+			ids = id.substring(2).split(",");
+		} else { // "c:"
+			var cids = id.substring(2);
+			ids = uncrunch(cids);
+		}
 		loadJsonThenMarkOnlyNewVisible(ids);
 	}
 }
@@ -991,7 +992,6 @@ function build_loadJsonThenAddEntries_callback(newIds, showTree, callback) {
 			} else {
 				markEntriesAsShown(newIds, true);
 			}
-			//setUrlToAllVisibleIds(); // TODO get this working - it seemed to break things
 			renderCurrentTree();
 		}
 		if (callback) {
@@ -1057,10 +1057,8 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	log("loadOneJsonDocument: " + jsonId, 1);
 	var url = "json/";
 	var loadNeeded = true;
-	var isFile = false;
 	if (isFileName(jsonId)) {
 		url = url + "f/" + jsonId.substring(2) + ".json";
-		isFile = true;
 	} else {
 		// we might have already loaded this id in a call chain, no need to look it up
 		if (dbMap[jsonId]) {
@@ -1090,10 +1088,9 @@ function buildAssignFileIdsCallback(fileName, callback) {
 }
 function buildInnerJsonSuccessCallback(entries, callback) {
 	return function(data) {
-		// TODO need to process it right now - this means we don't need to pass entries around????
-		//		yes we do because when it's a file, we need to grab them
-		// all we do is gather all the json data together into one large array
-		// any other processing will be handled by the final callback in the chain
+		// this is first thing that happens when JSON returns.
+		// we add the entries immediately to the global map
+		// and also add to the current list we are tracking for the callback chain
 		addEntriesToMap(data.entries);
 		for (var i = 0; i < data.entries.length; i++) {
 			entries.push(data.entries[i]);
@@ -1143,4 +1140,127 @@ function indexOf(array, item) {
        }
     }
     return -1;
+}
+// ------ Crunched Ids
+function __CrunchedIds() {}
+var crunchedMinPadSize = 3;
+var crunchedPadChangeDelimiter = '_';
+var crunchedRebaseIndicator = '.';
+var crunchedChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var crunchedRadix = crunchedChars.length;
+var crunchedZeroChar = "0";
+var crunchedMinValuesCount = 10;
+var crunchedPads = [];
+var crunchedMinValues = [];
+initCruncher();
+function initCruncher() {
+	var padding = "";
+	for (var i = 0; i < crunchedMinValuesCount; i++) {
+		crunchedMinValues[i] = Math.pow(crunchedRadix, i + 1);
+		crunchedPads[i] = padding;
+		padding += crunchedPadChangeDelimiter;
+	}
+}
+function crunch(nums) {
+	var minPadSize = crunchedMinPadSize;
+	var crunched = "";
+	var minValue = crunchedMinValues[minPadSize - 1];
+	for (var i = 0; i < nums.length; i++) {
+		var n = nums[i];
+		while (n >= minValue) {
+			crunched += crunchedPadChangeDelimiter;
+			minPadSize++;
+			minValue = minValues[minPadSize - 1];
+		}
+		var one = crunchOne(n, true, minPadSize);
+		crunched += one;
+	}
+	return crunched;
+}
+function crunchOne(n, pad, padSize) {
+	var s;
+	if (n == 0) {
+		s = crunchedZeroChar;
+	} else {
+		s = "";
+		while (n > 0) {
+			var next = Math.trunc(n / crunchedRadix);
+			var diff = (n - (next * crunchedRadix));
+			var diffChar = crunchIntToChar(diff);
+			s = diffChar + s;
+			n = next;
+		}
+	}
+	if (pad) {
+		var padded = leftPad(s, padSize, crunchedZeroChar);
+		return padded;
+	} else {
+		return s;
+	}
+}
+function leftPad(s, padSize, padChar) {
+	while (s.length < padSize) {
+		s = padChar + s;
+	}
+	return s;
+}
+function testCrunch() {
+	var val = $("#uncrunchedIds").val();
+	var nums = val.split(",");
+	var crunched = crunch(nums);
+	$("#crunchOutput").val(crunched);
+}
+function testUncrunch() {
+	var val = $("#crunchedIds").val();
+	var uncrunched = uncrunch(val);
+	$("#crunchOutput").val(uncrunched);
+}
+function uncrunch(s) {
+	var nums = [];
+	var padSize = crunchedMinPadSize;
+	var len = s.length;
+	for (var i = 0; i < len;) {
+		var c = s.charAt(i);
+		if (c == crunchedRebaseIndicator) {
+			if (padSize == 1) {
+				padSize = crunchedMinPadSize;
+			} else if (padSize >= crunchedMinPadSize) {
+				padSize = 1;
+			} else {
+				return false;
+				//throw new IllegalArgumentException("Not expecting " + rebaseIndicator + " at pos " + i + " of string " + s);
+			}
+			i++;
+			// I think I'm not using this...
+//		} else if (c == subtractionIndicator) {
+//			padSize--;
+//			i++;
+		} else if (c == crunchedPadChangeDelimiter) {
+			padSize++;
+			i++;
+		} else {
+			var sub = s.substring(i, i + padSize);
+			var val = uncrunchToInt(sub);
+			nums.push(val);
+			i += padSize;
+		}
+	}
+	return nums;
+}
+function uncrunchToInt(s) {
+	var len = s.length - 1;
+	var val = 0;
+	for (var i = 0; i <= len; i++) {
+		var c = s.charAt(i);
+		var n = uncrunchCharToInt(c);
+		val += (n * Math.pow(crunchedRadix, len - i));
+	}
+	return val;
+}
+// TODO would a map be faster?
+function uncrunchCharToInt(c) {
+	return crunchedChars.indexOf(c);
+}
+function crunchIntToChar(i) {
+	return crunchedChars.charAt(i);
 }
