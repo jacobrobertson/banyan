@@ -129,6 +129,11 @@ a.CreditLink {
 	text-align: center;
 	margin-bottom: 8px;
 }
+.QuoteLink:link, .QuoteLink:active, .QuoteLink:visited, .QuoteLink:hover, .QuoteLink:focus {
+	color: #547a29;
+	font-weight: bold;
+	text-decoration: underline;
+}
 .SearchExample {
 	color: #628e2f;
 	font-weight: normal;

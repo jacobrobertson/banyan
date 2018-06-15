@@ -33,6 +33,7 @@ var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't s
 var dbPartitions;
 var dbChildIdsToParents = {};
 var dbFileIds = {};
+var dbRandomFiles = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
 var defaultTree = "f:example-104";
 
@@ -221,16 +222,21 @@ function hideChildren(id) {
 	markChildrenAsShown(id, false);
 	renderCurrentTree();
 }
-function setUrlToAllVisibleIds() {
-	var ids = getAllVisibleNodeIds();
-	var cids = crunch(ids);
+function setUrl(afterHash, turnOffListening) {
 	var href = window.location.href;
 	var pos = href.indexOf("#");
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
-	isHashChangeListening = false;
-	window.location.href = href + "#c:" + cids;
+	if (turnOffListening) {
+		isHashChangeListening = false;
+	}
+	window.location.href = href + "#" + afterHash;
+}
+function setUrlToAllVisibleIds() {
+	var ids = getAllVisibleNodeIds();
+	var cids = "c:" + crunch(ids);
+	setUrl(cids, true);
 }
 // ------ General Utils
 function __GeneralUtils() {}
@@ -494,12 +500,22 @@ function getRootFromId(id) {
 }
 function prepareNodesForRender(e) {
 	buildShownNodes(e);
+	cleanNodes(e);
 	collapseNodesForChildrenToShow(e);
 	hideLongCollapsed(e);
 	collapseNodesForSiblingsToShow(e);
 	prepareEntryForControlPanel(e);
 }
-// These are the visible "children" of a node, not the actual children of an entry
+function cleanNodes(e) {
+	// we may have more things to do later...
+	e.collapsedPinned = false;
+	if (e.childrenToShow) {
+		for (var i = 0; i < e.childrenToShow.length; i++) {
+			var c = e.children[i];
+			cleanNodes(c);
+		}
+	}
+}
 function buildShownNodes(e) {
 	e.childrenToShow = [];
 	for (var i = 0; i < e.children.length; i++) {
@@ -744,8 +760,11 @@ function getEntrySimpleDisplayName(e) {
 function getAllVisibleNodeIds() {
 	var ids = [];
 	getVisibleNodeIds(getRootEntry(), ids);
-	ids.sort((a, b) => a - b);
+	ids.sort(sortIntCompare);
 	return ids;
+}
+function sortIntCompare(a, b) {
+	return a - b;
 }
 function getVisibleNodeIds(e, ids) {
 	if (isEntryShown(e.id)) {
@@ -940,6 +959,8 @@ function loadTreeFromURL() {
 	}
 	if (isFileName(id)) {
 		loadExampleFile(id);
+	} else if (id == "random") {
+		loadRandomFile();
 	} else {
 		var ids;
 		if (id.startsWith("i")) {
@@ -951,6 +972,21 @@ function loadTreeFromURL() {
 		}
 		loadJsonThenMarkOnlyNewVisible(ids);
 	}
+}
+function loadRandomFile() {
+	if (!dbRandomFiles) {
+		loadRandomFileFromJson();
+	} else {
+		var next = dbRandomFiles.shift();
+		dbRandomFiles.push(next);
+		setUrl("f:" + next, false);
+	}
+}
+function loadRandomFileFromJson() {
+	$.getJSON("json/f/random.json", function(data) {
+		dbRandomFiles = data.files;
+		loadRandomFile();
+	});
 }
 function loadExampleFile(file) {
 	loadJsonThenMarkOnlyNewVisible([file]);
@@ -1145,6 +1181,7 @@ function indexOf(array, item) {
 // ------ Crunched Ids
 function __CrunchedIds() {}
 var crunchedMinPadSize = 3;
+var crunchedSubtractionIndicator = '-';
 var crunchedPadChangeDelimiter = '_';
 var crunchedRebaseIndicator = '.';
 var crunchedChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1161,22 +1198,6 @@ function initCruncher() {
 		crunchedPads[i] = padding;
 		padding += crunchedPadChangeDelimiter;
 	}
-}
-function crunch(nums) {
-	var minPadSize = crunchedMinPadSize;
-	var crunched = "";
-	var minValue = crunchedMinValues[minPadSize - 1];
-	for (var i = 0; i < nums.length; i++) {
-		var n = nums[i];
-		while (n >= minValue) {
-			crunched += crunchedPadChangeDelimiter;
-			minPadSize++;
-			minValue = crunchedMinValues[minPadSize - 1];
-		}
-		var one = crunchOne(n, true, minPadSize);
-		crunched += one;
-	}
-	return crunched;
 }
 function crunchOne(n, pad, padSize) {
 	var s;
@@ -1217,7 +1238,13 @@ function testUncrunch() {
 	$("#crunchOutput").val(uncrunched);
 }
 function uncrunch(s) {
-	var nums = [];
+	var ids = [];
+	var subPos = s.indexOf(crunchedSubtractionIndicator);
+	if (subPos < 0) {
+		subPos = s.indexOf(crunchedRebaseIndicator);
+	}
+	var toAdd = 0;
+	var useSub = subPos >= 0;
 	var padSize = crunchedMinPadSize;
 	var len = s.length;
 	for (var i = 0; i < len;) {
@@ -1229,25 +1256,27 @@ function uncrunch(s) {
 				padSize = 1;
 			} else {
 				return false;
-				//throw new IllegalArgumentException("Not expecting " + rebaseIndicator + " at pos " + i + " of string " + s);
+				// throw new IllegalArgumentException("Not expecting " + rebaseIndicator + " at pos " + i + " of string " + s);
 			}
 			i++;
-			// I think I'm not using this...
-			// TODO YES - ADD IT BACK... 
-//		} else if (c == subtractionIndicator) {
-//			padSize--;
-//			i++;
+		} else if (c == crunchedSubtractionIndicator) {
+			padSize--;
+			i++;
 		} else if (c == crunchedPadChangeDelimiter) {
 			padSize++;
 			i++;
 		} else {
 			var sub = s.substring(i, i + padSize);
 			var val = uncrunchToInt(sub);
-			nums.push(val);
+			if (useSub) {
+				val += toAdd;
+				toAdd = val;
+			}
+			ids.push(val);
 			i += padSize;
 		}
 	}
-	return nums;
+	return ids;
 }
 function uncrunchToInt(s) {
 	var len = s.length - 1;
@@ -1265,4 +1294,101 @@ function uncrunchCharToInt(c) {
 }
 function crunchIntToChar(i) {
 	return crunchedChars.charAt(i);
+}
+// documentation found in Java file
+function crunch(nums) {
+	var usedSymbol = false;
+	var last = 0;
+	var buf = "";
+	var currentPad = crunchedMinPadSize;
+	var nsize = nums.length;
+	for (var i = 0; i < nsize; i++) {
+		var num = nums[i];
+		var sub = num - last;
+		last = num;
+		num = sub;
+		var s = crunchOne(num, false, crunchedMinPadSize);
+		var len = s.length;
+		var padDiff = currentPad - len;
+		if (padDiff > 0) {
+			if (padDiff == 1) {
+				// first determine if we should just zero pad it instead
+				var zeroPad = false;
+				// if it's the last number, can't compare the next number
+				if (i < nsize - 1) {
+					// look at the next number to see if it will just go back up again
+					var nextNum = nums[i + 1] - last;
+					var maxNext = crunchedMinValues[len - 1];
+					if (nextNum >= maxNext) {
+						zeroPad = true;
+					}
+				} else {
+					// the last number, so zero pad to look nicer
+					zeroPad = true;
+				}
+				if (zeroPad) {
+					buf += crunchedZeroChar;
+					len++;
+				} else {
+					buf += crunchedSubtractionIndicator;
+					usedSymbol = true;
+				}
+			} else if (currentPad >= crunchedMinPadSize && len == 1) {
+				buf += crunchedRebaseIndicator;
+				usedSymbol = true;
+			} else {
+				for (var j = 0; j < padDiff; j++) {
+					buf += crunchedSubtractionIndicator;
+				}
+				usedSymbol = true;
+			}
+		} else if (padDiff < 0) {
+			if (padDiff == -1) {
+				buf += crunchedPadChangeDelimiter;
+			} else if (currentPad == 1 && len == crunchedMinPadSize) {
+				buf += crunchedRebaseIndicator;
+				usedSymbol = true;
+			} else {
+				for (var j = 0; j < -padDiff; j++) {
+					buf += crunchedPadChangeDelimiter;
+				}
+			}
+		} else {
+			// no action needed...
+		}
+		currentPad = len;
+		buf += s;
+	}
+	var other = crunchSimple(nums);
+	var olen = other.length;
+	if (!usedSymbol) {
+		// we need this case, because otherwise when we parse it, we won't look for subtraction
+		if (buf.length + 1 < olen) { 
+			buf += crunchedSubtractionIndicator;
+			return buf;
+		} else {
+			return other;
+		}
+	} else if (olen <= buf.length) {
+		// this covers some very rare cases, plus makes it so w prefer non-subtraction style (easier on eyes)
+		return other;
+	} else {
+		return buf;
+	}
+}
+function crunchSimple(nums) {
+	var minPadSize = crunchedMinPadSize;
+	var crunched = "";
+	var minValue = crunchedMinValues[minPadSize - 1];
+	for (var i = 0; i < nums.length; i++) {
+		var n = nums[i];
+		while (n >= minValue) {
+			crunched += crunchedPadChangeDelimiter;
+			minPadSize++;
+			minValue = crunchedMinValues[minPadSize - 1];
+		}
+		var one = crunchOne(n, true, minPadSize);
+		crunched += one;
+	}
+	return crunched;
 }
