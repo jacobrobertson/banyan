@@ -744,6 +744,7 @@ function getEntrySimpleDisplayName(e) {
 function getAllVisibleNodeIds() {
 	var ids = [];
 	getVisibleNodeIds(getRootEntry(), ids);
+	ids.sort((a, b) => a - b);
 	return ids;
 }
 function getVisibleNodeIds(e, ids) {
