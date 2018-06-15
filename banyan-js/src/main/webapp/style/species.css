@@ -1,5 +1,9 @@
 body {height:90%;background: #e8f3db;}
 
+.tabCommand {
+	display: none;
+}
+
 .Highlight .Node {background:#ffefdc;}
 .Highlight .xb2 {background:#ffefdc;}
 .Highlight .xb3 {background:#ffefdc;}
@@ -142,8 +146,8 @@ a.CreditLink {
 }
 .FaqTitle { font-style: italic; color: #466522; font-size: 1.2em; }
 .Spacer {
-	margin-left: 5px;
-	margin-right: 5px;
+	margin-left: .2em;
+	margin-right: .2em;
 	color: #547a29;
 	font-weight: bold;
 }

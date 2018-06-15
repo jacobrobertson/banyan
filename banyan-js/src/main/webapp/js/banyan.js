@@ -8,7 +8,7 @@ function initData() {
 	loadPartitionIndex(function() {
 		// TODO choose correct file
 		loadJsonOnly([defaultTree], function() {
-			loadTreeFromURL();
+			loadCommandFromURL();
 		});
 	});
 }
@@ -53,7 +53,7 @@ var cancelerEvent = null;
 function __EventsBehaviorMenus() {}
 function onHashChange() {
 	if (isHashChangeListening) {
-		loadTreeFromURL();
+		loadCommandFromURL();
 	} else {
 		// we set this back because this will execute after an event
 		isHashChangeListening = true;
@@ -236,6 +236,7 @@ function setUrl(afterHash, turnOffListening) {
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
 	var cids = "c:" + crunch(ids);
+	$("#treeLink").attr("href", "#" + cids);
 	setUrl(cids, true);
 }
 // ------ General Utils
@@ -798,7 +799,7 @@ function renderCurrentTree() {
 	setUrlToAllVisibleIds();
 }
 function renderTree(id, keepOnlyNew) {
-	$("#tree").empty();
+	$("#treeTab").empty();
 	// for this test, we flag every entry as being rendered
 	if (!keepOnlyNew) {
 		id = addAllToRenderMap(getMapEntry(id));
@@ -806,7 +807,7 @@ function renderTree(id, keepOnlyNew) {
 	var e = getMapEntry(id);
 	// we need to collapse nodes only once we know the map is done
 	prepareNodesForRender(e);
-	buildTree($("#tree"), e);
+	buildTree($("#treeTab"), e);
 	initAllImagePreviewEvents();
 }
 function buildTree(h, e) {
@@ -947,31 +948,57 @@ function iconPath() {
 
 // ------ JSON Functions
 function __JsonFunctions() {}
-function loadTreeFromURL() {
+function loadCommandFromURL() {
 	var url = window.location.href;
 	var index = url.indexOf("#");
-	var id;
+	var hashValue = "";
 	if (index > 0) {
-		id = url.substring(index + 1);
-	} else {
+		hashValue = url.substring(index + 1);
+	} 
+	if (hashValue.length == 0) {
 		// we will never just load nothing
-		id = defaultTree;
+		hashValue = defaultTree;
 	}
-	if (isFileName(id)) {
-		loadExampleFile(id);
-	} else if (id == "random") {
-		loadRandomFile();
+	
+	// split the command if needed
+	var colon = hashValue.charAt(1);
+	var command;
+	var value;
+	if (colon == ":") {
+		command = hashValue.charAt(0);
+		value = hashValue.substring(2);
 	} else {
-		var ids;
-		if (id.startsWith("i")) {
-			// should be in the form i:1,23,223
-			ids = id.substring(2).split(",");
-		} else { // "c:"
-			var cids = id.substring(2);
-			ids = uncrunch(cids);
+		command = "";
+		value = hashValue;
+	}
+
+	// check the tabs first to ensure the tree is visible
+	if (command != "t") {
+		loadTab("treeTab");
+	}
+	
+	if (command == "f") {
+		loadExampleFile(hashValue);
+	} else if (command == "t") {
+		if (value == "random") {
+			loadRandomFile();
+		} else if (value == "startOver") {
+			loadExampleFile(defaultTree);
+		} else {
+			// other tab-commands can respond to visual treatment
+			loadTab(value);
 		}
+	} else if (command == "i") {
+		var ids = value.split(",");
+		loadJsonThenMarkOnlyNewVisible(ids);
+	} else if (command == "c") {
+		var ids = uncrunch(value);
 		loadJsonThenMarkOnlyNewVisible(ids);
 	}
+}
+function loadTab(id) {
+	$(".tabCommand").hide();
+	$("#" + id).show();
 }
 function loadRandomFile() {
 	if (!dbRandomFiles) {
@@ -1075,7 +1102,7 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 }
 function isFileName(name) {
 	name = "" + name;
-	return name.startsWith("f:");
+	return (name.length > 1 && name.charAt(0) == "f" && name.charAt(1) == ":");
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries) {
 	return function() {
@@ -1206,7 +1233,7 @@ function crunchOne(n, pad, padSize) {
 	} else {
 		s = "";
 		while (n > 0) {
-			var next = Math.trunc(n / crunchedRadix);
+			var next = Math.floor(n / crunchedRadix);
 			var diff = (n - (next * crunchedRadix));
 			var diffChar = crunchIntToChar(diff);
 			s = diffChar + s;

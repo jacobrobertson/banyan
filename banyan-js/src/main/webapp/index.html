@@ -1,31 +1,31 @@
+<!DOCTYPE html>
 <html>
 
 <head>
 <script src="js/jquery-1.12.4.js"></script>
 <script src="js/banyan.js"></script>
-<link rel="stylesheet" type="text/css" href="style/species.css">
-<style>
-#examplesTable td {
-	padding: .25em;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="style/species.css" />
 </head>
 
 <body>
 
 <div class="Node">
 	<div class="HeaderDiv">
-		<input class="Box" id="textfield" name="textfield" type="text"></input><input
-			class="Button" value="Search" name="search" type="submit"></input><span
-			class="Spacer">|</span><a shape="rect" class="Link"
-			href="search.tree/">#Tree</a><span class="Spacer">|</span><a
-			class="Link" href="/banyan/search.navigationbar.startover">Start
-			Over</a><span class="Spacer">|</span><a class="Link"
-			href="/banyan/examples">Examples</a><span class="Spacer">|</span><a
-			class="Link" href="#random">Random</a><span
-			class="Spacer">|</span><a class="Link" href="/banyan/howtouse">FAQ</a><span
-			class="Spacer">|</span><a class="Link" href="/banyan/credits">Credits</a><span
-			class="Logo"><img alt="Banyan" src="icons/banyan-logo.png" /></span>
+		<input class="Box" id="textfield" name="textfield" type="text"></input><input 
+			class="Button" value="Search" name="search" type="submit"></input>
+		<span class="Spacer">|</span><a 
+			class="Link" href="#" id="treeLink">#Tree</a><span 
+			class="Spacer">|</span><a 
+			class="Link" href="#t:startOver">Start Over</a><span 
+			class="Spacer">|</span><a 
+			class="Link" href="#t:examplesTab">Examples</a><span 
+			class="Spacer">|</span><a 
+			class="Link" href="#t:random">Random</a><span 
+			class="Spacer">|</span><a 
+			class="Link" href="#t:faqTab">FAQ</a><span 
+			class="Spacer">|</span><a 
+			class="Link" href="#t:creditsTab">Credits</a><span 
+			class="Logo"><img alt="Banyan" src="icons/banyan-logo.png"></img></span>
 	</div>
 </div>
 <div class="Quote">
@@ -36,7 +36,92 @@
 <a class="QuoteLink" href="#f:example-104">sharks</a> ...
 </div>
 <br/>
-<div id="tree"></div>
+
+<div id="tabContent"></div>
+<div id="treeTab" class="tabCommand"></div>
+<div id="examplesTab" class="tabCommand">
+<div class="Node">
+	<div class="ExampleTitle">
+		<img alt="star" class="star" src="icons/star.png" /><img alt="star"
+			class="star" src="icons/star.png" /><img alt="star" class="star"
+			src="icons/star.png" /> Click on one of these examples to get started
+		exploring Banyan! <img alt="star" class="star" src="icons/star.png" /><img
+			alt="star" class="star" src="icons/star.png" /><img alt="star"
+			class="star" src="icons/star.png" />
+	</div>
+	<br clear="none" />
+	<table class="ExamplesTable">
+		<tr>
+			<td colspan="1" rowspan="1"><div class="ExampleTitle">
+					<img alt="question" class="question" src="icons/question.png" />
+					Can you guess which is more closely related...
+				</div><a shape="rect" href="#f:example-401"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" /> ...
+					to a hippo - a rhinocerous or a pig?<br /></a> <a shape="rect"
+				href="/banyan/search.tree/2SVk61lzC"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" /> ...
+					to a racoon - a cat or a dog?<br /></a> <a shape="rect"
+				href="/banyan/search.tree/9V3_1tZt1u1Q"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" /> ...
+					to a tomatoe - a cucumber or tobacco?<br /></a> <a shape="rect"
+				href="#f:example-404"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" /> ...
+					to an ant - a wasp or a termite?<br /></a></td>
+			<td colspan="1" rowspan="1"><div class="ExampleTitle">
+					<img alt="question" class="question" src="icons/question.png" />
+					Have your heard of these?
+				</div> <a shape="rect" href="#f:example-300"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Pika? They're related to rabbits and hares<br /></a> <a shape="rect"
+				href="#f:example-301"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Caecilians? They look like giant earthworms, but are amphibians
+					like frogs and salamanders<br /></a> <a shape="rect"
+				href="#f:example-302"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Ghost Pipefish? They're related to seahorses and seadragons<br /></a> <a
+				shape="rect" href="#f:example-303"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Okapi? They're the closes relative to giraffes<br /></a></td>
+		</tr>
+		<tr>
+			<td colspan="1" rowspan="1"><div class="ExampleTitle">
+					<img alt="question" class="question" src="icons/question.png" />
+					Explore these trees
+				</div> <a shape="rect" href="/banyan/search.tree/.d_3y2J"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Tree of Life Overview - animals, plants and fungus<br /></a> <a
+				shape="rect" href="/banyan/search.tree/1Qy-Bz3r"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Mammals - elephants, tigers and pigs<br /></a> <a shape="rect"
+				href="/banyan/search.tree/24dKZrJcP-"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Insects - crickets, wasps and aphids<br /></a> <a shape="rect"
+				href="/banyan/search.tree/jVeOTI0TA-"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Flowering plants - watermelons, waterlilies and nutmeg<br /></a> <a
+				shape="rect" href="/banyan/search.tree/1R5m20SwL"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Cartilaginous fish - manta rays, sharks and guitarfish<br /></a></td>
+			<td colspan="1" rowspan="1"><div class="ExampleTitle">
+					<img alt="question" class="question" src="icons/question.png" />
+					Some families you might not have heard of...
+				</div> <a shape="rect" href="/banyan/search.tree/2rE2rLxUkKbl"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Marsupials - koalas, kangeroos and possum<br /></a> <a shape="rect"
+				href="/banyan/search.tree/1Qj.4_yd-213"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Afrotheria - elephants, hyraxes and aardvarks<br /></a> <a shape="rect"
+				href="/banyan/search.tree/0Mn1NH_1EK3"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Arthropods - spiders, lobsters and centipedes<br /></a> <a shape="rect"
+				href="/banyan/search.tree/0kF5EP.6"><img
+					class="tree-detail_indented" src="icons/detail_indented.png" />
+					Virus Groups - rabies, ebola and parvo<br /></a></td>
+		</tr>
+	</table>
+</div>
+</div>
 
 <!-- **************
 Non Visual Elements 
@@ -44,40 +129,65 @@ Non Visual Elements
 	<div id="controlpanel" style="display: none; top: 745.8px; left: 663.712px;">
 		<a shape="rect" class="cpButton" id="cpShowChildren" href="TBD" style="display: inline;">
 			<div class="MenuRow">
-				<img alt="show" src="icons/open_children.png">&nbsp;
+				<img alt="show" src="icons/open_children.png"></img>&nbsp;
 				<span id="cpShowChildrenCaption">Show 38 More Children</span>
 			</div>
 		</a>
 		<a shape="rect" class="cpButton" id="cpShowMore" href="TBD" style="display: inline;">
 			<div class="MenuRow">
-				<img alt="show-more" src="icons/show-interesting.png">&nbsp;
+				<img alt="show-more" src="icons/show-interesting.png"></img>&nbsp;
 				<span id="cpShowMoreCaption">Show 9 More Species</span>
 			</div>
 		</a>
 		<a shape="rect" class="cpButton" id="cpHide" href="TBD">
 			<div class="MenuRow">
-				<img alt="hide" src="icons/close-children.png">&nbsp;
+				<img alt="hide" src="icons/close-children.png"></img>&nbsp;
 				Hide Children
 			</div>
 		</a>
 		<a shape="rect" class="cpButton" id="cpClose" href="TBD">
 			<div class="MenuRow">
-				<img alt="close" src="icons/close.png">&nbsp;
+				<img alt="close" src="icons/close.png"></img>&nbsp;
 				Close
 			</div>
 		</a>
 		<a shape="rect" class="cpButton" id="cpFocus" href="TBD">
 			<div class="MenuRow">
-				<img alt="focus" src="icons/focus.png">&nbsp;
+				<img alt="focus" src="icons/focus.png"></img>&nbsp;
 				Focus
 			</div>
 		</a>
 		<a shape="rect" class="cpButton" id="cpDetail" href="TBD">
 			<div class="MenuRow">
-				<img alt="detail" src="icons/goto-details.png">&nbsp;
+				<img alt="detail" src="icons/goto-details.png"></img>&nbsp;
 				Go to Details
 			</div>
 		</a>
+	</div>
+	<div id="creditsTab" class="tabCommand">
+	<div class="Node"><div class="Star"><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
+		All Species images are from <br clear="none"><a shape="rect" href="http://species.wikimedia.org" class="CreditLink">WikiSpecies</a><br clear="none">
+		and are licensed either under the <br clear="none"><a shape="rect" href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License" class="CreditLink">GNU Free Documentation License</a><br clear="none">
+		or a <br clear="none"><a shape="rect" href="http://creativecommons.org/licenses/by-sa/2.5/" class="CreditLink">Creative Commons Attribution ShareAlike License</a>.
+		<div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
+		All icons are by <br clear="none"><a shape="rect" href="http://dryicons.com" class="CreditLink">http://dryicons.com</a><br clear="none">
+		and are licensed under their <br clear="none"><a shape="rect" href="http://dryicons.com/terms/free/" class="CreditLink">DryIcons Free License Agreement</a>. <br clear="none"><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
+		All other content <br clear="none"><a shape="rect" href="#" class="CreditLink">© Jacob Robertson 2009</a><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div></div></div>
+	</div>
+	<div id="faqTab" class="tabCommand">
+		<div class="Node"><span class="FaqTitle">What are all the icons for?</span><br/><img class="faqButton-detail_first" src="icons/menu_more.png"/> and <img class="faqButton-detail_first" src="icons/menu_less.png"/> - <b>Show Menu</b> - Hover over these buttons to show a menu of options. The button looks like <img class="faqButton-detail_first" src="icons/menu_less.png"/> when there are no sub-species available to open up.<br/><img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.<br/><img class="faqButton" src="icons/open_children.png"/> - <b>Show Children</b> - Will show all direct children of the chosen species.<br/><img class="faqButton" src="icons/show-interesting.png"/> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.<br/><img class="faqButton" src="icons/close-children.png"/> - <b>Hide Children</b> - Closes all children of the chosen species.<br/><img class="faqButton" src="icons/focus.png"/> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.<br/><img class="faqButton" src="icons/close.png"/> - <b>Close</b> - Closes the chosen species, and all its children.<br/>
+		<a name="73488" href="search.detail/Yellow_fronted_Canary_Crithagra_mozambica_73488" class="preview"><img src="/banyan-images/tiny/d/Crithagra mozambica.jpg" class="Thumb" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
+		</div>
+		<br/><div class="Node"><span class="FaqTitle">What is the difference between <img class="faqButton-detail_indented" src="icons/detail_indented.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/>?</span><br/><img class="faqButton-detail_indented" src="icons/detail_indented.png"/> - Shows a hierarchy of species<br/><img class="faqButton-detail_first" src="icons/detail_first.png"/> - Shows "sibling" species
+		</div><br/><div class="Node"><span class="FaqTitle">What does the <span class="HugeCross">† </span> symbol mean?</span><br/>
+		It indicates that the given species is extinct, and so are any sub-species.
+		</div><br/><div class="Node"><span class="FaqTitle">Why is there so much Latin?</span><br/>
+		The Latin is the scientific name, and is only shown when there is no other name available.
+		</div><br/><div class="Node"><span class="FaqTitle">What if I find a mistake in the Tree of Life?</span><br/>
+		Go to <a href="http://species.wikimedia.org" class="CreditLink">Wiki Species</a> and fix the mistake yourself!
+		<br/>
+		It won't show up here right away, but Wiki Species is where all this information lives.
+		</div>
 	</div>
 	<div id="log"></div>
 
