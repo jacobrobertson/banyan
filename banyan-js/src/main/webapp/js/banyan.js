@@ -1170,7 +1170,7 @@ function crunch(nums) {
 		while (n >= minValue) {
 			crunched += crunchedPadChangeDelimiter;
 			minPadSize++;
-			minValue = minValues[minPadSize - 1];
+			minValue = crunchedMinValues[minPadSize - 1];
 		}
 		var one = crunchOne(n, true, minPadSize);
 		crunched += one;
