@@ -1233,6 +1233,7 @@ function uncrunch(s) {
 			}
 			i++;
 			// I think I'm not using this...
+			// TODO YES - ADD IT BACK... 
 //		} else if (c == subtractionIndicator) {
 //			padSize--;
 //			i++;
