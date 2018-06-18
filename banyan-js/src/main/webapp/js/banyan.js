@@ -8,7 +8,7 @@ function initData() {
 	loadPartitionIndex(function() {
 		loadJsonOnly([defaultTree], function() {
 			loadCommandFromURL();
-			initFaq();
+			initPageElements();
 		});
 	});
 }
@@ -29,7 +29,6 @@ $(document).ready(function() {
 //------ Global vars
 function __GlobalVars(){}
 var dbMap = {};
-var dbEntryIdsToShow = {}; // key-based map, but "false" could also mean don't show
 var dbPartitions;
 var dbChildIdsToParents = {};
 var dbFileIds = {};
@@ -45,19 +44,13 @@ var maxWidthShowChildren = 163;
 var maxWidthShowMore = 159;
 var digitWidth = 9;
 
-var isHashChangeListening = true;
 var isMenuActive = false;
 var cancelerEvent = null;
 
 // ------ GUI Events/Behavior/Menus
 function __EventsBehaviorMenus() {}
 function onHashChange() {
-	if (isHashChangeListening) {
-		loadCommandFromURL();
-	} else {
-		// we set this back because this will execute after an event
-		isHashChangeListening = true;
-	}
+	loadCommandFromURL();
 }
 function hideContextMenu() {
 	isMenuActive = false;
@@ -89,14 +82,16 @@ function initContextMenu() {
 		return false;
 	});
 }
-function initFaq() {
+function initPageElements() {
+	// FAQ items that need to come from entries
 	var img = $("#faqImage img");
 	var e = getRootEntry();
 	img.attr("src", getImagesPath() + '/tiny/' + e.img);
 	img.attr("alt", e.alt);
 	img.attr("height", e.tHeight);
 	img.attr("width", e.tWidth);
-	initAllImagePreviewEvents();
+	setRandomLinkIndex();
+	initPreviewEvents();
 }
 function contextMenuClicked(aTag) {
 	var action = aTag.id;
@@ -115,7 +110,7 @@ function contextMenuClicked(aTag) {
 	} else if (action == "cpFocus") {
 		focusOnNode(id);
 	} else if (action = "cpDetail") {
-		setUrl(aTag.href.substring(pos + 1), false);
+		setUrlForDetail(aTag.href.substring(pos + 1));
 	}
 }
 function closeNode(id) {
@@ -192,64 +187,94 @@ function showContextMenu(e, img) {
 		"left" : left
 	});
 }
-function initAllImagePreviewEvents() {
-	$("a.preview").hover(function(e) {
-		var img = e.currentTarget;
-		var imageBorderWidth = 2; // represents the two borders, left/right
-		var width = getImageWidth(img) + imageBorderWidth;
-		var href = getHref(img); // this.href;
-		var caption = getImageCaption(img);
-		var c = (caption != "") ? "<br/>" + caption : "";
-		$("body").append(
-				"<p id='preview'><img src='" + href + "'/>" + c + "</p>");
-		$("#preview").hide().css("top", getPreviewTop(e, img) + "px").css(
-				"left", getLeft(e, img) + "px").css("width", width + "px")
-				.show("fast");
-		}, function() {
-			$("#preview").remove();
-		});
-	$("a.preview").mousemove(
-		function(e) {
+function initPreviewEvents() {
+	$("a.preview").off(".preview");
+	$("a.preview").on({
+		"mouseenter.preview": function(e) {
 			var img = e.currentTarget;
+			var id = getImageEntry(img).id;
+			var imageBorderWidth = 2; // represents the two borders, left/right
+			var width = getImageWidth(img) + imageBorderWidth;
+			var src = getPreviewImageSrc(img); // this.href;
+			var caption = getImageCaption(img);
+			var c = (caption != "") ? "<br/>" + caption : "";
+			
+			$("#preview").hide();
+			$("#preview").attr("class", id);
+			$("#previewImage").attr("src", src);
+			$("#previewCaption").html(c);
 			$("#preview").css("top", getPreviewTop(e, img) + "px").css(
+					"left", getLeft(e, img) + "px").css("width", width + "px")
+					.show("fast");
+			}, 
+		"mouseleave.preview": function() {
+			$("#preview").hide();
+		},
+		"mousemove.preview": function(e) {
+			var img = e.currentTarget;
+			var eventId = getImageEntry(img).id;
+			var currentId = $("#preview").attr("class");
+			if (eventId == currentId) {
+				$("#preview").css("top", getPreviewTop(e, img) + "px").css(
 					"left", getLeft(e, img) + "px");
-		});
-	$(".opener").bind("click mouseenter", function(e) {
-		cancelerEvent = e;
-		e.preventDefault();
-		var img = e.currentTarget;
-		var timeout = 5000;
-		if (e.type == "mouseenter") {
-			timeout = 50;
+			}
 		}
-		setTimeout(function() {
-			showContextMenu(e, img);
-		}, 5);
-		setTimeout(function() {
-			checkContextMenuActive(e);
-		}, timeout);
-    });
+	});
+	
+	$(".opener").off(".preview");
+	$(".opener").on({
+		"click.preview mouseenter.preview": function(e) {
+			cancelerEvent = e;
+			e.preventDefault();
+			var img = e.currentTarget;
+			var timeout = 5000;
+			if (e.type == "mouseenter") {
+				timeout = 50;
+			}
+			setTimeout(function() {
+				showContextMenu(e, img);
+			}, 5);
+			setTimeout(function() {
+				checkContextMenuActive(e);
+			}, timeout);
+		}
+	});
 }
 function hideChildren(id) {
 	markChildrenAsShown(id, false);
 	renderCurrentTree();
 }
-function setUrl(afterHash, turnOffListening) {
+// do not call directly - call from wrapper only
+function setUrlInner(afterHash) {
 	var href = window.location.href;
 	var pos = href.indexOf("#");
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
-	if (turnOffListening) {
-		isHashChangeListening = false;
-	}
 	window.location.href = href + "#" + afterHash;
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
+	setUrlsToIdsArray(ids, true, true);
+}
+function setUrlsToIdsArray(ids, setWindowUrl, setLinkUrls) {
 	var cids = "c:" + crunch(ids);
-	$("#treeLink,#treeLinkDetails").attr("href", "#" + cids);
-	setUrl(cids, true);
+	if (setLinkUrls) {
+		setTreeLinksToValue(cids);
+	}
+	if (setWindowUrl) {
+		setUrlInner(cids);
+	}
+}
+function setTreeLinksToValue(value) {
+	$("#treeLink,#treeLinkDetails").attr("href", "#" + value);
+}
+function setUrlForDetail(detailParams) {
+	// does not change #tree links
+	setUrlInner(detailParams);
+}
+function setTreeLinksForFile(file) {
+	setTreeLinksToValue(file);
 }
 // ------ General Utils
 function __GeneralUtils() {}
@@ -296,7 +321,7 @@ function getTop(e, popupHeight, bottomFudge) {
 	}
 	return top;
 }
-function getHref(img) {
+function getPreviewImageSrc(img) {
 	return getImagesPath() + "/preview/" + getImageEntry(img).img;
 }
 function getImageWidth(img) {
@@ -349,16 +374,21 @@ function getWindowLeft() {
 // ------ Entry Functions
 function __EntryFunctions() {}
 function isEntryShown(entryOrId) {
-	if (entryOrId.id) {
-		entryOrId = entryOrId.id;
+	if (!entryOrId.id) {
+		entryOrId = getMapEntry(entryOrId);
 	}
-	return (dbEntryIdsToShow[entryOrId] == true);
+	if (!entryOrId) {
+		// sometimes we're checking if an entry that isn't loaded yet is shown, which it isn't
+		return false;
+	} else {
+		return (entryOrId.show == true);
+	}
 }
 function setEntryShownAs(entryOrId, shown) {
-	if (entryOrId.id) {
-		entryOrId = entryOrId.id;
+	if (!entryOrId.id) {
+		entryOrId = getMapEntry(entryOrId);
 	}
-	dbEntryIdsToShow[entryOrId] = shown;
+	entryOrId.show = shown;
 }
 function setEntryShown(entryOrId) {
 	setEntryShownAs(entryOrId, true);
@@ -844,7 +874,8 @@ function renderTree(id, keepOnlyNew) {
 	// we need to collapse nodes only once we know the map is done
 	prepareNodesForRender(e);
 	buildTree($("#treeTab"), e);
-	initAllImagePreviewEvents();
+	initPreviewEvents();
+	showTreeTab();
 }
 function buildTree(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
@@ -1038,15 +1069,9 @@ function renderDetails(id) {
 		var a = ancestors[i];
 		var tr = $("<tr><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
 		var td = $("<td></td>").appendTo(tr);
-		renderDetailsEntryPreviewPart(td, a);
+		renderDetailsEntryPreviewPart(td, a, "taxo");
 	}
-
-	// <table id="SubSpeciesTable">	
-	// divide them up into columns
 	var children = e.children; // we show all whether they were visible or not
-	
-	// each child is the same as the tax area - make common
-	
 	// if there are no children, we should hide that area
 	var subTableNode = $("#SubSpeciesTableNode");
 	if (!children || children.length == 0) {
@@ -1054,22 +1079,55 @@ function renderDetails(id) {
 	} else {
 		subTableNode.show();
 		var subTable = $("#SubSpeciesTable");
+		// divide them up into columns
+		var cols = 3;
+		var neededExtraCells = (Math.ceil(children.length / cols) * cols) - children.length;
 		subTable.empty();
+		var tr = false;
 		for (i = 0; i < children.length; i++) {
-			var tr = $("<tr></tr>").appendTo(subTable);
+			if (i % cols == 0) {
+				tr = $("<tr></tr>").appendTo(subTable);
+			}
 			var td = $("<td></td>").appendTo(tr);
-			renderDetailsEntryPreviewPart(td, children[i]);
+			renderDetailsEntryPreviewPart(td, children[i], "child");
+		}
+		for (i = 0; i < neededExtraCells; i++) {
+			$("<td></td>").appendTo(tr);
 		}
 	}
 	
-	initAllImagePreviewEvents();
+	// double-check the treeLinkDetails, it might not be populated
+	var treeLinkDetails = $("#treeLinkDetails");
+	var treeLinkHref = treeLinkDetails.attr("href");
+	if (treeLinkHref == "#NONE") {
+		var linkIds = [];
+		var p = e;
+		while (p) {
+			linkIds.push(p.id);
+			p = p.parent;
+		}
+		linkIds = linkIds.concat(e.childrenIds);
+		linkIds.sort(sortIntCompare);
+		setUrlsToIdsArray(linkIds, false, true);
+	}
+	
+	initPreviewEvents();
 }
-function renderDetailsEntryPreviewPart(td, e) {
+function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
-	$("<a title='Go to Detail' href='#" + href 
+	$("<a href='#" + href 
 		+ "'><img src='icons/green_button.png' class='detail-button'></a>").appendTo(td);
 	var taxoName = getRenderTaxoDisplayName(e);
-	var previewA = $("<a id='taxo-" + e.id + "' class='preview' href='#" + href + "'>" + taxoName + "</a>").appendTo(td);
+	var previewClass = "preview";
+	var linkTitle;
+	if (!e.img) {
+		previewClass = "no-preview";
+		linkTitle = ' title="' + taxoName + '"';
+	} else {
+		linkTitle = "";
+	}
+	var previewA = $("<a id='" + idPrefix + "-" + e.id + "'"
+			+ linkTitle + " class='" + previewClass + "' href='#" + href + "'>" + taxoName + "</a>").appendTo(td);
 	if (e.img) {
 		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
 			+ "' class='Thumb' src='" + getImagesPath() + '/tiny/' + e.img + "'></img>").appendTo(previewA);
@@ -1094,7 +1152,7 @@ function loadCommandFromURL() {
 	var colon = hashValue.charAt(1);
 	var command;
 	var value;
-	var commandParam;
+	var commandParam = false;
 	if (colon == ":") {
 		command = hashValue.charAt(0);
 		value = hashValue.substring(2);
@@ -1108,22 +1166,18 @@ function loadCommandFromURL() {
 		value = hashValue;
 	}
 
-	// default view
-	var tab = "treeTab";
-	
 	if (command == "f") {
 		loadExampleFile(hashValue);
 	} else if (command == "t") {
 		if (value == "random") {
-			loadRandomFile();
+			loadRandomFile(commandParam);
 		} else if (value == "startOver") {
 			loadExampleFile(defaultTree);
 		} else if (value == "details") {
 			loadDetails(commandParam);
-			tab = "detailsTab";
 		} else {
-			// other tab-commands can respond to visual treatment
-			tab = value;
+			// other tab-commands can respond to simple tab change
+			showTab(value);
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
@@ -1132,8 +1186,6 @@ function loadCommandFromURL() {
 		var ids = uncrunch(value);
 		loadJsonThenMarkOnlyNewVisible(ids);
 	}
-	// check the tabs first to ensure the tree is visible
-	loadTab(tab);
 }
 // should be from "t:details:id,crunchedId"
 function loadDetails(params) {
@@ -1146,9 +1198,13 @@ function loadDetails(params) {
 function build_loadDetails_callback(id) {
 	return function(entries) {
 		renderDetails(id);
-	}
+		showTab("detailsTab");
+	};
 }
-function loadTab(id) {
+function showTreeTab() {
+	showTab("treeTab");
+}
+function showTab(id) {
 	$(".tabCommand").hide();
 	$("#" + id).show();
 }
@@ -1156,10 +1212,20 @@ function loadRandomFile() {
 	if (!dbRandomFiles) {
 		loadRandomFileIndexFromJson();
 	} else {
-		var next = dbRandomFiles.shift();
-		dbRandomFiles.push(next);
-		setUrl("f:" + next, false);
+		setRandomLinkIndex();
+		// choose a random file and load it
+		var index = Math.floor(Math.random() * dbRandomFiles.length);
+		var next = dbRandomFiles[index];
+		loadExampleFile("f:" + next);
 	}
+}
+function setRandomLinkIndex() {
+	// change the random link, so that it will trigger the listener
+	var link = $("#RandomLink");
+	var href = link.attr("href");
+	var pos = href.lastIndexOf(":");
+	var index = parseInt(href.substring(pos + 1)) + 1;
+	link.attr("href", "#t:random:" + index);
 }
 function loadRandomFileIndexFromJson() {
 	$.getJSON("json/f/random.json", function(data) {
@@ -1169,13 +1235,14 @@ function loadRandomFileIndexFromJson() {
 }
 function loadExampleFile(file) {
 	hideAllNodes();
+	setTreeLinksForFile(file);
 	loadJsonThenAddEntries([file], false, build_loadExampleFile_callback());
 }
 function build_loadExampleFile_callback() {
 	return function(entries) {
 		markEntriesAsShown(entries, true);
 		renderCurrentTree(true);
-	}
+	};
 }
 function loadAllChildren(id) {
 	var childrenIds = getMapEntry(id).childrenIds;

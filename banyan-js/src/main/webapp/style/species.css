@@ -61,7 +61,7 @@ body {height:90%;background: #e8f3db;}
 	outline: 0;
 	font-weight: bold;
 	color: #228282;
-	text-decoration: underline;
+	text-decoration: none;
 }
 .Extinct {
 	font-size: 70%;
@@ -105,13 +105,6 @@ body {height:90%;background: #e8f3db;}
 	font-size: 150%;
 	font-weight: bold;
 	color: #547a29;
-}
-#ExamplesLink, #Ex1, #Ex2, #Ex3, #Ex4, #RandomLink {
-	margin-left: 0px;
-	color: #547a29;
-	font-weight: bold;
-	text-decoration: underline;
-	vertical-align: baseline;
 }
 a.CreditLink {
 	color: #c82;

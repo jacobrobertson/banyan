@@ -20,7 +20,7 @@
 			class="Spacer">|</span><a 
 			class="Link" href="#t:examplesTab">Examples</a><span 
 			class="Spacer">|</span><a 
-			class="Link" href="#t:random">Random</a><span 
+			class="Link" id="RandomLink" href="#t:random:0">Random</a><span 
 			class="Spacer">|</span><a 
 			class="Link" href="#t:faqTab">FAQ</a><span 
 			class="Spacer">|</span><a 
@@ -167,15 +167,13 @@
 			<div class="DetailImage">
 			<a id="DetailImageWikiSpeciesLink" href="#FILL"><img id="DetailImage" alt="Tree of Life" height="188" width="250" src="#FILL"><br clear="none"><span class="ImageSourceLink"><i>View original image at WikiSpecies</i></span></a></div></td></tr></tbody></table>
 			<br/>
-			<div class="Return"><a id="treeLinkDetails" href="#FILL"><img src="icons/back.png" class="detail-button-back">View your current Tree of Life</a></div>
+			<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">View your current Tree of Life</a></div>
 		</div>
 		<br/>
 		<div id="SubSpeciesTableNode" class="Node"><div class="DetailTitle">Sub-species of <span class="DetailTitleName">Tree of Life</span></div>
 		<br/>
 		<table id="SubSpeciesTable">
-			<tbody>
-				<tr><td colspan="1" rowspan="1" class="DetailColumn"><a title="Go to Details" href="/banyan/detail.detail/458"><img src="icons/green_button.png" class="detail-button"></a><a name="458" class="preview" href="/banyan/detail.detail/Archaea_458" title=""><i>(Archaea)</i><img height="18" width="20" class="Thumb" src="#FILL"></a><br clear="none"><a shape="rect" title="Go to Details" href="/banyan/detail.detail/297"><img src="icons/green_button.png" class="detail-button"></a><a shape="rect" name="297" class="preview" href="/banyan/detail.detail/Bacterium_Eubacterium_Bacteria_297" title="">Bacterium, Eubacterium&nbsp;<i>(Bacteria)</i><img height="13" width="20" class="Thumb" src="#FILL"></a><br clear="none"></td><td colspan="1" rowspan="1" class="DetailColumn"><a shape="rect" title="Go to Details" href="/banyan/detail.detail/6"><img src="icons/green_button.png" class="detail-button"></a><a shape="rect" name="6" class="preview" href="/banyan/detail.detail/Eukaryotes_Eukaryota_6" title="">Eukaryotes&nbsp;<i>(Eukaryota)</i><img height="19" width="16" class="Thumb" src="#FILL"></a><br clear="none"></td><td colspan="1" rowspan="1" class="DetailColumn"><a shape="rect" title="Go to Details" href="/banyan/detail.detail/1165"><img src="icons/green_button.png" class="detail-button"></a><a shape="rect" name="1165" class="preview" href="/banyan/detail.detail/Virus_1165" title=""><i>(Virus)</i><img height="11" width="20" class="Thumb" src="#FILL"></a><br clear="none"></td></tr>
-			</tbody>
+			<!--  will be filled or hidden -->
 		</table>
 		</div>
 	</div>
@@ -224,6 +222,7 @@ Non Visual Elements
 			</div>
 		</a>
 	</div>
+	<span id="preview" class="DYNAMIC"><img id="previewImage" src="FILL"></img><span id="previewCaption"></span></span>
 	<div id="log"></div>
 
 </body>
