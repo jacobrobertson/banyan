@@ -179,11 +179,7 @@ public class Detail extends AbstractPage {
 		return entry.getLatinName();
 	}
 	public String getImageSourceUrl() {
-		String imageLink = ImagesCreater.parseFileName(entry.getImageLink());
-		int pos = imageLink.lastIndexOf('/');
-		String imageName = imageLink.substring(pos + 1);
-		String url = "http://species.wikimedia.org/wiki/File:" + imageName;
-		return url;
+		return ImagesCreater.getImageSourceUrl(entry);
 	}
 	public String getEntryDetailImageUrl() {
 		// we use "preview" instead of "detail" because

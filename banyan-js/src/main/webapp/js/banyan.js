@@ -6,9 +6,9 @@ $(document).ready(function() {
 });
 function initData() {
 	loadPartitionIndex(function() {
-		// TODO choose correct file
 		loadJsonOnly([defaultTree], function() {
 			loadCommandFromURL();
+			initFaq();
 		});
 	});
 }
@@ -35,7 +35,7 @@ var dbChildIdsToParents = {};
 var dbFileIds = {};
 var dbRandomFiles = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
-var defaultTree = "f:example-104";
+var defaultTree = "f:welcome-to-banyan";
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -89,6 +89,15 @@ function initContextMenu() {
 		return false;
 	});
 }
+function initFaq() {
+	var img = $("#faqImage img");
+	var e = getRootEntry();
+	img.attr("src", getImagesPath() + '/tiny/' + e.img);
+	img.attr("alt", e.alt);
+	img.attr("height", e.tHeight);
+	img.attr("width", e.tWidth);
+	initAllImagePreviewEvents();
+}
 function contextMenuClicked(aTag) {
 	var action = aTag.id;
 	var pos = aTag.href.indexOf('#');
@@ -105,6 +114,8 @@ function contextMenuClicked(aTag) {
 		loadAllShowMore(id);
 	} else if (action == "cpFocus") {
 		focusOnNode(id);
+	} else if (action = "cpDetail") {
+		setUrl(aTag.href.substring(pos + 1), false);
 	}
 }
 function closeNode(id) {
@@ -122,8 +133,8 @@ function showContextMenu(e, img) {
 		button = buttons[i];
 		var buttonId = button.id;
 		var buttonValue = e[buttonId];
+		var link = buttonId + "#" + imgId;
 		if (buttonValue) {
-			button.href = buttonValue + "#" + imgId;
 			$(button).show();
 			rowsShownCount++;
 		} else {
@@ -137,6 +148,7 @@ function showContextMenu(e, img) {
 			maxWidth = Math.max(maxWidth, maxWidthFocus);
 		} else if (buttonId == 'cpDetail') {
 			maxWidth = Math.max(maxWidth, maxWidthDetail);
+			link = "#" + getEntryDetailsHash(e);
 		} else if (buttonId == 'cpShowChildren') {
 			var showCaption = e.cpShowChildrenCaption;
 			if (showCaption) {
@@ -150,6 +162,7 @@ function showContextMenu(e, img) {
 				maxWidth = getVariableWidth(showMoreCaption, 19, maxWidthShowMore, maxWidth);
 			}
 		}
+		button.href = link;		
 	}
 	// one row = 168 x 19
 	// 112 = total height = 5 * 19 + 17 = rowheight * numrows + ?
@@ -178,7 +191,6 @@ function showContextMenu(e, img) {
 		"top" : top,
 		"left" : left
 	});
-
 }
 function initAllImagePreviewEvents() {
 	$("a.preview").hover(function(e) {
@@ -236,7 +248,7 @@ function setUrl(afterHash, turnOffListening) {
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
 	var cids = "c:" + crunch(ids);
-	$("#treeLink").attr("href", "#" + cids);
+	$("#treeLink,#treeLinkDetails").attr("href", "#" + cids);
 	setUrl(cids, true);
 }
 // ------ General Utils
@@ -285,16 +297,16 @@ function getTop(e, popupHeight, bottomFudge) {
 	return top;
 }
 function getHref(img) {
-	return imagePath() + "/preview/" + this.getImageAttribute(img).img;
+	return getImagesPath() + "/preview/" + getImageEntry(img).img;
 }
 function getImageWidth(img) {
-	return this.getImageAttribute(img).pWidth;
+	return getImageEntry(img).pWidth;
 }
 function getImageHeight(img) {
-	return this.getImageAttribute(img).pHeight;
+	return getImageEntry(img).pHeight;
 }
 function getImageCaption(img) {
-	var e = this.getImageAttribute(img);
+	var e = getImageEntry(img);
 	var latinNameCaption = "<span class='PopupLatin'>(" + e.lname + ")</span>";
 	var names = e.cnames || [];
 	var commonNamesCaption = "";
@@ -303,8 +315,14 @@ function getImageCaption(img) {
 	}
 	return commonNamesCaption + latinNameCaption;
 }
-function getImageAttribute(img) {
-	return getMapEntry(img.name);
+function getImageEntry(img) {
+	if (img.id == "faqImage") {
+		return getRootEntry();
+	}
+	var id = img.id;
+	var dash = id.indexOf('-');
+	id = id.substring(dash + 1);
+	return getMapEntry(id);
 }
 function getVariableWidth(text, minLength, baseWidth, maxWidth) {
 	var len = text.length;
@@ -404,7 +422,6 @@ function markChildrenAsShown(id, show) {
 	markEntryChildrenAsShown(getMapEntry(id), show);
 }
 // just these ids, nothing else
-// TODO probably have to show parent ids too, because some of the callers hide those first
 function markEntriesAsShown(entriesOrIds, show) {
 	for (var i = 0; i < entriesOrIds.length; i++) {
 		var entryOrId = entriesOrIds[i];
@@ -485,6 +502,7 @@ function addEntriesToMap(entries) {
 	for (i = 0; i < entries.length; i++) {
 		e = entries[i];
 		initPartitionPath(e);
+		initEntryDetailsCrunchedIds(e);
 	}
 }
 function getRootFromId(id) {
@@ -505,7 +523,7 @@ function prepareNodesForRender(e) {
 	collapseNodesForChildrenToShow(e);
 	hideLongCollapsed(e);
 	collapseNodesForSiblingsToShow(e);
-	prepareEntryForControlPanel(e);
+	prepareEntryForContextMenu(e);
 }
 function cleanNodes(e) {
 	// we may have more things to do later...
@@ -628,7 +646,7 @@ function getTotalChildrenShownCountingSiblings(e) {
 	}
 	return count;
 }
-function prepareEntryForControlPanel(e) {
+function prepareEntryForContextMenu(e) {
 	var hiddenCount = e.childrenIds.length - getTotalChildrenShownCountingSiblings(e);
 	if (hiddenCount == 0) {
 		e.cpShowChildren = false;
@@ -655,10 +673,10 @@ function prepareEntryForControlPanel(e) {
 	
 	// recurse
 	for (var i = 0; i < e.childrenToShow.length; i++) {
-		prepareEntryForControlPanel(e.childrenToShow[i]);
+		prepareEntryForContextMenu(e.childrenToShow[i]);
 	}
 	for (var i = 0; i < e.siblings.length; i++) {
-		prepareEntryForControlPanel(e.siblings[i]);
+		prepareEntryForContextMenu(e.siblings[i]);
 	}
 }
 // are there any non-descendant leafs
@@ -694,19 +712,19 @@ function countVisible(ids) {
 	}
 	return count;
 }
+function getInitIds(ids) {
+	if (!ids) {
+		return [];
+	} else {
+		return uncrunch(ids);
+	} 
+}
 // only those things that need to be done exactly one time when first loaded
 function initEntry(e) {
-	e.href = e.id;// "Complete_Metamorphosis_Insects_Endopterygota_6691";
-	e.cpDetail = "TODO"; // should just be true?
-	if (!e.childrenIds) {
-		e.childrenIds = [];
-	}
-	if (!e.showMoreLeafIds) {
-		e.showMoreLeafIds = [];
-	}
-	if (!e.showMoreOtherIds) {
-		e.showMoreOtherIds = [];
-	}
+	e.cpDetail = true;
+	e.childrenIds = getInitIds(e.childrenIds);
+	e.showMoreLeafIds = getInitIds(e.showMoreLeafIds);
+	e.showMoreOtherIds = getInitIds(e.showMoreOtherIds);
 	e.cpClose = true;
 	if (!e.extinct) {
 		e.extinct = false;
@@ -721,6 +739,19 @@ function initEntry(e) {
 	}  else {
 		e.alt = e.lname;
 	}
+}
+function initEntryDetailsCrunchedIds(e) {
+	var ids = [];
+	ids = ids.concat((e.childrenIds));
+	ids.push(e.id);
+	var p = e.parent;
+	while (p) {
+		ids.push(p.id);
+		p = p.parent;
+	}
+	ids.sort(sortIntCompare);
+	var cids = crunch(ids);
+	e.detailCrunchedIds = cids;
 }
 function initPartitionPath(e) {
 	if (e.partitionPath) {
@@ -738,6 +769,9 @@ function initPartitionPath(e) {
 		var index = indexOf(p.childrenIds, e.id);
 		e.partitionPath = p.partitionPath + "" + getPartitionPathPart(index); // to ensure by string
 	}
+}
+function getEntryDetailsHash(e) {
+	return "t:details:" + e.id + "," + e.detailCrunchedIds;
 }
 function getEntryDisplayName(e) {
 	if (e.cname) {
@@ -794,9 +828,11 @@ function addAllToRenderMapDownstream(e) {
 }
 // ------ Tree/HTML Rendering
 function __TreeHtmlRendering() {}
-function renderCurrentTree() {
+function renderCurrentTree(skipUrl) {
 	renderTree(getRootEntry().id, true);
-	setUrlToAllVisibleIds();
+	if (!skipUrl) {
+		setUrlToAllVisibleIds();
+	}
 }
 function renderTree(id, keepOnlyNew) {
 	$("#treeTab").empty();
@@ -895,7 +931,8 @@ function renderNodeEntryLine(h, e, depth) {
 		detailClass = "tree-tree_root";
 	}
 	var pad = getNbsps(depth);
-	span.append(pad + '<a title="Go to Details" href="search.detail/' + e.href + 
+	var detailsHash = getEntryDetailsHash(e);
+	span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
 			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
 	// image and link
@@ -905,7 +942,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var imgClass;
 	if (e.img) {
 		img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
-			imagePath() + '/tiny/' + e.img + '" class="Thumb" />';
+			getImagesPath() + '/tiny/' + e.img + '" class="Thumb" />';
 		imgClass = "preview";
 		linkTitle = "";
 	} else {
@@ -920,7 +957,7 @@ function renderNodeEntryLine(h, e, depth) {
 		}
 		span.append('<a title="Extinct" href="#"><span class="' + eClass + '">&dagger;</span></a>');
 	}
-	span.append('<a class="' + imgClass + '"' + linkTitle + ' name="' + e.id + '" href="search.detail/' + e.href + '">' 
+	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
 	// menu button
@@ -939,11 +976,104 @@ function getNbsps(count) {
 	}
 	return pad;
 }
-function imagePath() {
+function getImagesPath() {
 	return "http://jacobrobertson.com/banyan-images"; // "images";
 }
 function iconPath() {
 	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
+}
+function getRenderTaxoDisplayName(e) {
+	var name = "<i>(" + e.lname + ")</i>";
+	if (e.cname) {
+		name = e.cname + " " + name;
+	}
+	return name;
+}
+function renderDetails(id) {
+	var e = getMapEntry(id);
+
+	var gbase = "http://www.google.com/";
+	var gquery = "?q=";
+	if (e.cnames) {
+		for (var i = 0; i < e.cnames.length; i++) {
+			gquery += e.cnames[i];
+			gquery += " ";
+		}
+	}
+	gquery += e.lname;
+	gquery = gquery.replace(/ /g, '+');
+	
+	var displayName = getEntrySimpleDisplayName(e);
+	$(".DetailTitleName").html(displayName); // TODO should list all names
+	$("#DetailLatinTitle").html(e.lname);
+	$("#DetailGoogleLink").attr("href", gbase + "search" + gquery);
+	$("#DetailGoogleImageLink").attr("href", gbase + "images" + gquery);
+	
+	var searchName = e.lname;
+	if (e.cname) {
+		searchName = e.cname + " (" + searchName + ")";
+	}
+	$(".SearchTerm").html(searchName);
+	
+	var img = $("#DetailImage");
+	img.attr("alt", "");
+	img.attr("height", e.pHeight);
+	img.attr("width", e.pWidth);
+	img.attr("src", getImagesPath() + "/preview/" + e.img);
+
+	var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
+	$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
+
+	var taxoEntry = $("#TaxonomyCell .Entry");
+	taxoEntry.empty();
+	var table = $("<table></table>").appendTo(taxoEntry);
+	var ancestors = [];
+	var p = e;
+	while (p) {
+		ancestors.push(p);
+		p = p.parent;
+	}
+	var i;
+	for (i = ancestors.length - 1; i >= 0; i--) {
+		var a = ancestors[i];
+		var tr = $("<tr><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
+		var td = $("<td></td>").appendTo(tr);
+		renderDetailsEntryPreviewPart(td, a);
+	}
+
+	// <table id="SubSpeciesTable">	
+	// divide them up into columns
+	var children = e.children; // we show all whether they were visible or not
+	
+	// each child is the same as the tax area - make common
+	
+	// if there are no children, we should hide that area
+	var subTableNode = $("#SubSpeciesTableNode");
+	if (!children || children.length == 0) {
+		subTableNode.hide();
+	} else {
+		subTableNode.show();
+		var subTable = $("#SubSpeciesTable");
+		subTable.empty();
+		for (i = 0; i < children.length; i++) {
+			var tr = $("<tr></tr>").appendTo(subTable);
+			var td = $("<td></td>").appendTo(tr);
+			renderDetailsEntryPreviewPart(td, children[i]);
+		}
+	}
+	
+	initAllImagePreviewEvents();
+}
+function renderDetailsEntryPreviewPart(td, e) {
+	var href = getEntryDetailsHash(e);
+	$("<a title='Go to Detail' href='#" + href 
+		+ "'><img src='icons/green_button.png' class='detail-button'></a>").appendTo(td);
+	var taxoName = getRenderTaxoDisplayName(e);
+	var previewA = $("<a id='taxo-" + e.id + "' class='preview' href='#" + href + "'>" + taxoName + "</a>").appendTo(td);
+	if (e.img) {
+		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
+			+ "' class='Thumb' src='" + getImagesPath() + '/tiny/' + e.img + "'></img>").appendTo(previewA);
+	}
 }
 
 // ------ JSON Functions
@@ -964,18 +1094,22 @@ function loadCommandFromURL() {
 	var colon = hashValue.charAt(1);
 	var command;
 	var value;
+	var commandParam;
 	if (colon == ":") {
 		command = hashValue.charAt(0);
 		value = hashValue.substring(2);
+		var colon2Index = value.indexOf(":");
+		if (colon2Index > 0) {
+			commandParam = value.substring(colon2Index + 1);
+			value = value.substring(0, colon2Index);
+		}
 	} else {
 		command = "";
 		value = hashValue;
 	}
 
-	// check the tabs first to ensure the tree is visible
-	if (command != "t") {
-		loadTab("treeTab");
-	}
+	// default view
+	var tab = "treeTab";
 	
 	if (command == "f") {
 		loadExampleFile(hashValue);
@@ -984,9 +1118,12 @@ function loadCommandFromURL() {
 			loadRandomFile();
 		} else if (value == "startOver") {
 			loadExampleFile(defaultTree);
+		} else if (value == "details") {
+			loadDetails(commandParam);
+			tab = "detailsTab";
 		} else {
 			// other tab-commands can respond to visual treatment
-			loadTab(value);
+			tab = value;
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
@@ -995,6 +1132,21 @@ function loadCommandFromURL() {
 		var ids = uncrunch(value);
 		loadJsonThenMarkOnlyNewVisible(ids);
 	}
+	// check the tabs first to ensure the tree is visible
+	loadTab(tab);
+}
+// should be from "t:details:id,crunchedId"
+function loadDetails(params) {
+	var comma = params.indexOf(",");
+	var id = params.substring(0, comma);
+	var otherIds = params.substring(comma + 1);
+	otherIds = uncrunch(otherIds);
+	loadJsonOnly(otherIds, build_loadDetails_callback(id));
+}
+function build_loadDetails_callback(id) {
+	return function(entries) {
+		renderDetails(id);
+	}
 }
 function loadTab(id) {
 	$(".tabCommand").hide();
@@ -1002,21 +1154,28 @@ function loadTab(id) {
 }
 function loadRandomFile() {
 	if (!dbRandomFiles) {
-		loadRandomFileFromJson();
+		loadRandomFileIndexFromJson();
 	} else {
 		var next = dbRandomFiles.shift();
 		dbRandomFiles.push(next);
 		setUrl("f:" + next, false);
 	}
 }
-function loadRandomFileFromJson() {
+function loadRandomFileIndexFromJson() {
 	$.getJSON("json/f/random.json", function(data) {
 		dbRandomFiles = data.files;
 		loadRandomFile();
 	});
 }
 function loadExampleFile(file) {
-	loadJsonThenMarkOnlyNewVisible([file]);
+	hideAllNodes();
+	loadJsonThenAddEntries([file], false, build_loadExampleFile_callback());
+}
+function build_loadExampleFile_callback() {
+	return function(entries) {
+		markEntriesAsShown(entries, true);
+		renderCurrentTree(true);
+	}
 }
 function loadAllChildren(id) {
 	var childrenIds = getMapEntry(id).childrenIds;
@@ -1059,7 +1218,7 @@ function build_loadJsonThenAddEntries_callback(newIds, showTree, callback) {
 			renderCurrentTree();
 		}
 		if (callback) {
-			callback();
+			callback(entries);
 		}
 	};
 }
@@ -1212,6 +1371,7 @@ var crunchedSubtractionIndicator = '-';
 var crunchedPadChangeDelimiter = '_';
 var crunchedRebaseIndicator = '.';
 var crunchedChars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+var crunchedCharsMap = {};
 var crunchedRadix = crunchedChars.length;
 var crunchedZeroChar = "0";
 var crunchedMinValuesCount = 10;
@@ -1220,10 +1380,14 @@ var crunchedMinValues = [];
 initCruncher();
 function initCruncher() {
 	var padding = "";
-	for (var i = 0; i < crunchedMinValuesCount; i++) {
+	var i;
+	for (i = 0; i < crunchedMinValuesCount; i++) {
 		crunchedMinValues[i] = Math.pow(crunchedRadix, i + 1);
 		crunchedPads[i] = padding;
 		padding += crunchedPadChangeDelimiter;
+	}
+	for (i = 0; i < crunchedChars.length; i++) {
+		crunchedCharsMap[crunchedChars[i]] = i;
 	}
 }
 function crunchOne(n, pad, padSize) {
@@ -1253,6 +1417,7 @@ function leftPad(s, padSize, padChar) {
 	}
 	return s;
 }
+// TODO delete these two test methods
 function testCrunch() {
 	var val = $("#uncrunchedIds").val();
 	var nums = val.split(",");
@@ -1315,9 +1480,8 @@ function uncrunchToInt(s) {
 	}
 	return val;
 }
-// TODO would a map be faster?
 function uncrunchCharToInt(c) {
-	return crunchedChars.indexOf(c);
+	return crunchedCharsMap[c];
 }
 function crunchIntToChar(i) {
 	return crunchedChars.charAt(i);

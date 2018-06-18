@@ -150,6 +150,18 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		return link;
 	}
+	public static String getImageSourceUrl(Entry entry) {
+		String imageName = getImageFileName(entry);
+		String url = "http://species.wikimedia.org/wiki/File:" + imageName;
+		return url;
+	}
+	public static String getImageFileName(Entry entry) {
+		String imageLink = parseFileName(entry.getImageLink());
+		int pos = imageLink.lastIndexOf('/');
+		String imageName = imageLink.substring(pos + 1);
+		return imageName;
+	}
+	
 	/**
 	 * For some files, (or file types?)
 	 * we need to use this syntax

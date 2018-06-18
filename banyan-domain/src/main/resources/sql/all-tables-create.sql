@@ -8,10 +8,12 @@ CREATE TABLE crawl (
 CREATE INDEX idx_crawl_link on crawl (link);
 CREATE INDEX idx_crawl_id on crawl (crawl_id);
 
+-- drop table example;
 CREATE TABLE example (
   example_index int DEFAULT NULL,
   example_id int DEFAULT NULL,
   group_id int DEFAULT NULL,
+  simple_name char(50) default NULL,
   caption char(254) DEFAULT NULL,
   terms char(254) DEFAULT NULL,
   crunched_ids char(254) DEFAULT NULL

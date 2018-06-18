@@ -4,6 +4,7 @@ public class Example {
 
 	private String caption;
 	private String terms;
+	private String simpleTitle;
 	private String crunchedIds;
 	private int groupId;
 	private int id;
@@ -37,6 +38,12 @@ public class Example {
 	}
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
+	}
+	public String getSimpleTitle() {
+		return simpleTitle;
+	}
+	public void setSimpleTitle(String simpleTitle) {
+		this.simpleTitle = simpleTitle;
 	}
 	
 }

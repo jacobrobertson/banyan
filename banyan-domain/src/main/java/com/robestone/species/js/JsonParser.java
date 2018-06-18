@@ -3,6 +3,8 @@ package com.robestone.species.js;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,8 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.apache.commons.io.FileUtils;
+
+import com.robestone.species.EntryUtilities;
 
 // mostly just a very dumb implementation for testing purposes
 public class JsonParser {
@@ -150,5 +154,113 @@ public class JsonParser {
 		}
 		return nodes;
 	}
+
+	private void appendKey(StringBuilder buf, Object key) {
+		buf.append('"');
+		buf.append(key);
+		buf.append("\": ");
+	}
+	private void appendComma(StringBuilder buf, boolean comma) {
+		if (comma) {
+			buf.append(", ");
+		}
+	}
+	private void appendIntList(StringBuilder buf, boolean comma, Object key, Collection<Integer> vals) {
+		if (vals == null || vals.isEmpty()) {
+			return;
+		}
+		appendComma(buf, comma);
+		appendKey(buf, key);
+		buf.append("\"");
+		List<Integer> list = new ArrayList<>(vals);
+		Collections.sort(list);
+		String cids = EntryUtilities.CRUNCHER.toString(vals);
+		buf.append(cids);
+		buf.append("\"");
+	}
+	private void appendStringList(StringBuilder buf, boolean comma, Object key, Collection<String> vals) {
+		if (vals == null || vals.isEmpty()) {
+			return;
+		}
+		appendComma(buf, comma);
+		appendKey(buf, key);
+		buf.append("[");
+		boolean first = true;
+		for (String o : vals) {
+			if (!first) {
+				buf.append(", ");
+			} else {
+				first = false;
+			}
+			appendValue(buf, o);
+		}
+		buf.append("]");
+	}
+	private void append(StringBuilder buf, boolean comma, Object key, Object val) {
+		if (val == null) {
+			// in this case we don't render, as js will see it as undefined
+			return;
+		}
+		appendComma(buf, comma);
+		appendKey(buf, key);
+		appendValue(buf, val);
+	}
+	private void appendValue(StringBuilder buf, Object val) {
+		if (val instanceof Integer) {
+			buf.append(val);
+		} else {
+			buf.append('"');
+			buf.append(escape(val));
+			buf.append('"');
+		}
+	}
+	private String escape(Object val) {
+		String v = val.toString();
+		v = v.replace("\"", "\\\"");
+		return v;
+	}
+
+	public String toJsonString(List<JsonEntry> entries) {
+		boolean firstEntry = true;
+		StringBuilder buf = new StringBuilder("{\"entries\": [");
+		for (JsonEntry e : entries) {
+			if (!firstEntry) {
+				buf.append(",\n");
+			}
+			firstEntry = false;
+			buf.append('{');
+			append(buf, false, "id", e.getId()); // first is always no comma, and id is always there
+			
+			appendStringList(buf, true, "cnames", e.getCnames());
+			append(buf, true, "lname", e.getLname());
+			append(buf, true, "parentId", e.getParentId());
+			append(buf, true, "rank", e.getRank());
+			if (e.isExtinct()) {
+				String extinct = "true";
+				if (!e.isAncestorExtinct()) {
+					extinct = "top";
+				}
+				append(buf, true, "extinct", extinct);
+			}
 	
+			if (e.getImg() != null) {
+				append(buf, true, "img", e.getImg());
+				append(buf, true, "tHeight", e.gettHeight());
+				append(buf, true, "tWidth", e.gettWidth());
+				append(buf, true, "pHeight", e.getpHeight());
+				append(buf, true, "pWidth", e.getpWidth());
+				append(buf, true, "iLink", e.getWikiSpeciesLink());
+			}
+	
+			appendIntList(buf, true, "childrenIds", e.getChildrenIds());
+			
+			appendIntList(buf, true, "showMoreLeafIds", e.getShowMoreLeafIds());
+			appendIntList(buf, true, "showMoreOtherIds", e.getShowMoreOtherIds());
+
+			buf.append("}");
+		}
+		buf.append("]}");
+		return buf.toString();
+	}
+
 }

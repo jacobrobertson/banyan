@@ -20,6 +20,9 @@ public class JsonEntry {
 	private boolean extinct;
 	private boolean ancestorExtinct;
 	
+	private String rank;
+	private String wikiSpeciesLink;
+	
 	public Integer getId() {
 		return id;
 	}
@@ -104,5 +107,18 @@ public class JsonEntry {
 	public void setAncestorExtinct(boolean ancestorExtinct) {
 		this.ancestorExtinct = ancestorExtinct;
 	}
+	public String getRank() {
+		return rank;
+	}
+	public void setRank(String rank) {
+		this.rank = rank;
+	}
+	public String getWikiSpeciesLink() {
+		return wikiSpeciesLink;
+	}
+	public void setWikiSpeciesLink(String wikiSpeciesLink) {
+		this.wikiSpeciesLink = wikiSpeciesLink;
+	}
+
 	
 }

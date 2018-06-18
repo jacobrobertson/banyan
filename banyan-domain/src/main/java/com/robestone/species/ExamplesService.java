@@ -183,6 +183,7 @@ public class ExamplesService implements IExamplesService {
 			Example e = new Example();
 			e.setId(rs.getInt("example_id"));
 			e.setGroupId(rs.getInt("group_id"));
+			e.setSimpleTitle(rs.getString("simple_name").trim());
 			e.setCaption(EntityMapperJdbcTemplate.getString(rs, "caption"));
 			e.setTerms(EntityMapperJdbcTemplate.getString(rs, "terms"));
 			e.setCrunchedIds(EntityMapperJdbcTemplate.getString(rs, "crunched_ids"));

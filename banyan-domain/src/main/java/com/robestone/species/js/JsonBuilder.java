@@ -19,17 +19,33 @@ import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
 import com.robestone.species.parse.AbstractWorker;
+import com.robestone.species.parse.ImagesCreater;
 
 public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		new JsonBuilder().runExamples();
+
+		// should delete all json first
+		new JsonBuilder().runGenerateFullJsonDB();
+		
+//		new JsonBuilder().runExamples();
+//		new JsonBuilder().outputRandomFileIndex();
+//		new JsonBuilder().partitionFromFileSystem2();
+		
+//		new JsonBuilder().outputExampleFromCrunchedIds();
+		
 //		new JsonBuilder().runOneId(1, 6);
 //		new JsonBuilder().partitionFromFileSystem2();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
+	
+	public void runGenerateFullJsonDB() throws Exception {
+		runExamples();
+		outputRandomFileIndex();
+		partitionFromDB();
+	}
 	
 	public void partitionFromDB() throws Exception {
 		Node root = buildTree();
@@ -154,8 +170,7 @@ public class JsonBuilder extends AbstractWorker {
 					}
 				}
 				// save one "fat" file for the example
-				// TODO add a "file name" key to the DB and use that
-				save("example-" + ex.getId(), array);
+				save(true, ex.getSimpleTitle(), array);
 			}
 		}
 	}
@@ -216,7 +231,7 @@ public class JsonBuilder extends AbstractWorker {
 		// - all interesting ids
 		// - all children ids
 		
-		save(e.getId().toString(), e);
+		save(false, e.getId().toString(), e);
 	}
 	public static int getSubFolder(int id) {
 		double d = id;
@@ -225,18 +240,18 @@ public class JsonBuilder extends AbstractWorker {
 		int i = (int) d;
 		return i;
 	}
-	private void save(String name, Entry... entries) throws Exception {
+	private void save(boolean isName, String name, Entry... entries) throws Exception {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
 			JsonEntry je = toJsonEntry(e);
 			jentries.add(je);
 		}
-		saveByFolders(name, jentries);
+		saveByFolders(isName, name, jentries);
 	}
-	private void saveByFolders(String name, List<JsonEntry> entries) throws Exception {
+	private void saveByFolders(boolean isName, String name, List<JsonEntry> entries) throws Exception {
 		// convention because javascript is tricky this way
 		String subfolder;
-		if (name.charAt(0) == 'e') {
+		if (isName) {
 			subfolder = "f";
 		} else {
 			int id = Integer.parseInt(name);
@@ -246,7 +261,7 @@ public class JsonBuilder extends AbstractWorker {
 		saveByFileName(fileName, entries);
 	}
 	private void saveByFileName(String fileName, List<JsonEntry> entries) throws Exception {
-		String json = toJsonString(entries);
+		String json = parser.toJsonString(entries);
 		
 		System.out.println(json);
 		String folder = outputDir + "\\" + fileName;
@@ -264,47 +279,7 @@ public class JsonBuilder extends AbstractWorker {
 			JsonEntry je = toJsonEntry(e);
 			jentries.add(je);
 		}
-		return toJsonString(jentries);
-	}
-	public String toJsonString(List<JsonEntry> entries) {
-		boolean firstEntry = true;
-		StringBuilder buf = new StringBuilder("{\"entries\": [");
-		for (JsonEntry e : entries) {
-			if (!firstEntry) {
-				buf.append(",\n");
-			}
-			firstEntry = false;
-			buf.append('{');
-			append(buf, false, "id", e.getId()); // first is always no comma, and id is always there
-			
-			append(buf, true, "cnames", e.getCnames());
-			append(buf, true, "lname", e.getLname());
-			append(buf, true, "parentId", e.getParentId());
-			if (e.isExtinct()) {
-				String extinct = "true";
-				if (!e.isAncestorExtinct()) {
-					extinct = "top";
-				}
-				append(buf, true, "extinct", extinct);
-			}
-	
-			if (e.getImg() != null) {
-				append(buf, true, "img", e.getImg());
-				append(buf, true, "tHeight", e.gettHeight());
-				append(buf, true, "tWidth", e.gettWidth());
-				append(buf, true, "pHeight", e.getpHeight());
-				append(buf, true, "pWidth", e.getpWidth());
-			}
-	
-			append(buf, true, "childrenIds", e.getChildrenIds());
-			
-			append(buf, true, "showMoreLeafIds", e.getShowMoreLeafIds());
-			append(buf, true, "showMoreOtherIds", e.getShowMoreOtherIds());
-
-			buf.append("}");
-		}
-		buf.append("]}");
-		return buf.toString();
+		return parser.toJsonString(jentries);
 	}
 	public JsonEntry toJsonEntry(Entry e) {
 		JsonEntry je = new JsonEntry();
@@ -314,13 +289,16 @@ public class JsonBuilder extends AbstractWorker {
 		je.setParentId(e.getParentId());
 		je.setExtinct(e.isExtinct());
 		je.setAncestorExtinct(e.isAncestorExtinct());
-	
-		if (e.getImage() != null) {
+		je.setRank(e.getRank().getCommonName());
+
+		// TODO research why some of these have one but not the other
+		if (e.getImage() != null && e.getImageLink() != null) {
 			je.setImg(e.getImage().getImagePathPart());
 			je.settHeight(e.getImage().getTinyHeight());
 			je.settWidth(e.getImage().getTinyWidth());
 			je.setpHeight(e.getImage().getPreviewHeight());
 			je.setpWidth(e.getImage().getPreviewWidth());
+			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
 		}
 		je.setChildrenIds(new ArrayList<Integer>(getChildrenIds(e)));
 		Collections.sort(je.getChildrenIds()); // for indexing in js
@@ -350,62 +328,50 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		return ids;
 	}
-	private void appendKey(StringBuilder buf, Object key) {
-		buf.append('"');
-		buf.append(key);
-		buf.append("\": ");
-	}
-	private void appendComma(StringBuilder buf, boolean comma) {
-		if (comma) {
-			buf.append(", ");
-		}
-	}
-	private <T> void append(StringBuilder buf, boolean comma, Object key, Collection<T> vals) {
-		if (vals == null || vals.isEmpty()) {
-			return;
-		}
-		appendComma(buf, comma);
-		appendKey(buf, key);
-		buf.append("[");
-		boolean first = true;
-		for (Object o : vals) {
-			if (!first) {
-				buf.append(", ");
-			} else {
-				first = false;
+	
+	public void outputRandomFileIndex() throws Exception {
+		// this is a temp impl until I have the real deal
+		List<ExampleGroup> groups = new ArrayList<>();
+		// I'm just getting the ones that aren't duplicates
+		groups.add(examplesService.getFamilies());
+		groups.add(examplesService.getHaveYouHeardOf());
+		groups.add(examplesService.getOtherFamilies());
+		groups.add(examplesService.getYouMightNotKnow());
+		List<String> names = new ArrayList<>();
+		for (ExampleGroup eg : groups) {
+			for (Example ex : eg.getExamples()) {
+				String name = ex.getSimpleTitle();
+				names.add(name);
 			}
-			appendValue(buf, o);
 		}
-		buf.append("]");
-	}
-//	private void appendStrings(StringBuilder buf, boolean comma, Object key, Collection vals) {
-//		if (vals == null || vals.isEmpty()) {
-//			return;
-//		}
-//		append(buf, comma, key, (Object) vals);
-//	}
-	private void append(StringBuilder buf, boolean comma, Object key, Object val) {
-		if (val == null) {
-			// in this case we don't render, as js will see it as undefined
-			return;
+		StringBuilder buf = new StringBuilder();
+		for (String name : names) {
+			if (buf.length() == 0) {
+				buf.append("{\"files\":[");
+			} else {
+				buf.append(",\n");
+			}
+			buf.append("\"");
+			buf.append(name);
+			buf.append("\"");
 		}
-		appendComma(buf, comma);
-		appendKey(buf, key);
-		appendValue(buf, val);
+		buf.append("]}");
+		
+		FileUtils.writeStringToFile(new File(outputDir + "/f/random.json"), buf.toString());
 	}
-	private void appendValue(StringBuilder buf, Object val) {
-		if (val instanceof Integer) {
-			buf.append(val);
-		} else {
-			buf.append('"');
-			buf.append(escape(val));
-			buf.append('"');
+	
+	// (504, 504, 5, 'example-searches', 'Caption...', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', '')
+	public void outputExampleFromCrunchedIds() {
+		String cids = "04u13P2mn2nD5UxkVmWfH";
+		List<Integer> ids = EntryUtilities.CRUNCHER.toList(cids);
+		StringBuilder buf = new StringBuilder();
+		for (Integer id : ids) {
+			if (buf.length() > 0) {
+				buf.append(",");
+			}
+			buf.append(speciesService.findEntry(id).getLatinName());
 		}
-	}
-	private String escape(Object val) {
-		String v = val.toString();
-		v = v.replace("\"", "\\\"");
-		return v;
+		System.out.println(buf);
 	}
 	
 }
