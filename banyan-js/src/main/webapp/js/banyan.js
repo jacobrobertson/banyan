@@ -187,35 +187,49 @@ function showContextMenu(e, img) {
 		"left" : left
 	});
 }
+function removePreviewPanel() {
+	var previewE = $("#preview");
+	if (previewE) {
+		previewE.remove();
+	}
+}
+function showPreviewPanel(e) {
+	removePreviewPanel();
+	var img = e.currentTarget;
+	var imageBorderWidth = 2; // represents the two borders, left/right
+	var width = getImageWidth(img) + imageBorderWidth;
+	var src = getPreviewImageSrc(img); // this.href;
+	var caption = getImageCaption(img);
+	caption = (caption != "") ? "<br/>" + caption : "";
+	
+	var previewHolder = $("body");
+	var previewE = $("<span id='preview'></span>");
+	var previewImage = $('<img id="previewImage" src="' + src + '">').appendTo(previewE);
+	previewE.append(caption);
+	
+	previewE.css("top", getPreviewTop(e, img) + "px").css(
+			"left", getPreviewLeft(e, img) + "px").css("width", width + "px");
+	previewHolder.append(previewE);
+	previewE.show("fast");
+}
 function initPreviewEvents() {
 	$("a.preview").off(".preview");
 	$("a.preview").on({
 		"mouseenter.preview": function(e) {
-			var img = e.currentTarget;
-			var imageBorderWidth = 2; // represents the two borders, left/right
-			var width = getImageWidth(img) + imageBorderWidth;
-			var src = getPreviewImageSrc(img); // this.href;
-			var caption = getImageCaption(img);
-			caption = (caption != "") ? "<br/>" + caption : "";
-			
-			var previewHolder = $("body");
-			var previewE = $("<span id='preview'></span>");
-			var previewImage = $('<img id="previewImage" src="' + src + '">').appendTo(previewE);
-			previewE.append(caption);
-			
-			previewE.css("top", getPreviewTop(e, img) + "px").css(
-					"left", getPreviewLeft(e, img) + "px").css("width", width + "px");
-			previewHolder.append(previewE);
-			previewE.show("fast");
+			showPreviewPanel(e);
 		}, 
 		"mouseleave.preview": function() {
-			$("#preview").hide();
-			$("#preview").remove();
+			removePreviewPanel();
 		},
 		"mousemove.preview": function(e) {
-			var img = e.currentTarget;
-			$("#preview").css("top", getPreviewTop(e, img) + "px").css(
-				"left", getPreviewLeft(e, img) + "px");
+			var previewE = $("#preview");
+			if (previewE) {
+				var img = e.currentTarget;
+				previewE.css("top", getPreviewTop(e, img) + "px").css(
+					"left", getPreviewLeft(e, img) + "px");
+			} else {
+				showPreviewPanel(e);
+			}
 		}
 	});
 	
