@@ -192,32 +192,30 @@ function initPreviewEvents() {
 	$("a.preview").on({
 		"mouseenter.preview": function(e) {
 			var img = e.currentTarget;
-			var id = getImageEntry(img).id;
 			var imageBorderWidth = 2; // represents the two borders, left/right
 			var width = getImageWidth(img) + imageBorderWidth;
 			var src = getPreviewImageSrc(img); // this.href;
 			var caption = getImageCaption(img);
-			var c = (caption != "") ? "<br/>" + caption : "";
+			caption = (caption != "") ? "<br/>" + caption : "";
 			
-			$("#preview").hide();
-			$("#preview").attr("class", id);
-			$("#previewImage").attr("src", src);
-			$("#previewCaption").html(c);
-			$("#preview").css("top", getPreviewTop(e, img) + "px").css(
-					"left", getLeft(e, img) + "px").css("width", width + "px")
-					.show("fast");
-			}, 
+			var previewHolder = $("body");
+			var previewE = $("<span id='preview'></span>");
+			var previewImage = $('<img id="previewImage" src="' + src + '">').appendTo(previewE);
+			previewE.append(caption);
+			
+			previewE.css("top", getPreviewTop(e, img) + "px").css(
+					"left", getPreviewLeft(e, img) + "px").css("width", width + "px");
+			previewHolder.append(previewE);
+			previewE.show("fast");
+		}, 
 		"mouseleave.preview": function() {
 			$("#preview").hide();
+			$("#preview").remove();
 		},
 		"mousemove.preview": function(e) {
 			var img = e.currentTarget;
-			var eventId = getImageEntry(img).id;
-			var currentId = $("#preview").attr("class");
-			if (eventId == currentId) {
-				$("#preview").css("top", getPreviewTop(e, img) + "px").css(
-					"left", getLeft(e, img) + "px");
-			}
+			$("#preview").css("top", getPreviewTop(e, img) + "px").css(
+				"left", getPreviewLeft(e, img) + "px");
 		}
 	});
 	
@@ -284,7 +282,7 @@ function log(m, level) {
 		$("#log").append("<div>" + m + "</div>");
 	}
 }
-function getLeft(e, img) {
+function getPreviewLeft(e, img) {
 	var w = $("body").width();
 	var x = e.pageX;
 
