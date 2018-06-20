@@ -438,6 +438,7 @@ img.PinnedImage {
 }
 .PinnedImageEntryLine {
 	float: right;
+	padding-left: 20px;
 }
 .PinnedNode {
 	float: right;

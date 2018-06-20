@@ -115,7 +115,6 @@ function contextMenuClicked(aTag) {
 	} else if (action == "cpUnpin") {
 		pinNode(id, false);
 	}
-	
 }
 function closeNode(id) {
 	markIdAsShown(id, false);
@@ -1021,7 +1020,7 @@ function appendEntryLinesElement(h, e, showLine) {
 }
 
 function renderNodeEntryLine(h, e, depth) {
-	var spanClass = "EntryLine EntryLineTop";
+	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
 		var pinnedScaling = .5;
@@ -1031,6 +1030,8 @@ function renderNodeEntryLine(h, e, depth) {
 			getImagesPath() + '/preview/' + e.img + '" class="PinnedImage" />';
 		h.append(pimg);
 		h.append("<br/>");
+	} else if (depth == 0) {
+		spanClass += " EntryLineTop";
 	}
 	var span = $('<span class="' + spanClass + '"></span>').appendTo(h);
 	// detail button
@@ -1047,11 +1048,14 @@ function renderNodeEntryLine(h, e, depth) {
 		detailIcon = "tree_root.png";
 		detailClass = "tree-tree_root";
 	}
+	// the green button on the left of the line
 	var pad = getNbsps(depth);
-	var detailsHash = getEntryDetailsHash(e);
-	span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
+	if (!e.pinned) {
+		var detailsHash = getEntryDetailsHash(e);
+		span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
 			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
+	}
 	// image and link
 	var name = getEntryDisplayName(e);
 	var img;
@@ -1332,10 +1336,22 @@ function loadRandomFileIndexFromJson() {
 		loadRandomFile();
 	});
 }
-function loadExampleFile(file) {
+function loadExampleFile(fileName) {
 	hideAllNodes();
-	setTreeLinksForFile(file);
-	loadJsonThenAddEntries([file], false, false, build_loadExampleFile_callback());
+	setTreeLinksForFile(fileName);
+	
+	var fileEntry = dbFileIds[fileName];
+	if (fileEntry) {
+		// no need to load file
+		// set visible
+		markEntriesAsShown(fileEntry.ids, true);
+		// set pinned
+		markOnlyTheseIdsAsPinned(fileEntry.pinnedIds);
+		// render current tree
+		renderCurrentTree();
+	} else {
+		loadJsonThenAddEntries([fileName], false, false, build_loadExampleFile_callback());
+	}
 }
 function build_loadExampleFile_callback() {
 	return function(entries) {
@@ -1470,11 +1486,17 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 }
 function buildAssignFileIdsCallback(fileName, callback) {
 	return function(entries) {
-		var ids = [];
+		dbFileIds[fileName] = {
+			ids: [],
+			pinnedIds: []
+		};
+		var fileEntry = dbFileIds[fileName];
 		for (var i = 0; i < entries.length; i++) {
-			ids.push(entries[i].id);
+			fileEntry.ids.push(entries[i].id);
+			if (entries[i].pinned) {
+				fileEntry.pinnedIds.push(entries[i].id);
+			}
 		}
-		dbFileIds[fileName] = ids;
 		callback(entries);
 	};
 }
