@@ -1,4 +1,3 @@
-// ------ Document Init Methods
 $(document).ready(function() {
 	$(window).on('hashchange', onHashChange);
 	initContextMenu();
@@ -109,12 +108,21 @@ function contextMenuClicked(aTag) {
 		loadAllShowMore(id);
 	} else if (action == "cpFocus") {
 		focusOnNode(id);
-	} else if (action = "cpDetail") {
+	} else if (action == "cpDetail") {
 		setUrlForDetail(aTag.href.substring(pos + 1));
+	} else if (action == "cpPin") {
+		pinNode(id, true);
+	} else if (action == "cpUnpin") {
+		pinNode(id, false);
 	}
+	
 }
 function closeNode(id) {
 	markIdAsShown(id, false);
+	renderCurrentTree();
+}
+function pinNode(id, pinned) {
+	getMapEntry(id).pinned = pinned;
 	renderCurrentTree();
 }
 function showContextMenu(e, img) {
@@ -204,7 +212,7 @@ function showPreviewPanel(e) {
 	
 	var previewHolder = $("body");
 	var previewE = $("<span id='preview'></span>");
-	var previewImage = $('<img id="previewImage" src="' + src + '">').appendTo(previewE);
+	$('<img id="previewImage" src="' + src + '">').appendTo(previewE);
 	previewE.append(caption);
 	
 	previewE.css("top", getPreviewTop(e, img) + "px").css(
@@ -267,15 +275,19 @@ function setUrlInner(afterHash) {
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
-	setUrlsToIdsArray(ids, true, true);
+	var pids = getAllPinnedNodeIds();
+	setUrlsToIdsArray(ids, pids, true, true);
 }
-function setUrlsToIdsArray(ids, setWindowUrl, setLinkUrls) {
-	var cids = "c:" + crunch(ids);
+function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
+	var idsString = "c:" + crunch(ids);
+	if (pinnedIds && pinnedIds.length > 0) {
+		idsString = idsString + ":p:" + crunch(pinnedIds);
+	}
 	if (setLinkUrls) {
-		setTreeLinksToValue(cids);
+		setTreeLinksToValue(idsString);
 	}
 	if (setWindowUrl) {
-		setUrlInner(cids);
+		setUrlInner(idsString);
 	}
 }
 function setTreeLinksToValue(value) {
@@ -401,6 +413,9 @@ function setEntryShownAs(entryOrId, shown) {
 		entryOrId = getMapEntry(entryOrId);
 	}
 	entryOrId.show = shown;
+	if (!shown) {
+		entryOrId.pinned = false;
+	}
 }
 function setEntryShown(entryOrId) {
 	setEntryShownAs(entryOrId, true);
@@ -440,6 +455,18 @@ function focusOnNodeParent(p, e) {
 function hideAllNodes() {
 	if (getRootEntry()) {
 		markEntryChildrenAsShown(getRootEntry(), false);
+	}
+}
+function markAllIdsAsUnpinned(e) {
+	e.pinned = false;
+	for (var i = 0; i < e.children.length; i++) {
+		markAllIdsAsUnpinned(e.children[i]);
+	}
+}
+function markOnlyTheseIdsAsPinned(ids) {
+	markAllIdsAsUnpinned(getRootEntry());
+	for (var i = 0; i < ids.length; i++) {
+		getMapEntry(ids[i]).pinned = true;
 	}
 }
 function markIdAsShown(id, show) {
@@ -592,7 +619,7 @@ function collapseNodesForSiblingsToShow(e) {
 	var last = false;
 	for (var i = 0; i < e.childrenToShow.length; i++) {
 		var c = e.childrenToShow[i];
-		if (c.childrenToShow.length == 0) {
+		if (c.childrenToShow.length == 0 && !c.pinned) {
 			if (!last) {
 				last = c;
 				c.siblings = [];
@@ -714,12 +741,16 @@ function prepareEntryForContextMenu(e) {
 	e.cpFocus = isFocusNeeded(e);
 	
 	// recurse
-	for (var i = 0; i < e.childrenToShow.length; i++) {
+	var i;
+	for (i = 0; i < e.childrenToShow.length; i++) {
 		prepareEntryForContextMenu(e.childrenToShow[i]);
 	}
-	for (var i = 0; i < e.siblings.length; i++) {
+	for (i = 0; i < e.siblings.length; i++) {
 		prepareEntryForContextMenu(e.siblings[i]);
 	}
+	
+	e.cpPin = !e.pinned;
+	e.cpUnpin = e.pinned;
 }
 // are there any non-descendant leafs
 function isFocusNeeded(e) {
@@ -840,6 +871,12 @@ function getAllVisibleNodeIds() {
 	ids.sort(sortIntCompare);
 	return ids;
 }
+function getAllPinnedNodeIds() {
+	var ids = [];
+	getPinnedNodeIds(getRootEntry(), ids);
+	ids.sort(sortIntCompare);
+	return ids;
+}
 function sortIntCompare(a, b) {
 	return a - b;
 }
@@ -848,6 +885,16 @@ function getVisibleNodeIds(e, ids) {
 		ids.push(e.id);
 		for (var i = 0; i < e.children.length; i++) {
 			getVisibleNodeIds(e.children[i], ids);
+		}
+	}
+}
+function getPinnedNodeIds(e, ids) {
+	if (isEntryShown(e.id)) {
+		if (e.pinned) {
+			ids.push(e.id);
+		}
+		for (var i = 0; i < e.children.length; i++) {
+			getPinnedNodeIds(e.children[i], ids);
 		}
 	}
 }
@@ -893,12 +940,22 @@ function buildTree(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	buildRowsForTree(table, e);
 }
+function getPinnedNodeFromCollapsed(e) {
+	for (var i = 0; i < e.collapsed.length; i++) {
+		if (e.collapsed[i].pinned) {
+			return e.collapsed[i];
+		}
+	}
+	return e;
+}
 function buildRowsForTree(table, e) {
 	var tr = $("<tr></tr>").appendTo(table);
 	var children = e.childrenToShow;
 	if (e.collapsed.length > 0) {
 		children = e.collapsed[e.collapsed.length - 1].childrenToShow;
 	}
+	// we won't display the root, etc, if there is one pinned
+	e = getPinnedNodeFromCollapsed(e);
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
@@ -935,7 +992,13 @@ function appendEntryLinesElement(h, e, showLine) {
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
-	var div = $("<div id='node-" + e.id + "' class='Node'></div>").appendTo(td); 
+	
+	var nodeClass = "Node";
+	if (e.pinned) {
+		nodeClass += " PinnedNode";
+	}
+	
+	var div = $("<div id='node-" + e.id + "' class='" + nodeClass + "'></div>").appendTo(td); 
 	
 	renderNodeEntryLine(div, e, 0);
 	for (var i = 0; i < e.siblings.length; i++) {
@@ -943,7 +1006,7 @@ function appendEntryLinesElement(h, e, showLine) {
 		renderNodeEntryLine(div, e.siblings[i], 0);
 	}
 	
-	// this will always be empty if we are rendering
+	// this will always be empty if we are rendering children
 	for (var i = 0; i < e.collapsed.length; i++) {
 		div.append($("<br/>"));
 		renderNodeEntryLine(div, e.collapsed[i], i + 1);
@@ -958,7 +1021,18 @@ function appendEntryLinesElement(h, e, showLine) {
 }
 
 function renderNodeEntryLine(h, e, depth) {
-	var span = $('<span class="EntryLine EntryLineTop"></span>').appendTo(h);
+	var spanClass = "EntryLine EntryLineTop";
+	if (e.pinned) {
+		spanClass += " PinnedImageEntryLine";
+		var pinnedScaling = .5;
+		var height = pinnedScaling * e.pHeight;
+		var width = pinnedScaling * e.pWidth;
+		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
+			getImagesPath() + '/preview/' + e.img + '" class="PinnedImage" />';
+		h.append(pimg);
+		h.append("<br/>");
+	}
+	var span = $('<span class="' + spanClass + '"></span>').appendTo(h);
 	// detail button
 	var detailIcon = "detail_first.png";
 	var detailClass = "tree-detail_first";
@@ -984,8 +1058,12 @@ function renderNodeEntryLine(h, e, depth) {
 	var linkTitle;
 	var imgClass;
 	if (e.img) {
-		img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
-			getImagesPath() + '/tiny/' + e.img + '" class="Thumb" />';
+		if (!e.pinned) {
+			img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
+				getImagesPath() + '/tiny/' + e.img + '" class="Thumb" />';
+		} else {
+			img = "";
+		}
 		imgClass = "preview";
 		linkTitle = "";
 	} else {
@@ -1120,7 +1198,7 @@ function renderDetails(id) {
 		}
 		linkIds = linkIds.concat(e.childrenIds);
 		linkIds.sort(sortIntCompare);
-		setUrlsToIdsArray(linkIds, false, true);
+		setUrlsToIdsArray(linkIds, false, false, true);
 	}
 	
 	initPreviewEvents();
@@ -1193,10 +1271,19 @@ function loadCommandFromURL() {
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
-		loadJsonThenMarkOnlyNewVisible(ids);
+		loadJsonThenMarkOnlyNewVisible(ids, false);
 	} else if (command == "c") {
+		var pinnedIds = false;
+		if (commandParam) {
+			var pinType = commandParam.charAt(0);
+			if (pinType == "p") {
+				pinnedIds = uncrunch(commandParam.substring(2));
+			} else {
+				pinnedIds = commandParam.substring(2).split(",");
+			}
+		}
 		var ids = uncrunch(value);
-		loadJsonThenMarkOnlyNewVisible(ids);
+		loadJsonThenMarkOnlyNewVisible(ids, pinnedIds);
 	}
 }
 // should be from "t:details:id,crunchedId"
@@ -1248,7 +1335,7 @@ function loadRandomFileIndexFromJson() {
 function loadExampleFile(file) {
 	hideAllNodes();
 	setTreeLinksForFile(file);
-	loadJsonThenAddEntries([file], false, build_loadExampleFile_callback());
+	loadJsonThenAddEntries([file], false, false, build_loadExampleFile_callback());
 }
 function build_loadExampleFile_callback() {
 	return function(entries) {
@@ -1267,25 +1354,25 @@ function loadAllShowMore(id) {
 	loadJsonThenMarkNewIdsVisible(allShowMoreIds);
 }
 
-function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds) {
+function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds, pinnedIds) {
 	hideAllNodes();
-	loadJsonThenAddEntries(fileNamesOrIds, true);
+	loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true);
 }
 // these are the master "load ids" methods, and should be altered to accomodate the one or two scenarios we have
 // - load these nodes/files exactly, and then mark exactly those nodes visible in addition to current tree, then render tree
 // - load a brand new tree (? maybe already handled by calling method)
 // - load these nodes, but don't do anything else (? not sure that's a valid scenario)
 function loadJsonOnly(fileNamesOrIds, callback) {
-	loadJsonThenAddEntries(fileNamesOrIds, false, callback);
+	loadJsonThenAddEntries(fileNamesOrIds, false, false, callback);
 }
 function loadJsonThenMarkNewIdsVisible(fileNamesOrIds, callback) {
-	loadJsonThenAddEntries(fileNamesOrIds, true, callback);
+	loadJsonThenAddEntries(fileNamesOrIds, false, true, callback);
 }
-function loadJsonThenAddEntries(fileNamesOrIds, showTree, outerCallback) {
-	var callback = build_loadJsonThenAddEntries_callback(fileNamesOrIds, showTree, outerCallback);
+function loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, showTree, outerCallback) {
+	var callback = build_loadJsonThenAddEntries_callback(fileNamesOrIds, pinnedIds, showTree, outerCallback);
 	loadJson(fileNamesOrIds, callback);
 }
-function build_loadJsonThenAddEntries_callback(newIds, showTree, callback) {
+function build_loadJsonThenAddEntries_callback(newIds, pinnedIds, showTree, callback) {
 	return function(entries) {
 		if (showTree) {
 			if (newIds.length > 0 && isFileName(newIds[0])) {
@@ -1293,6 +1380,9 @@ function build_loadJsonThenAddEntries_callback(newIds, showTree, callback) {
 				markEntriesAsShown(entries, true);
 			} else {
 				markEntriesAsShown(newIds, true);
+			}
+			if (pinnedIds) {
+				markOnlyTheseIdsAsPinned(pinnedIds);
 			}
 			renderCurrentTree();
 		}
