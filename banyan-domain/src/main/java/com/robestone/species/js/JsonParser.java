@@ -205,6 +205,15 @@ public class JsonParser {
 		appendKey(buf, key);
 		appendValue(buf, val);
 	}
+	private void appendBoolean(StringBuilder buf, boolean comma, Object key, boolean val) {
+		if (!val) {
+			// in this case we don't render, as js will see it as undefined
+			return;
+		}
+		appendComma(buf, comma);
+		appendKey(buf, key);
+		buf.append("true");
+	}
 	private void appendValue(StringBuilder buf, Object val) {
 		if (val instanceof Integer) {
 			buf.append(val);
@@ -231,6 +240,7 @@ public class JsonParser {
 			buf.append('{');
 			append(buf, false, "id", e.getId()); // first is always no comma, and id is always there
 			
+			appendBoolean(buf, true, "pinned", e.isPinned());
 			appendStringList(buf, true, "cnames", e.getCnames());
 			append(buf, true, "lname", e.getLname());
 			append(buf, true, "parentId", e.getParentId());

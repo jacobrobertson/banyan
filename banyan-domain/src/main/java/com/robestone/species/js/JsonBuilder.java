@@ -24,18 +24,18 @@ import com.robestone.species.parse.ImagesCreater;
 public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-
+		JsonBuilder b = new JsonBuilder();
 		// should delete all json first
-		new JsonBuilder().runGenerateFullJsonDB();
+//		new JsonBuilder().runGenerateFullJsonDB();
+		b.buildRandomFiles();
+//		b.runExamples();
+//		b.outputRandomFileIndex();
+//		b.partitionFromFileSystem2();
 		
-//		new JsonBuilder().runExamples();
-//		new JsonBuilder().outputRandomFileIndex();
-//		new JsonBuilder().partitionFromFileSystem2();
+//		b.outputExampleFromCrunchedIds();
 		
-//		new JsonBuilder().outputExampleFromCrunchedIds();
-		
-//		new JsonBuilder().runOneId(1, 6);
-//		new JsonBuilder().partitionFromFileSystem2();
+//		b.runOneId(1, 6);
+//		b.partitionFromFileSystem2();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
@@ -143,15 +143,17 @@ public class JsonBuilder extends AbstractWorker {
 		return node;
 	}
 	
+	/*
 	public void runOneId(int id, int maxDepth) throws Exception {
 		Entry e = speciesService.findEntry(id);
 		Set<Integer> idsRun = new HashSet<>();
 		runRecursively(e, 0, maxDepth, idsRun);
 	}
+	*/
 	
 	public void runExamples() throws Exception {
-		int exampleDepth = 0;
-		Set<Integer> idsRun = new HashSet<>();
+//		int exampleDepth = 0;
+//		Set<Integer> idsRun = new HashSet<>();
 		List<ExampleGroup> egs = examplesService.findExampleGroups();
 		for (ExampleGroup eg : egs) {
 			for (Example ex : eg.getExamples()) {
@@ -165,12 +167,12 @@ public class JsonBuilder extends AbstractWorker {
 				for (Entry e : entries) {
 					array[index++] = e;
 					// save all descendants files so I can test opening those
-					if (exampleDepth > 0) {
-						runRecursively(e, 0, exampleDepth, idsRun);
-					}
+//					if (exampleDepth > 0) {
+//						runRecursively(e, 0, exampleDepth, idsRun);
+//					}
 				}
 				// save one "fat" file for the example
-				save(true, ex.getSimpleTitle(), array);
+				saveExampleFile(ex.getSimpleTitle(), new HashSet<>(ids), array);
 			}
 		}
 	}
@@ -209,7 +211,7 @@ public class JsonBuilder extends AbstractWorker {
 		
 		return showMore;
 	}
-	
+	/*
 	public void runRecursively(Entry e, int depth, int maxDepth, Set<Integer> idsRun) throws Exception {
 		if (idsRun.add(e.getId())) {
 			save(e);
@@ -223,7 +225,8 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		System.out.println("runRecursively - completed " + idsRun.size());
 	}
-	
+	*/
+	/*
 	private void save(Entry e) throws Exception {
 		
 		// each file is going to have all the entries needed
@@ -233,6 +236,7 @@ public class JsonBuilder extends AbstractWorker {
 		
 		save(false, e.getId().toString(), e);
 	}
+	*/
 	public static int getSubFolder(int id) {
 		double d = id;
 		d = d / 100d;
@@ -240,24 +244,27 @@ public class JsonBuilder extends AbstractWorker {
 		int i = (int) d;
 		return i;
 	}
-	private void save(boolean isName, String name, Entry... entries) throws Exception {
+	private void saveExampleFile(String name, Set<Integer> pinnedIds, Entry... entries) throws Exception {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
 			JsonEntry je = toJsonEntry(e);
+			if (pinnedIds.contains(e.getId())) {
+				je.setPinned(true); // TODO allow us to not pin all the "terms"
+			}
 			jentries.add(je);
 		}
-		saveByFolders(isName, name, jentries);
+		saveByFolders("e", name, jentries);
 	}
-	private void saveByFolders(boolean isName, String name, List<JsonEntry> entries) throws Exception {
+	private void saveByFolders(String subFolder, String name, List<JsonEntry> entries) throws Exception {
 		// convention because javascript is tricky this way
-		String subfolder;
-		if (isName) {
-			subfolder = "f";
-		} else {
-			int id = Integer.parseInt(name);
-			subfolder = "n/" + String.valueOf(getSubFolder(id));
-		}
-		String fileName = subfolder + "/" + name + ".json";
+//		String subfolder;
+//		if (isName) {
+//			subfolder = "f";
+//		} else {
+//			int id = Integer.parseInt(name);
+//			subfolder = "n/" + String.valueOf(getSubFolder(id));
+//		}
+		String fileName = subFolder + "/" + name + ".json";
 		saveByFileName(fileName, entries);
 	}
 	private void saveByFileName(String fileName, List<JsonEntry> entries) throws Exception {
@@ -373,5 +380,33 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		System.out.println(buf);
 	}
-	
+	public void buildRandomFiles() throws Exception {
+		// load the index
+		@SuppressWarnings("unchecked")
+		List<String> lines = 
+				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
+		for (String line : lines) {
+			Entry e = findEntryFromQuery(line);
+			if (e != null) {
+				buildRandomTree(e);
+			}
+		}
+	}
+	private void buildRandomTree(Entry e) {
+		// find all children
+		// 	use those to get grand children
+		
+		
+	}
+	private Entry findEntryFromQuery(String query) throws Exception {
+		int id = speciesService.findBestId(query, new ArrayList<>());
+		if (id >= 0) {
+			Entry e = speciesService.findEntry(id);
+			System.out.println(query + " >> " + e.getLatinName() + " // " + e.getCommonNames() + " // " + e.getCommonName());
+			return e;
+		} else {
+			System.out.println(query + " >> Not Found");
+			return null;
+		}
+	}
 }

@@ -17,6 +17,7 @@ public class JsonEntry {
 	private List<Integer> showMoreLeafIds;
 	private List<Integer> showMoreOtherIds;
 	
+	private boolean pinned;
 	private boolean extinct;
 	private boolean ancestorExtinct;
 	
@@ -119,6 +120,11 @@ public class JsonEntry {
 	public void setWikiSpeciesLink(String wikiSpeciesLink) {
 		this.wikiSpeciesLink = wikiSpeciesLink;
 	}
-
+	public boolean isPinned() {
+		return pinned;
+	}
+	public void setPinned(boolean pinned) {
+		this.pinned = pinned;
+	}
 	
 }

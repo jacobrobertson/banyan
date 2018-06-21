@@ -45,5 +45,7 @@ values
 (502, 502, 5, 'insects-search', 'Insects - crickets, wasps and aphids', 'Gryllinae,Vespoidea,Brevicoryne brassicae', ''),
 (503, 503, 5, 'marsupials-searc', 'Marsupials - koalas, kangeroos and possum', 'Petaurus breviceps,Phascolarctos cinereus,Macropus,Didelphis virginiana', ''), 
 (504, 504, 5, 'example-searches', 'Example searches - "bears", "viola arvensis", "dwarf marsh violet", "vulpes"', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', ''),
+--- ALL ABOVE this line no longer being used...
+
 (505, 505, 5, 'welcome-to-banyan', 'Welcome to Banyan!', 'Bryophyta,Magnoliopsida,Selachimorpha,Crocodylidae,Orthoptera,Canidae,Scyllaridae', '')
 ;

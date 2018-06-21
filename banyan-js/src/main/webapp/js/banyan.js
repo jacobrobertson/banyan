@@ -33,7 +33,7 @@ var dbChildIdsToParents = {};
 var dbFileIds = {};
 var dbRandomFiles = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
-var defaultTree = "f:welcome-to-banyan";
+var defaultTree = "e:welcome-to-banyan";
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -1000,15 +1000,17 @@ function appendEntryLinesElement(h, e, showLine) {
 	var div = $("<div id='node-" + e.id + "' class='" + nodeClass + "'></div>").appendTo(td); 
 	
 	renderNodeEntryLine(div, e, 0);
-	for (var i = 0; i < e.siblings.length; i++) {
-		div.append($("<br/>"));
-		renderNodeEntryLine(div, e.siblings[i], 0);
-	}
+	if (!e.pinned) {
+		for (var i = 0; i < e.siblings.length; i++) {
+			div.append($("<br/>"));
+			renderNodeEntryLine(div, e.siblings[i], 0);
+		}
 	
-	// this will always be empty if we are rendering children
-	for (var i = 0; i < e.collapsed.length; i++) {
-		div.append($("<br/>"));
-		renderNodeEntryLine(div, e.collapsed[i], i + 1);
+		// this will always be empty if we are rendering children
+		for (var i = 0; i < e.collapsed.length; i++) {
+			div.append($("<br/>"));
+			renderNodeEntryLine(div, e.collapsed[i], i + 1);
+		}
 	}
 	
 	var blankTr = $("<tr></tr>").appendTo(table);
@@ -1023,7 +1025,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
-		var pinnedScaling = .5;
+		var pinnedScaling = .75;
 		var height = pinnedScaling * e.pHeight;
 		var width = pinnedScaling * e.pWidth;
 		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
@@ -1050,8 +1052,8 @@ function renderNodeEntryLine(h, e, depth) {
 	}
 	// the green button on the left of the line
 	var pad = getNbsps(depth);
+	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
-		var detailsHash = getEntryDetailsHash(e);
 		span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
 			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
@@ -1260,7 +1262,7 @@ function loadCommandFromURL() {
 		value = hashValue;
 	}
 
-	if (command == "f") {
+	if (command == "e") {
 		loadExampleFile(hashValue);
 	} else if (command == "t") {
 		if (value == "random") {
@@ -1446,7 +1448,9 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 }
 function isFileName(name) {
 	name = "" + name;
-	return (name.length > 1 && name.charAt(0) == "f" && name.charAt(1) == ":");
+	return (name.length > 1 && 
+	// TODO "r" or "e"
+		(name.charAt(0) == "e") && name.charAt(1) == ":");
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries) {
 	return function() {
@@ -1466,7 +1470,7 @@ function loadOneJsonDocument(jsonId, entries, callback) {
 	var url = "json/";
 	var loadNeeded = true;
 	if (isFileName(jsonId)) {
-		url = url + "f/" + jsonId.substring(2) + ".json";
+		url = url + jsonId.charAt(0) + "/" + jsonId.substring(2) + ".json";
 	} else {
 		// we might have already loaded this id in a call chain, no need to look it up
 		if (dbMap[jsonId]) {
