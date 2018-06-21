@@ -1321,7 +1321,7 @@ function loadRandomFile() {
 		// choose a random file and load it
 		var index = Math.floor(Math.random() * dbRandomFiles.length);
 		var next = dbRandomFiles[index];
-		loadExampleFile("f:" + next);
+		loadExampleFile("e:" + next);
 	}
 }
 function setRandomLinkIndex() {

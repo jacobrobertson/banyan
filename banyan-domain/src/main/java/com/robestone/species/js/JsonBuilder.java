@@ -364,7 +364,7 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		buf.append("]}");
 		
-		FileUtils.writeStringToFile(new File(outputDir + "/f/random.json"), buf.toString());
+		FileUtils.writeStringToFile(new File(outputDir + "/r/random.json"), buf.toString());
 	}
 	
 	// (504, 504, 5, 'example-searches', 'Caption...', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', '')
