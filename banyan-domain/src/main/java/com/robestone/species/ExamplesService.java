@@ -30,7 +30,7 @@ public class ExamplesService implements IExamplesService {
 		this.speciesService = speciesService;
 	}
 
-	public void crunchIds() {
+	public void crunchIds(boolean updateTerms) {
 		List<Example> examples = template.query("select * from example order by example_index",
 				new ExampleMapper());
 		for (Example example: examples) {
@@ -66,7 +66,11 @@ public class ExamplesService implements IExamplesService {
 				buf.append(entry.getLatinName());
 			}
 			LogHelper.speciesLogger.info("crunchIds." + buf);
-			template.update("update example set crunched_ids = ?, terms = ? where example_id = ?", crunched, terms, example.getId());
+			if (updateTerms) {
+				template.update("update example set crunched_ids = ?, terms = ? where example_id = ?", crunched, terms, example.getId());
+			} else {
+				template.update("update example set crunched_ids = ? where example_id = ?", crunched, example.getId());
+			}
 		}
 	}
 	/**
@@ -185,7 +189,7 @@ public class ExamplesService implements IExamplesService {
 			e.setGroupId(rs.getInt("group_id"));
 			e.setSimpleTitle(rs.getString("simple_name").trim());
 			e.setCaption(EntityMapperJdbcTemplate.getString(rs, "caption"));
-			e.setTerms(EntityMapperJdbcTemplate.getString(rs, "terms"));
+			e.setTerms(rs.getString("terms").trim());
 			e.setCrunchedIds(EntityMapperJdbcTemplate.getString(rs, "crunched_ids"));
 			return e;
 		}

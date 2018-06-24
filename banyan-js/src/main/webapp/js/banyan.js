@@ -1120,7 +1120,7 @@ function getRenderTaxoDisplayName(e) {
 // only needs to be called once
 // much of this is based off an assumed structure of 2x2
 function renderExamplesTab(data) {
-	var exampleImageScaling = .65;
+	var exampleImageScaling = .5;
 	var tab = $("#examplesTab");
 	tab.empty();
 	var groupsTable = $('<table class="ExamplesTable"></table>').appendTo($('<div class="Node"></div>')).appendTo(tab);
@@ -1413,13 +1413,12 @@ function loadExampleFile(fileName) {
 		// render current tree
 		renderCurrentTree();
 	} else {
-		loadJsonThenAddEntries([fileName], false, false, build_loadExampleFile_callback());
+		loadJsonThenAddEntries([fileName], false, false, build_loadExampleFile_callback(fileName));
 	}
 }
-function build_loadExampleFile_callback() {
+function build_loadExampleFile_callback(fileName) {
 	return function(entries) {
-		markEntriesAsShown(entries, true);
-		renderCurrentTree(true);
+		loadExampleFile(fileName);
 	};
 }
 function loadAllChildren(id) {

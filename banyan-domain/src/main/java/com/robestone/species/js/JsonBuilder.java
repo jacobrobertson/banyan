@@ -26,13 +26,12 @@ public class JsonBuilder extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 		JsonBuilder b = new JsonBuilder();
 		
-		b.buildExampleIndexFile();
+//		b.buildExampleIndexFile();
 		
 		// should delete all json first
 //		new JsonBuilder().runGenerateFullJsonDB();
 //		b.buildRandomFiles();
-//		b.buildRandomFileFromQuery("Arrow Crab");
-//		b.runExamples();
+		b.runExamples();
 //		b.outputRandomFileIndex();
 //		b.partitionFromFileSystem2();
 		
@@ -204,17 +203,7 @@ public class JsonBuilder extends AbstractWorker {
 		return node;
 	}
 	
-	/*
-	public void runOneId(int id, int maxDepth) throws Exception {
-		Entry e = speciesService.findEntry(id);
-		Set<Integer> idsRun = new HashSet<>();
-		runRecursively(e, 0, maxDepth, idsRun);
-	}
-	*/
-	
 	public void runExamples() throws Exception {
-//		int exampleDepth = 0;
-//		Set<Integer> idsRun = new HashSet<>();
 		List<ExampleGroup> egs = examplesService.findExampleGroups();
 		for (ExampleGroup eg : egs) {
 			for (Example ex : eg.getExamples()) {
@@ -227,15 +216,12 @@ public class JsonBuilder extends AbstractWorker {
 				int index = 0;
 				for (Entry e : entries) {
 					array[index++] = e;
-					// save all descendants files so I can test opening those
-//					if (exampleDepth > 0) {
-//						runRecursively(e, 0, exampleDepth, idsRun);
-//					}
 				}
 				// save one "fat" file for the example
-				saveExampleFile(ex.getSimpleTitle(), new HashSet<>(ids), array);
+				saveExampleFile(ex.getSimpleTitle(), ex.getPinnedTerms(), array);
 			}
 		}
+		buildExampleIndexFile();
 	}
 	
 	/**
@@ -305,11 +291,11 @@ public class JsonBuilder extends AbstractWorker {
 		int i = (int) d;
 		return i;
 	}
-	private void saveExampleFile(String name, Set<Integer> pinnedIds, Entry... entries) throws Exception {
+	private void saveExampleFile(String name, Set<String> pinnedTerms, Entry... entries) throws Exception {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
 			JsonEntry je = toJsonEntry(e);
-			if (pinnedIds.contains(e.getId())) {
+			if (pinnedTerms.contains(e.getLatinName())) {
 				je.setPinned(true); // TODO allow us to not pin all the "terms"
 			}
 			jentries.add(je);

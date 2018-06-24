@@ -10,7 +10,7 @@ public interface IExamplesService {
 
 	void setSpeciesService(SpeciesService speciesService);
 
-	void crunchIds();
+	void crunchIds(boolean updateTerms);
 
 	List<ExampleGroup> findExampleGroups();
 

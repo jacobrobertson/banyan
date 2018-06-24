@@ -1,5 +1,8 @@
 package com.robestone.species;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Example {
 
 	private String caption;
@@ -10,6 +13,7 @@ public class Example {
 	private int id;
 	private String depictedTerm;
 	private Image depictedImage;
+	private Set<String> pinnedTerms;
 	
 	public int getId() {
 		return id;
@@ -27,12 +31,18 @@ public class Example {
 		return terms;
 	}
 	public void setTerms(String terms) {
+		pinnedTerms = new HashSet<>();
 		StringBuilder buf = new StringBuilder();
 		String[] termsSplit = terms.split(",");
 		for (String term : termsSplit) {
-			if (term.startsWith("@")) {
+			if (term.startsWith("$")) {
 				term = term.substring(1);
 				depictedTerm = term;
+			}
+			if (term.startsWith("!")) {
+				term = term.substring(1);
+			} else {
+				pinnedTerms.add(term);
 			}
 			if (buf.length() > 0) {
 				buf.append(",");
@@ -68,5 +78,7 @@ public class Example {
 	public void setDepictedImage(Image depictedImage) {
 		this.depictedImage = depictedImage;
 	}
-	
+	public Set<String> getPinnedTerms() {
+		return pinnedTerms;
+	}
 }
