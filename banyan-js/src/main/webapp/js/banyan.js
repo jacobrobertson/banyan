@@ -1321,7 +1321,7 @@ function loadRandomFile() {
 		// choose a random file and load it
 		var index = Math.floor(Math.random() * dbRandomFiles.length);
 		var next = dbRandomFiles[index];
-		loadExampleFile("e:" + next);
+		loadExampleFile("r:" + next);
 	}
 }
 function setRandomLinkIndex() {
@@ -1333,7 +1333,7 @@ function setRandomLinkIndex() {
 	link.attr("href", "#t:random:" + index);
 }
 function loadRandomFileIndexFromJson() {
-	$.getJSON("json/f/random.json", function(data) {
+	$.getJSON("json/r/random-index.json", function(data) {
 		dbRandomFiles = data.files;
 		loadRandomFile();
 	});
@@ -1448,9 +1448,12 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 }
 function isFileName(name) {
 	name = "" + name;
-	return (name.length > 1 && 
-	// TODO "r" or "e"
-		(name.charAt(0) == "e") && name.charAt(1) == ":");
+	if (name.length < 3) {
+		return false;
+	}
+	var code = name.charAt(0);
+	var fileTypes = "er";
+	return (fileTypes.indexOf(code) >= 0 && name.charAt(1) == ":");
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries) {
 	return function() {

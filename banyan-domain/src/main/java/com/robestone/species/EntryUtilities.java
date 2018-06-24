@@ -270,7 +270,7 @@ public class EntryUtilities {
 	}
 	
 	public static Entry findEntry(Entry entry, int id) {
-		if (entry.getId() == id) {
+		if (entry.getId().equals(id)) {
 			return entry;
 		}
 		if (entry.hasChildren()) {

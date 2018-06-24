@@ -229,7 +229,7 @@ public class JsonParser {
 		return v;
 	}
 
-	public String toJsonString(List<JsonEntry> entries) {
+	public String toJsonString(Collection<JsonEntry> entries) {
 		boolean firstEntry = true;
 		StringBuilder buf = new StringBuilder("{\"entries\": [");
 		for (JsonEntry e : entries) {

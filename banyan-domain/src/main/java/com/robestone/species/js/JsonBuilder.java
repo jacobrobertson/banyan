@@ -28,8 +28,9 @@ public class JsonBuilder extends AbstractWorker {
 		// should delete all json first
 //		new JsonBuilder().runGenerateFullJsonDB();
 		b.buildRandomFiles();
+//		b.buildRandomFileFromQuery("Arrow Crab");
 //		b.runExamples();
-//		b.outputRandomFileIndex();
+		b.outputRandomFileIndex();
 //		b.partitionFromFileSystem2();
 		
 //		b.outputExampleFromCrunchedIds();
@@ -40,6 +41,40 @@ public class JsonBuilder extends AbstractWorker {
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
+	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
+	
+	public void buildRandomFiles() throws Exception {
+		// load the index
+		@SuppressWarnings("unchecked")
+		List<String> lines = 
+				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
+		for (String line : lines) {
+			buildOneRandomFileFromQuery(line);
+		}
+	}
+	private void buildOneRandomFileFromQuery(String query) throws Exception {
+		query = query.trim();
+		CompleteEntry e = findEntryFromQuery(query);
+		if (e != null) {
+			Collection<CompleteEntry> entries = randomTreeBuilder.buildRandomTree(e.getId());
+			if (entries != null) {
+				List<JsonEntry> jentries = toJsonEntries(entries.toArray(new Entry[entries.size()]));
+				String fileName = randomTreeBuilder.toRandomFileName(query, e.getId());
+				saveByFolders("r", fileName, jentries);
+			}
+		}
+	}
+	private CompleteEntry findEntryFromQuery(String query) throws Exception {
+		int id = speciesService.findBestId(query, new ArrayList<>());
+		if (id >= 0) {
+			CompleteEntry e = speciesService.findEntry(id);
+			System.out.println(query + " >> " + e.getLatinName() + " // " + e.getCommonNames() + " // " + e.getCommonName());
+			return e;
+		} else {
+			System.out.println(query + " >> Not Found");
+			return null;
+		}
+	}
 	
 	public void runGenerateFullJsonDB() throws Exception {
 		runExamples();
@@ -281,12 +316,16 @@ public class JsonBuilder extends AbstractWorker {
 	//	"img": "15/Endopterygota.jpg", "href": "Complete_Metamorphosis_Insects_Endopterygota_6691", 
 	// "height": 16, "width": 20},
 	public String toJson(Entry... entries) {
+		List<JsonEntry> jentries = toJsonEntries(entries);
+		return parser.toJsonString(jentries);
+	}
+	public List<JsonEntry> toJsonEntries(Entry... entries) {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
 			JsonEntry je = toJsonEntry(e);
 			jentries.add(je);
 		}
-		return parser.toJsonString(jentries);
+		return jentries;
 	}
 	public JsonEntry toJsonEntry(Entry e) {
 		JsonEntry je = new JsonEntry();
@@ -337,20 +376,21 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void outputRandomFileIndex() throws Exception {
-		// this is a temp impl until I have the real deal
-		List<ExampleGroup> groups = new ArrayList<>();
-		// I'm just getting the ones that aren't duplicates
-		groups.add(examplesService.getFamilies());
-		groups.add(examplesService.getHaveYouHeardOf());
-		groups.add(examplesService.getOtherFamilies());
-		groups.add(examplesService.getYouMightNotKnow());
+		String fileName = "random-index";
+		File dir = new File(outputDir + "/r");
 		List<String> names = new ArrayList<>();
-		for (ExampleGroup eg : groups) {
-			for (Example ex : eg.getExamples()) {
-				String name = ex.getSimpleTitle();
+		for (File f : dir.listFiles()) {
+			String name = f.getName();
+			int pos = name.indexOf('.');
+			name = name.substring(0, pos);
+			if (!fileName.equals(name)) {
 				names.add(name);
 			}
 		}
+		String file = "/r/" + fileName + ".json";
+		outputNamesListJsonFile(names, file);
+	}
+	public void outputNamesListJsonFile(List<String> names, String subDirAndFileName) throws Exception {
 		StringBuilder buf = new StringBuilder();
 		for (String name : names) {
 			if (buf.length() == 0) {
@@ -364,7 +404,7 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		buf.append("]}");
 		
-		FileUtils.writeStringToFile(new File(outputDir + "/r/random.json"), buf.toString());
+		FileUtils.writeStringToFile(new File(outputDir + subDirAndFileName), buf.toString());
 	}
 	
 	// (504, 504, 5, 'example-searches', 'Caption...', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', '')
@@ -379,34 +419,5 @@ public class JsonBuilder extends AbstractWorker {
 			buf.append(speciesService.findEntry(id).getLatinName());
 		}
 		System.out.println(buf);
-	}
-	public void buildRandomFiles() throws Exception {
-		// load the index
-		@SuppressWarnings("unchecked")
-		List<String> lines = 
-				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
-		for (String line : lines) {
-			Entry e = findEntryFromQuery(line);
-			if (e != null) {
-				buildRandomTree(e);
-			}
-		}
-	}
-	private void buildRandomTree(Entry e) {
-		// find all children
-		// 	use those to get grand children
-		
-		
-	}
-	private Entry findEntryFromQuery(String query) throws Exception {
-		int id = speciesService.findBestId(query, new ArrayList<>());
-		if (id >= 0) {
-			Entry e = speciesService.findEntry(id);
-			System.out.println(query + " >> " + e.getLatinName() + " // " + e.getCommonNames() + " // " + e.getCommonName());
-			return e;
-		} else {
-			System.out.println(query + " >> Not Found");
-			return null;
-		}
 	}
 }
