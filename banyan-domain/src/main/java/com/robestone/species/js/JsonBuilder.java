@@ -25,12 +25,15 @@ public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		JsonBuilder b = new JsonBuilder();
+		
+		b.buildExampleIndexFile();
+		
 		// should delete all json first
 //		new JsonBuilder().runGenerateFullJsonDB();
-		b.buildRandomFiles();
+//		b.buildRandomFiles();
 //		b.buildRandomFileFromQuery("Arrow Crab");
 //		b.runExamples();
-		b.outputRandomFileIndex();
+//		b.outputRandomFileIndex();
 //		b.partitionFromFileSystem2();
 		
 //		b.outputExampleFromCrunchedIds();
@@ -42,6 +45,29 @@ public class JsonBuilder extends AbstractWorker {
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
+	
+	public void buildExampleIndexFile() throws Exception {
+		examplesService.findExampleGroups(); // inits it
+		List<ExampleGroup> groups = new ArrayList<>();
+		groups.add(examplesService.getYouMightNotKnow());
+		groups.add(examplesService.getHaveYouHeardOf());
+		groups.add(examplesService.getFamilies());
+		groups.add(examplesService.getOtherFamilies());
+		
+		// need to set the image path
+		for (ExampleGroup eg : groups) {
+			for (Example ex : eg.getExamples()) {
+				String term = ex.getDepictedTerm();
+				CompleteEntry imageEntry = speciesService.findEntryByLatinName(term);
+				imageEntry = speciesService.findEntry(imageEntry.getId());
+				ex.setDepictedImage(imageEntry.getImage());
+			}
+		}
+		
+		String s = parser.toJsonString(groups);
+		File file = new File(outputDir + "/e/examples-index.json");
+		FileUtils.writeStringToFile(file, s);
+	}
 	
 	public void buildRandomFiles() throws Exception {
 		// load the index

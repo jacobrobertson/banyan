@@ -8,6 +8,8 @@ public class Example {
 	private String crunchedIds;
 	private int groupId;
 	private int id;
+	private String depictedTerm;
+	private Image depictedImage;
 	
 	public int getId() {
 		return id;
@@ -25,7 +27,19 @@ public class Example {
 		return terms;
 	}
 	public void setTerms(String terms) {
-		this.terms = terms;
+		StringBuilder buf = new StringBuilder();
+		String[] termsSplit = terms.split(",");
+		for (String term : termsSplit) {
+			if (term.startsWith("@")) {
+				term = term.substring(1);
+				depictedTerm = term;
+			}
+			if (buf.length() > 0) {
+				buf.append(",");
+			}
+			buf.append(term);
+		}
+		this.terms = buf.toString();
 	}
 	public String getCrunchedIds() {
 		return crunchedIds;
@@ -44,6 +58,15 @@ public class Example {
 	}
 	public void setSimpleTitle(String simpleTitle) {
 		this.simpleTitle = simpleTitle;
+	}
+	public String getDepictedTerm() {
+		return depictedTerm;
+	}
+	public Image getDepictedImage() {
+		return depictedImage;
+	}
+	public void setDepictedImage(Image depictedImage) {
+		this.depictedImage = depictedImage;
 	}
 	
 }

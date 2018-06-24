@@ -34,6 +34,7 @@ var dbFileIds = {};
 var dbRandomFiles = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
 var defaultTree = "e:welcome-to-banyan";
+var examplesIndexLoaded = false;
 
 var maxWidthHide = 106;
 var maxWidthClose = 58;
@@ -1116,6 +1117,53 @@ function getRenderTaxoDisplayName(e) {
 	}
 	return name;
 }
+// only needs to be called once
+// much of this is based off an assumed structure of 2x2
+function renderExamplesTab(data) {
+	var exampleImageScaling = .65;
+	var tab = $("#examplesTab");
+	tab.empty();
+	var groupsTable = $('<table class="ExamplesTable"></table>').appendTo($('<div class="Node"></div>')).appendTo(tab);
+	var groups = data.groups;
+	var groupsRow = $("<tr></tr>").appendTo(groupsTable);
+	for (var i = 0; i < groups.length; i++) {
+		var group = groups[i];
+		if (i == 2) {
+			groupsRow = $("<tr></tr>").appendTo(groupsTable);
+		}
+		var groupsCell = $('<td class="Node"></td>').appendTo(groupsRow);
+		var titleDiv = $('<div class="ExampleTitle"></div>').appendTo(groupsCell);
+		titleDiv.append('<img alt="question" class="question" src="icons/question.png" />');
+		titleDiv.append(group.caption);
+		
+		var exampleTable = $("<table></table>").appendTo(groupsCell);
+		var exampleRow = $("<tr></tr>").appendTo(exampleTable);
+		for (var j = 0; j < group.examples.length; j++) {
+			if (j == 2) {
+				exampleRow = $("<tr></tr>").appendTo(exampleTable);
+			}
+			var example = group.examples[j];
+			var exampleCell = $('<td class="Node"></td>').appendTo(exampleRow);
+			var exampleLink = $('<a href="#e:' + example.file + '"></a>').appendTo(exampleCell);
+			var w = example.width * exampleImageScaling;
+			var h = example.height * exampleImageScaling;
+			exampleLink.append('<img alt="' + example.caption + '" height="' + h + '" width="' + w + '" src="'
+				+ getImagesPath() + "/preview/" + example.image + '" class="PinnedImage"></img>');
+			var captionLines = example.caption.split("/");
+			for (var k = 0; k < captionLines.length; k++) {
+				exampleLink.append("<br/>");
+				var cls = "ExampleInnerCaption";
+				if (k == 0) {
+					cls += " ExampleInnerCaptionFirstLine";
+				}
+				var span = $("<span class='" + cls + "'>" + captionLines[k] + "</span>").appendTo(exampleLink);
+				if (k == captionLines.length - 1) {
+					span.append('<img class="ExampleGotoIcon" src="icons/show-interesting.png" />');
+				}
+			}
+		}
+	}
+}
 function renderDetails(id) {
 	var e = getMapEntry(id);
 
@@ -1271,6 +1319,8 @@ function loadCommandFromURL() {
 			loadExampleFile(defaultTree);
 		} else if (value == "details") {
 			loadDetails(commandParam);
+		} else if (value == "examplesTab") {
+			loadExamplesTab();
 		} else {
 			// other tab-commands can respond to simple tab change
 			showTab(value);
@@ -1291,6 +1341,17 @@ function loadCommandFromURL() {
 		var ids = uncrunch(value);
 		loadJsonThenMarkOnlyNewVisible(ids, pinnedIds);
 	}
+}
+function loadExamplesTab() {
+	if (!examplesIndexLoaded) {
+		$.getJSON("json/e/examples-index.json", function(data) {
+			renderExamplesTab(data);
+			examplesIndexLoaded = true;
+			loadExamplesTab();
+		});
+	} else {
+		showTab("examplesTab");
+	}		
 }
 // should be from "t:details:id,crunchedId"
 function loadDetails(params) {

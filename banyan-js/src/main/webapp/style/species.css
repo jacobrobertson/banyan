@@ -419,6 +419,30 @@ td {
 	padding: 5px; 
 	border-radius: 25px 60px 5px 34px;
 }
+.ExamplesTable td.Node {
+	display: inline-block;
+	background:#f8fbf4; 
+	margin: .2em;
+}
+.ExamplesTable td.Node td.Node {
+	background:#d1e7b7;
+	padding-bottom: .5em;
+}
+.ExampleInnerCaption {
+	padding-right: .25em;
+	padding-left: 1em;
+}
+.ExampleInnerCaptionFirstLine {
+	font-weight: bold;
+}
+.ExampleTitle {
+	margin-right: 2em;
+}
+.ExampleGotoIcon {
+	width: 20px;
+	height: 20px;
+	padding-left: .2em;
+}
 /* Font Styles */
 .Node {color: #628e2f; }
 .Node i {color: #628e2f; }

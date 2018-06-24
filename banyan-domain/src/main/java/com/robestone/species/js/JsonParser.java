@@ -20,6 +20,8 @@ import javax.json.JsonValue;
 import org.apache.commons.io.FileUtils;
 
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.Example;
+import com.robestone.species.ExampleGroup;
 
 // mostly just a very dumb implementation for testing purposes
 public class JsonParser {
@@ -229,6 +231,46 @@ public class JsonParser {
 		return v;
 	}
 
+	public String toJsonString(List<ExampleGroup> groups) {
+		StringBuilder buf = new StringBuilder();
+		buf.append("{");
+		appendKey(buf, "groups");
+		buf.append("[");
+		
+		boolean firstGroup = true;
+		for (ExampleGroup eg : groups) {
+			if (!firstGroup) {
+				buf.append(",");
+			} else {
+				firstGroup = false;
+			}
+			buf.append("\n{");
+			append(buf, false, "caption", eg.getCaption());
+			buf.append(", ");
+			appendKey(buf, "examples");
+			buf.append("[");
+			boolean firstExample = true;
+			for (Example ex : eg.getExamples()) {
+				if (!firstExample) {
+					buf.append(",");
+				} else {
+					firstExample = false;
+				}
+				buf.append("\n{");
+				append(buf, false, "file", ex.getSimpleTitle());
+				append(buf, true, "caption", ex.getCaption());
+				append(buf, true, "image", ex.getDepictedImage().getImagePathPart());
+				append(buf, true, "width", ex.getDepictedImage().getPreviewWidth());
+				append(buf, true, "height", ex.getDepictedImage().getPreviewHeight());
+				buf.append("}");
+			}
+			buf.append("]}");
+		}
+		buf.append("]}");
+		
+		return buf.toString();
+	}
+	
 	public String toJsonString(Collection<JsonEntry> entries) {
 		boolean firstEntry = true;
 		StringBuilder buf = new StringBuilder("{\"entries\": [");

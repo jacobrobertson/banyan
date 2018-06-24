@@ -173,7 +173,7 @@ public class ExamplesService implements IExamplesService {
 				throws SQLException {
 			ExampleGroup g = new ExampleGroup();
 			g.setId(rs.getInt("group_id"));
-			g.setCaption(rs.getString("caption"));
+			g.setCaption(rs.getString("caption").trim());
 			return g;
 		}
 	}
