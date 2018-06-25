@@ -1411,7 +1411,7 @@ function loadExampleFile(fileName) {
 		// set pinned
 		markOnlyTheseIdsAsPinned(fileEntry.pinnedIds);
 		// render current tree
-		renderCurrentTree();
+		renderCurrentTree(true);
 	} else {
 		loadJsonThenAddEntries([fileName], false, false, build_loadExampleFile_callback(fileName));
 	}

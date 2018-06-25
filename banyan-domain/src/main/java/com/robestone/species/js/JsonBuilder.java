@@ -204,6 +204,7 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void runExamples() throws Exception {
+		examplesService.crunchIds(false);
 		List<ExampleGroup> egs = examplesService.findExampleGroups();
 		for (ExampleGroup eg : egs) {
 			for (Example ex : eg.getExamples()) {
