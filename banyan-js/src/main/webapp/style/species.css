@@ -408,7 +408,14 @@ td {
 	color: red;
 	font-size: 150%;
 }
-
+#faqTab .HugeCross {
+	font-style: italic;
+}
+.CreditsTable {
+	width: 100%;
+	margin-top: 1em;
+	text-align: center;
+}
 .Node {
 	display:block; 
 	background:#d1e7b7; 

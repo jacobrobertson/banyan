@@ -23,8 +23,6 @@
 			class="Link" id="RandomLink" href="#t:random:0">Random</a><span 
 			class="Spacer">|</span><a 
 			class="Link" href="#t:faqTab">FAQ</a><span 
-			class="Spacer">|</span><a 
-			class="Link" href="#t:creditsTab">Credits</a><span 
 			class="Logo"><img alt="Banyan" src="icons/banyan-logo.png"></img></span>
 	</div>
 </div>
@@ -39,83 +37,74 @@
 <div id="tabContent"></div>
 <div id="treeTab" class="tabCommand"></div>
 <div id="examplesTab" class="tabCommand"></div>
-	<div id="creditsTab" class="tabCommand">
-	<div class="Node"><div class="Star"><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
-		All Species images are from <br clear="none"><a href="http://species.wikimedia.org" class="CreditLink">WikiSpecies</a><br clear="none">
-		and are licensed either under the <br clear="none"><a href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License" class="CreditLink">GNU Free Documentation License</a><br clear="none">
-		or a <br clear="none"><a href="http://creativecommons.org/licenses/by-sa/2.5/" class="CreditLink">Creative Commons Attribution ShareAlike License</a>.
-		<div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
-		All icons are by <br clear="none"><a href="http://dryicons.com" class="CreditLink">http://dryicons.com</a><br clear="none">
-		and are licensed under their <br clear="none"><a href="http://dryicons.com/terms/free/" class="CreditLink">DryIcons Free License Agreement</a>. <br clear="none"><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div>
-		All other content <br clear="none"><a href="#" class="CreditLink">© Jacob Robertson 2009</a><div class="Star"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"><img alt="star" class="star" src="icons/star.png"></div></div></div>
+<div id="faqTab" class="tabCommand">
+	<div class="Node FaqNode">
+	<span class="FaqTitle">What are all the icons for?</span>
+	<br/>
+	<img class="faqButton-detail_first" src="icons/menu_more.png"/> and <img class="faqButton-detail_first" src="icons/menu_less.png"/> - <b>Show Menu</b> - Hover over these buttons to show a menu of options. The button looks like <img class="faqButton-detail_first" src="icons/menu_less.png"/> when there are no sub-species available to open up.
+	<br/>
+	<img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.
+	<br/>
+	<img class="faqButton" src="icons/open_children.png"/> - <b>Show Children</b> - Will show all direct children of the chosen species.
+	<br/>
+	<img class="faqButton" src="icons/show-interesting.png"/> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.
+	<br/>
+	<img class="faqButton" src="icons/close-children.png"/> - <b>Hide Children</b> - Closes all children of the chosen species.
+	<br/>
+	<img class="faqButton" src="icons/focus.png"/> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.
+	<br/>
+	<img class="faqButton" src="icons/pin_image.png"/> and <img class="faqButton" src="icons/unpin_image.png"/> - <b>Pinning Images</b> - Makes that species' image show as part of the tree. 
+	<br/>
+	<img class="faqButton" src="icons/close.png"/> - <b>Close</b> - Closes the chosen species, and all its children.
+	<br/>
+	<span class="HugeCross">† </span> - Indicates that the given species is extinct.
+	<br/>
+	<a id="faqImage" href="#" class="preview"><img src="#willInit" class="Thumb" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
 	</div>
-	<div id="faqTab" class="tabCommand">
-		<div class="Node FaqNode">
-		<span class="FaqTitle">What are all the icons for?</span>
-		<br/>
-		<img class="faqButton-detail_first" src="icons/menu_more.png"/> and <img class="faqButton-detail_first" src="icons/menu_less.png"/> - <b>Show Menu</b> - Hover over these buttons to show a menu of options. The button looks like <img class="faqButton-detail_first" src="icons/menu_less.png"/> when there are no sub-species available to open up.
-		<br/>
-		<img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.
-		<br/>
-		<img class="faqButton" src="icons/open_children.png"/> - <b>Show Children</b> - Will show all direct children of the chosen species.
-		<br/>
-		<img class="faqButton" src="icons/show-interesting.png"/> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.
-		<br/>
-		<img class="faqButton" src="icons/close-children.png"/> - <b>Hide Children</b> - Closes all children of the chosen species.
-		<br/>
-		<img class="faqButton" src="icons/focus.png"/> - <b>Focus</b> - Show just the chosen species, and all its super-species and sub-species.
-		<br/>
-		<img class="faqButton" src="icons/pin_image.png"/> and <img class="faqButton" src="icons/unpin_image.png"/> - <b>Pinning Images</b> - Makes that species' image show as part of the tree. 
-		<br/>
-		<img class="faqButton" src="icons/close.png"/> - <b>Close</b> - Closes the chosen species, and all its children.
-		<br/>
-		<a id="faqImage" href="#" class="preview"><img src="#willInit" class="Thumb" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
-		</div>
-		<br/>
-		<div class="Node FaqNode"><span class="FaqTitle">What is the difference between <img class="faqButton-detail_indented" src="icons/detail_indented.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/>?</span><br/><img class="faqButton-detail_indented" src="icons/detail_indented.png"/> - Shows a hierarchy of species<br/><img class="faqButton-detail_first" src="icons/detail_first.png"/> - Shows "sibling" species
-		</div><br/><div class="Node FaqNode"><span class="FaqTitle">What does the <span class="HugeCross">† </span> symbol mean?</span><br/>
-		It indicates that the given species is extinct, and so are any sub-species.
-		</div><br/><div class="Node FaqNode"><span class="FaqTitle">Why is there so much Latin?</span><br/>
-		The Latin is the scientific name, and is only shown when there is no other name available.
-		</div><br/><div class="Node FaqNode"><span class="FaqTitle">What if I find a mistake in the Tree of Life?</span><br/>
-		Go to <a href="http://species.wikimedia.org" class="CreditLink">Wiki Species</a> and fix the mistake yourself!
-		<br/>
-		It won't show up here right away, but Wiki Species is where all this information lives.
-		</div>
-	</div>
-	<div id="detailsTab" class="tabCommand">
-		<div class="Node"><table><tbody>
-			<tr><td>
-				<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
-				<div class="DetailLatinTitle" id="DetailLatinTitle">Latin Name</div>
-				<br/>
-				</td>
-				<td>
-				<div class="Queries">
-					<a id="DetailGoogleLink" href="http://www.google.com/images?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
-					Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google Images</span></a><br clear="none">
-					<a id="DetailGoogleImageLink" href="http://www.google.com/search?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
-					Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google (Web Search)</span></a></div></td></tr><tr>
-				<td id="TaxonomyCell">
-					<span class="Entry"></span>
-				</td>
-			<td class="DetailImageCell">
+	<table class="CreditsTable"><tr>
+	<td rowspan="2"><span class="Node">All Species images are from <a href="http://species.wikimedia.org" class="CreditLink">WikiSpecies</a><br clear="none">
+	and are licensed either under the <br clear="none"><a href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License" class="CreditLink">GNU Free Documentation License</a> 
+	or a <br clear="none"><a href="http://creativecommons.org/licenses/by-sa/2.5/" class="CreditLink">Creative Commons Attribution ShareAlike License</a>.</span></td>
+	<td class="b">&nbsp</td>
+	<td rowspan="2"><span class="Node">All icons are by <br clear="none"><a href="http://dryicons.com" class="CreditLink">http://dryicons.com</a><br clear="none">
+	and are licensed under their <br clear="none"><a href="http://dryicons.com/terms/free/" class="CreditLink">DryIcons Free License Agreement</a>.</span></td>
+	<td class="b">&nbsp</td>
+	<td rowspan="2"><span class="Node">All other content <br clear="none"><a href="#" class="CreditLink">© Jacob Robertson 2009-2018</a></span></td>
+	</tr>
+	<tr><td>&nbsp</td><td>&nbsp</td></tr>
+	</table>
+</div>
+<div id="detailsTab" class="tabCommand">
+	<div class="Node"><table><tbody>
+		<tr><td>
+			<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
+			<div class="DetailLatinTitle" id="DetailLatinTitle">Latin Name</div>
 			<br/>
-			<div class="DetailImage">
-			<a id="DetailImageWikiSpeciesLink" href="#FILL"><img id="DetailImage" alt="Tree of Life" height="188" width="250" src="#FILL"><br clear="none"><span class="ImageSourceLink"><i>View original image at WikiSpecies</i></span></a></div></td></tr></tbody></table>
-			<br/>
-			<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">View your current Tree of Life</a></div>
-		</div>
+			</td>
+			<td>
+			<div class="Queries">
+				<a id="DetailGoogleLink" href="http://www.google.com/images?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
+				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google Images</span></a><br clear="none">
+				<a id="DetailGoogleImageLink" href="http://www.google.com/search?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
+				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google (Web Search)</span></a></div></td></tr><tr>
+			<td id="TaxonomyCell">
+				<span class="Entry"></span>
+			</td>
+		<td class="DetailImageCell">
 		<br/>
-		<div id="SubSpeciesTableNode" class="Node"><div class="DetailTitle">Sub-species of <span class="DetailTitleName">Tree of Life</span></div>
+		<div class="DetailImage">
+		<a id="DetailImageWikiSpeciesLink" href="#FILL"><img id="DetailImage" alt="Tree of Life" height="188" width="250" src="#FILL"><br clear="none"><span class="ImageSourceLink"><i>View original image at WikiSpecies</i></span></a></div></td></tr></tbody></table>
 		<br/>
-		<table id="SubSpeciesTable">
-			<!--  will be filled or hidden -->
-		</table>
-		</div>
+		<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">View your current Tree of Life</a></div>
 	</div>
-
-
+	<br/>
+	<div id="SubSpeciesTableNode" class="Node"><div class="DetailTitle">Sub-species of <span class="DetailTitleName">Tree of Life</span></div>
+	<br/>
+	<table id="SubSpeciesTable">
+		<!--  will be filled or hidden -->
+	</table>
+	</div>
+</div>
 
 <!-- **************
 Non Visual Elements 
