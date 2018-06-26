@@ -95,8 +95,11 @@ body {height:90%;background: #e8f3db;}
 	background: #c82;
 	border-color: #ea4;
 }
+#searchForm {
+	float: left;
+	margin-right: .1em;
+}
 .Node .Link {
-	margin-left: 5px;
 	color: #466522;
 	font-weight: bold;
 }

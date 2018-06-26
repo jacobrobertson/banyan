@@ -11,7 +11,6 @@ function initData() {
 		});
 	});
 }
-/* TODO we need to put these back later - for now we don't have these
 $(document).ready(function() {
 	$("#textfield").focus(function() {
 		this.select();
@@ -23,8 +22,12 @@ $(document).ready(function() {
 	}).bind('mouseout blur', function(event) {
 		$(this).removeClass("ButtonOver");
 	});
+	$("#searchForm").submit(function(event) {
+		event.preventDefault();
+		submitSearchQuery($("#textfield").val());
+	});
 });
-	*/
+
 //------ Global vars
 function __GlobalVars(){}
 var dbMap = {};
@@ -433,6 +436,9 @@ function getGlobalMap() {
 	return dbMap;
 }
 function getMapEntry(key) {
+	if (key.id) {
+		return key;
+	}
 	return dbMap[key];
 }
 function focusOnNode(id) {
@@ -494,10 +500,15 @@ function markChildrenAsShown(id, show) {
 function markEntriesAsShown(entriesOrIds, show) {
 	for (var i = 0; i < entriesOrIds.length; i++) {
 		var entryOrId = entriesOrIds[i];
-		if (entryOrId.childrenIds) {
-			setEntryShownAs(entryOrId.id, show);
-		} else {
-			setEntryShownAs(entryOrId, show);
+		setEntryShownAs(entryOrId, show);
+		// also show all ancestors - this is for the case (for example) where we search
+		//	for something that is already loaded, but isn't shown
+		if (show) {
+			var e = getMapEntry(entryOrId).parent;
+			while (e) {
+				setEntryShownAs(e, true);
+				e = e.parent;
+			}
 		}
 	}
 }
@@ -1343,6 +1354,12 @@ function loadCommandFromURL() {
 		loadJsonThenMarkOnlyNewVisible(ids, pinnedIds);
 	}
 }
+function submitSearchQuery(query) {
+	var url = "json/s/fake.json";
+	$.getJSON(url, function(data) {
+		loadJsonThenMarkNewIdsVisible([data.id]);
+	});
+}
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
 		$.getJSON("json/e/examples-index.json", function(data) {
@@ -1494,18 +1511,40 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 			}
 		}
 	}
-	var currentCallback = callback;
+	var currentCallback = callback; //TODO add back and figure out... build_loadJsonInner_parentIdCallback(idsToProcess, callback);
 	if (idsWithoutParents.length > 0 && idsToProcess.length > 0) {
 		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries);
 	}
 	// build list of functions - we don't care which order
 	for (var j = 0; j < idsToProcess.length; j++) {
 		var parentCallback = currentCallback;
-		var thisCallback = buildJsonCallback(idsToProcess[j], parentCallback);
+		var thisCallback = build_loadJsonInner_callbackChain(idsToProcess[j], parentCallback);
 		currentCallback = thisCallback;
 	}
 	// call the last function, it will cascade up
 	currentCallback(entries);
+}
+function build_loadJsonInner_parentIdCallback(idsToProcess, parentCallback) {
+	return function(entries) {
+		var parentIds = [];
+		for (var i = 0; i < idsToProcess.length; i++) {
+			var id = idsToProcess[i];
+			if (isFileName(id)) {
+				continue;
+			}
+			// each of these should be loaded
+			var e = getMapEntry(id);
+			var p = getMapEntry(e.parentId);
+			if (!p) {
+				parentIds.push(e.parentId);
+			}
+		}
+		if (parentIds.length > 0) {
+			loadJsonInner(parentIds, entries, parentCallback);
+		} else {
+			parentCallback(entries);
+		}
+	};
 }
 function isFileName(name) {
 	name = "" + name;
@@ -1516,14 +1555,14 @@ function isFileName(name) {
 	var fileTypes = "er";
 	return (fileTypes.indexOf(code) >= 0 && name.charAt(1) == ":");
 }
-function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries) {
-	return function() {
-		loadJson(idsWithoutParents, callback, entries);
+function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, outerEntries) {
+	return function(newEntries) {
+		loadJson(idsWithoutParents, callback, outerEntries);
 	};
 }
 // this is a callback in the sense that it is part of a callback chain, 
 // even though this method itself will call json and need a callback
-function buildJsonCallback(id, parentCallback) {
+function build_loadJsonInner_callbackChain(id, parentCallback) {
 	return function(entries) {
 		return loadOneJsonDocument(id, entries, parentCallback);
 	};
