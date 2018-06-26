@@ -9,13 +9,18 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StringField;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.FuzzyQuery;
@@ -27,7 +32,7 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 
 import com.robestone.util.html.EntityMapper;
 
@@ -109,21 +114,26 @@ public class LuceneSearcher implements EntrySearcher {
 	private CommonNameSplitter commonNameSplitter = new CommonNameSplitter();
 	private List<SearchType> searchTypes = createSearchTypes();
 	private PluralMaker pluralMaker = new PluralMaker();
-	private Analyzer analyzer = new SimpleAnalyzer();
+	private Analyzer analyzer = new StandardAnalyzer();
 	private IndexSearcher searcher;
+	private String indexDir;
 
 	/**
 	 * @param speciesService For building the index
 	 */
-	public LuceneSearcher(SpeciesService speciesService) {
+	public LuceneSearcher(ISpeciesService speciesService) {
 		List<CompleteEntry> entries = speciesService.findEntriesForLuceneIndex();
 		LogHelper.speciesLogger.info("LuceneSearcher.entries." + entries.size());
 		buildIndex(entries);
 	}
-	public LuceneSearcher(Collection<? extends Entry> entries) {
-		this(entries, false);
+	public LuceneSearcher(Collection<? extends Entry> entries, String indexDir) {
+		this(entries, false, indexDir);
 	}
 	public LuceneSearcher(Collection<? extends Entry> entries, boolean isTesting) {
+		this(entries, isTesting, null);
+	}
+	public LuceneSearcher(Collection<? extends Entry> entries, boolean isTesting, String indexDir) {
+		this.indexDir = indexDir;
 		buildIndex(entries);
 	}
 	private void buildIndex(Collection<? extends Entry> entries) {
@@ -139,16 +149,25 @@ public class LuceneSearcher implements EntrySearcher {
 	private static String defaultWindowsPath = "D:\\banyan-db\\lucene";
 	private static String defaultLinuxPath = "/home/private/banyan-lucene";
 	private File getDirectory() {
-		File file = new File(defaultWindowsPath);
-		if (file.exists()) {
-			return file;
+		String fileName = indexDir;
+		if (fileName == null) {
+			fileName = System.getProperty("banyan.lucene.dir");
 		}
-		return new File(defaultLinuxPath);
+		if (fileName == null) {
+			fileName = defaultWindowsPath;
+		}
+
+		if (!new File(fileName).exists()) {
+			fileName = defaultLinuxPath;
+		}
+		LogHelper.speciesLogger.info("getDirectory." + fileName);
+
+		return new File(fileName);
 	}
 	private void doBuildIndex(Collection<? extends Entry> entries) throws IOException {
-		Directory directory = FSDirectory.getDirectory(getDirectory()); // new RAMDirectory();
-		IndexWriter writer = new IndexWriter(directory, analyzer,
-				true, IndexWriter.MaxFieldLength.UNLIMITED);
+		Directory directory =  NIOFSDirectory.open(getDirectory().toPath()); // FSDirectory.getDirectory(getDirectory()); // new RAMDirectory();
+		IndexWriterConfig config = new IndexWriterConfig(analyzer);
+		IndexWriter writer = new IndexWriter(directory, config);
 		int count = 0;
 		for (Entry entry: entries) {
 			Document doc = buildDocument(entry);
@@ -157,10 +176,13 @@ public class LuceneSearcher implements EntrySearcher {
 			count++;
 		}
 		LogHelper.speciesLogger.info("doBuildIndex." + count);
-		writer.optimize();
+		// This article recomends not to use this option, and it's been removed
+		// https://stackoverflow.com/questions/14599297/lucene-migration-from-3-x-to-4-1-0-and-index-optimisation
+//		writer.optimize();
 		writer.close();
 
-		searcher = new IndexSearcher(directory);
+		IndexReader reader = DirectoryReader.open(directory);  
+		searcher = new IndexSearcher(reader);
 	}
 	protected Document buildDocument(Entry entry) {
 		List<String> commonNames = createCommonNames(entry);
@@ -172,12 +194,26 @@ public class LuceneSearcher implements EntrySearcher {
 		
 		String id = toQueryId(entryId);
 		
-		doc.add(new Field(ID, id, Field.Store.YES, Field.Index.NOT_ANALYZED));
+		FieldType notAnalyzed = new FieldType(StringField.TYPE_STORED);
+		notAnalyzed.setOmitNorms(false);
+		FieldType analyzed = new FieldType(StringField.TYPE_STORED);
+		
+		/*
+		 https://lucene.apache.org/core/4_0_0/MIGRATE.html
+		 OLD: new Field("field", "value", Field.Store.YES, Field.Indexed.NOT_ANALYZED)
+		 NEW:
+		  	FieldType ft = new FieldType(StringField.TYPE_STORED);
+			ft.setOmitNorms(false);
+			new Field("field", "value", ft)
+		 
+		 */
+		
+		doc.add(new Field(ID, id, notAnalyzed));
 		
 		latinName = normalize(latinName);
 
-		doc.add(new Field(LATIN, latinName, Field.Store.YES, Field.Index.ANALYZED));
-		doc.add(new Field(LATIN_NOTOKEN, latinName, Field.Store.YES, Field.Index.NOT_ANALYZED));
+		doc.add(new Field(LATIN, latinName, analyzed));
+		doc.add(new Field(LATIN_NOTOKEN, latinName, notAnalyzed));
 		
 		if (commonNames != null) {
 			for (String commonName: commonNames) {
@@ -185,10 +221,10 @@ public class LuceneSearcher implements EntrySearcher {
 				if (StringUtils.isEmpty(commonName)) {
 					continue;
 				}
-				doc.add(new Field(COMMON, commonName, Field.Store.YES, Field.Index.ANALYZED));
-				doc.add(new Field(COMMON_NOTOKEN, commonName, Field.Store.YES, Field.Index.NOT_ANALYZED));
+				doc.add(new Field(COMMON, commonName, analyzed));
+				doc.add(new Field(COMMON_NOTOKEN, commonName, notAnalyzed));
 			}
-			doc.add(new Field(COMMON_NOTOKEN, StringUtils.join(commonNames, " "), Field.Store.YES, Field.Index.NOT_ANALYZED));
+			doc.add(new Field(COMMON_NOTOKEN, StringUtils.join(commonNames, " "), notAnalyzed));
 		}
 //		LogHelper.speciesLogger.info("buildDocument." + doc);
 		return doc;
@@ -265,7 +301,9 @@ public class LuceneSearcher implements EntrySearcher {
 			if (searchType.matchType == MatchType.Exact) {
 				query = new TermQuery(term);
 			} else if (searchType.matchType.isFuzzy()) {
-				query = new FuzzyQuery(term, searchType.matchType.fuzzy, 0);
+				// the API changed to be based on # of edits, and has
+				// a preferred default setting
+				query = new FuzzyQuery(term); // , searchType.matchType.fuzzy, 0);
 			} else if (searchType.matchType == MatchType.StartsWith) {
 				query = new PrefixQuery(term);
 			} else {
@@ -301,10 +339,10 @@ public class LuceneSearcher implements EntrySearcher {
 		return -1;
 	}
 	private int search(Query baseQuery, Collection<Integer> existingIds) {
-		BooleanQuery query = buildExistingIdsSubQuery(existingIds);
-		query.add(baseQuery, BooleanClause.Occur.MUST);
+		BooleanQuery.Builder queryBuilder = buildExistingIdsSubQuery(existingIds);
+		queryBuilder.add(baseQuery, BooleanClause.Occur.MUST);
 		try {
-			TopDocs rs = searcher.search(query, null, 1);
+			TopDocs rs = searcher.search(queryBuilder.build(), 1);
 			if (rs.totalHits == 0) {
 				return -1;
 			}
@@ -317,12 +355,12 @@ public class LuceneSearcher implements EntrySearcher {
 			throw new RuntimeException(ioe);
 		}
 	}
-	protected BooleanQuery buildExistingIdsSubQuery(Collection<Integer> existingIds) {
-		BooleanQuery query = new BooleanQuery();
+	protected BooleanQuery.Builder buildExistingIdsSubQuery(Collection<Integer> existingIds) {
+		BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
 		for (Integer id: existingIds) {
-			query.add(new TermQuery(new Term(ID, toQueryId(id))), BooleanClause.Occur.MUST_NOT);
+			queryBuilder.add(new TermQuery(new Term(ID, toQueryId(id))), BooleanClause.Occur.MUST_NOT);
 		}
-		return query;
+		return queryBuilder;
 	}
 	public List<String> createCommonNames(Entry entry) {
 		if (entry.getCommonName() == null) {

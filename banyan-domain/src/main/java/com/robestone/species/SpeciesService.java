@@ -83,7 +83,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				"update species set interesting_crunched_ids = ? where id = ?", 
 				ids, entry.getId());
 	}
-	List<CompleteEntry> findEntriesForLuceneIndex() {
+	public List<CompleteEntry> findEntriesForLuceneIndex() {
 		List<CompleteEntry> entries = template.query(
 				"select id, common_name, latin_name from species where boring_final = false", this);
 		return entries;

@@ -58,5 +58,7 @@ public interface ISpeciesService {
 			boolean getParentLatinName);
 
 	void setDataSource(DataSource dataSource);
+	
+	List<CompleteEntry> findEntriesForLuceneIndex();
 
 }
