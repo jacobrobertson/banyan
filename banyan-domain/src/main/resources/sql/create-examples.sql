@@ -28,7 +28,7 @@ values
 
 -- HAVE_YOU_HEARD_OF
 (300, 300, 3, 'pika-rabbits-hares', 'Pika? / They''re related to rabbits and hares', 'Ochotona,$Sylvilagus,Lepus,!Brachylagus', ''),
-(301, 301, 3, 'caecilians-worms-amphibians', 'Caecilians? / They look like giant earthworms, / but are amphibians like frogs and salamanders', 'Lumbricus terrestris,Scaphiophryne,Chthonerpeton indistinctum,Typhlonectes,$Bolitoglossa mexicana', ''),
+(301, 301, 3, 'caecilians-worms-amphibians', 'Caecilians? / They look like giant earthworms, / but are amphibians like frogs and salamanders', 'Microcaecilia,!Caeciliinae,Lumbricus terrestris,Scaphiophryne,Chthonerpeton indistinctum,Typhlonectes,$Bolitoglossa mexicana', ''),
 (302, 302, 3, 'pipefish-seahorses-seadragons', 'Ghost Pipefish? / They''re related to seahorses / and seadragons', '$Phyllopteryx taeniolatus,Solenostomidae,Corythoichthys schultzi,Hippocampus guttulatus', ''),
 (303, 303, 3, 'okapi-giraffes', 'Okapi? / They''re the closes relative to giraffes', '$Okapia,Giraffa tippelskirchi,Giraffa reticulata,Giraffa giraffa', ''),
 

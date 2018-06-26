@@ -686,9 +686,7 @@ function hideLongCollapsed(e) {
 }
 function collapseNodesForChildrenToShow(e) {
 	e.collapsed = [];
-	if (e.childrenToShow.length == 0) {
-		return;
-	} else if (e.childrenToShow.length > 1) {
+	if (e.childrenToShow.length != 1 || e.pinned) {
 		// don't do anything for this node, but recurse
 		for (var i = 0; i < e.childrenToShow.length; i++) {
 			collapseNodesForChildrenToShow(e.childrenToShow[i]);
@@ -697,9 +695,12 @@ function collapseNodesForChildrenToShow(e) {
 		var r = e;
 		while (r.childrenToShow.length == 1) {
 			var c = r.childrenToShow[0];
+			r = c;
+			if (c.pinned) {
+				break;
+			}
 			e.collapsed.push(c);
 			c.collapsedPinned = false;
-			r = c;
 		}
 		collapseNodesForChildrenToShow(r);
 	}
