@@ -1,0 +1,1 @@
+java -jar `ls ../banyan-search/target/banyan-search-*-SNAPSHOT.jar`

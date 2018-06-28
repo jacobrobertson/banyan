@@ -122,8 +122,12 @@ public class LuceneSearcher implements EntrySearcher {
 	 * @param speciesService For building the index
 	 */
 	public LuceneSearcher(ISpeciesService speciesService) {
+		this(speciesService, null);
+	}
+	public LuceneSearcher(ISpeciesService speciesService, String indexDir) {
 		List<CompleteEntry> entries = speciesService.findEntriesForLuceneIndex();
 		LogHelper.speciesLogger.info("LuceneSearcher.entries." + entries.size());
+		this.indexDir = indexDir;
 		buildIndex(entries);
 	}
 	public LuceneSearcher(Collection<? extends Entry> entries, String indexDir) {
@@ -160,9 +164,9 @@ public class LuceneSearcher implements EntrySearcher {
 		if (!new File(fileName).exists()) {
 			fileName = defaultLinuxPath;
 		}
-		LogHelper.speciesLogger.info("getDirectory." + fileName);
-
-		return new File(fileName);
+		File file = new File(fileName);
+		LogHelper.speciesLogger.info("getDirectory." + file.getAbsolutePath());
+		return file;
 	}
 	private void doBuildIndex(Collection<? extends Entry> entries) throws IOException {
 		Directory directory =  NIOFSDirectory.open(getDirectory().toPath()); // FSDirectory.getDirectory(getDirectory()); // new RAMDirectory();

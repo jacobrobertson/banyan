@@ -5,6 +5,15 @@
 	<artifactId>banyan-search</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
+<!-- 
+1. mvn package
+2. java -jar banyan-search.jar
+
+NOTE, under NFSN, you will need to pass in the lucene dir, but
+locally this seems to work coming from application.properties
+
+ -->
+
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
@@ -62,6 +71,11 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<folders>
+						<folder>${project.build.directory}/../../banyan-js/src/main/webapp</folder>
+					</folders>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

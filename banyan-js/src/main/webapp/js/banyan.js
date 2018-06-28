@@ -282,7 +282,9 @@ function setUrlToAllVisibleIds() {
 	setUrlsToIdsArray(ids, pids, true, true);
 }
 function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
-	var idsString = "c:" + crunch(ids);
+	// set global var
+	var cids = crunch(ids);
+	var idsString = "c:" + cids;
 	if (pinnedIds && pinnedIds.length > 0) {
 		idsString = idsString + ":p:" + crunch(pinnedIds);
 	}
@@ -432,9 +434,6 @@ function getRootEntry() {
 	}
 	return false;
 }
-function getGlobalMap() {
-	return dbMap;
-}
 function getMapEntry(key) {
 	if (key.id) {
 		return key;
@@ -538,13 +537,12 @@ function addEntriesToMap(entries) {
 	}
 	entries = temp;
 	
-	var map = getGlobalMap();
 	// add each item to the map, plus any init needed
 	for (i = 0; i < entries.length; i++) {
 		e = entries[i];
 		e.children = [];
 		initEntry(e);
-		map[e.id] = e;
+		dbMap[e.id] = e;
 		// add the g-children to that map
 		for (j = 0; j < e.childrenIds.length; j++) {
 			dbChildIdsToParents[e.childrenIds[j]] = e;
@@ -555,7 +553,7 @@ function addEntriesToMap(entries) {
 	// link each child to its parent
 	for (i = 0; i < entries.length; i++) {
 		e = entries[i];
-		var p = map[e.parentId];
+		var p = dbMap[e.parentId];
 		e.parent = p;
 		if (p) {
 			var dname = getEntrySimpleDisplayName(e);
@@ -1355,10 +1353,16 @@ function loadCommandFromURL() {
 	}
 }
 function submitSearchQuery(query) {
-	var url = "json/s/fake.json";
-	$.getJSON(url, function(data) {
-		loadJsonThenMarkNewIdsVisible([data.id]);
-	});
+	//var url = "json/s/fake.json";
+	var ids = getAllVisibleNodeIds();
+	var cids = crunch(ids);
+	var urlQueryPart = "/search/" + query + "/" + cids + "?callback=submitSearchQuery_callback";
+	var urlBase = "http://localhost:8081";
+	var url = urlBase + urlQueryPart;
+	$.getJSON(url);
+}
+function submitSearchQuery_callback(data) {
+	loadJsonThenMarkNewIdsVisible([data.id]);
 }
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
@@ -1557,7 +1561,14 @@ function isFileName(name) {
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, outerEntries) {
 	return function(newEntries) {
-		loadJson(idsWithoutParents, callback, outerEntries);
+		var idsToProcess = [].concat(idsWithoutParents);
+		for (var i = 0; i < newEntries.length; i++) {
+			var e = newEntries[i];
+			if (!e.parent) {
+				idsToProcess.push(e.parentId);
+			}
+		}
+		loadJson(idsToProcess, callback, outerEntries);
 	};
 }
 // this is a callback in the sense that it is part of a callback chain, 

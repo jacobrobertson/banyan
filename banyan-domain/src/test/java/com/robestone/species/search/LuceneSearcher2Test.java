@@ -18,7 +18,7 @@ public class LuceneSearcher2Test extends AbstractSearcherTester {
 	protected void setUp() throws Exception {
 		Set<? extends Entry> entries = EntryUtilities.getEntries(
 				(CompleteEntry) mocks.getRoot()); // EntryForName("Testing"));
-		searcher = new LuceneSearcher(entries);
+		searcher = null;//new LuceneSearcher(entries);
 	}
 	
 	public void testFinky() {

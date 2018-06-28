@@ -16,37 +16,59 @@ import com.robestone.species.EntryUtilities;
 import com.robestone.species.LuceneSearcher;
 
 @RestController
+@RequestMapping(value = "/", method = RequestMethod.GET)
 public class SearchService {
 
 	@Value("${banyan.lucene.dir}")
 	private String luceneDir;
 	
+	@Value("${spring.resources.static-locations}")
+	private String locations;
+	
 	private LuceneSearcher searcher;
 	
 	@PostConstruct
 	public void init() {
+		
+		System.out.println(">>>--->>>" + locations + "<<<===<<<");
+		
 		List<CompleteEntry> entries = new ArrayList<CompleteEntry>();
 		
-		int id = 1;
-		addEntry("Wolves", "Lupin", id++, entries);
-		addEntry("Banana", "Barga", id++, entries);
-		addEntry(null, "Vespus", id++, entries);
-		addEntry(null, "Vespusi", id++, entries);
-		addEntry(null, "Vespusii", id++, entries);
+//		int id = 1;
+//		addEntry("Wolves", "Lupin", id++, entries);
+//		addEntry("Banana", "Barga", id++, entries);
+//		addEntry(null, "Vespus", id++, entries);
+//		addEntry(null, "Vespusi", id++, entries);
+//		addEntry(null, "Vespusii", id++, entries);
 		
 		searcher = new LuceneSearcher(entries, luceneDir);
 	}
-	
-	@RequestMapping(value = "/search/{query}/{existingIds}", method = RequestMethod.GET)
+
+	@RequestMapping(value = "/search-test/{query}")
+	public Entry search(@PathVariable String query) {
+		return search(query, null);
+	}
+
+	@RequestMapping(value = "/search/{query}/{existingIds}")
 	public Entry search(@PathVariable String query, @PathVariable String existingIds) {
-		List<Integer> ids = EntryUtilities.CRUNCHER.toList(existingIds);
+		List<Integer> ids;
+		if (existingIds == null) {
+			ids = new ArrayList<Integer>();
+		} else {
+			ids = EntryUtilities.CRUNCHER.toList(existingIds);
+		}
 		int id = searcher.search(query, ids);
 		Entry entry = new Entry();
 		entry.setId(id);
 		return entry;
 	}
+
+	@RequestMapping("/error")
+	public Entry error() {
+		return new Entry(-666);
+	}
 	
-	private void addEntry(String cname, String lname, int id, List<CompleteEntry> list) {
+	void addEntry(String cname, String lname, int id, List<CompleteEntry> list) {
 		CompleteEntry e = new CompleteEntry();
 		e.setCommonName(cname);
 		e.setLatinName(lname);

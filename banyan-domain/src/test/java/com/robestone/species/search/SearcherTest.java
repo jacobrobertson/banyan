@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.analysis.SimpleAnalyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexWriter;
@@ -32,7 +32,7 @@ import com.robestone.species.parse.Mocks;
 public class SearcherTest extends AbstractSearcherTester {
 	
 	private LuceneSearcher searcher;
-	private SimpleAnalyzer analyzer = new SimpleAnalyzer();
+	private StandardAnalyzer analyzer = new StandardAnalyzer();
 	private Mocks mocks = new Mocks();
 	
 	@Override
@@ -88,13 +88,13 @@ public class SearcherTest extends AbstractSearcherTester {
 		doTestQuery(query, "latin_name", "Natrix natrix");
 	}
 	public void testFuzzyQuery() throws IOException {
-		Query query = new FuzzyQuery(new Term("common_name", "snaks"), .75f, 1);
+		Query query = null; // new FuzzyQuery(new Term("common_name", "snaks"), .75f, 1);
 		doTestQuery(query, "latin_name", "Serpentes");
 	}
 	private void doTestQuery(Query query, String testField, String expectValue) throws IOException {
 		IndexSearcher searcher = buildIndexSearcher();
 		
-		TopDocs rs = searcher.search(query, null, 1);
+		TopDocs rs = null; // searcher.search(query, null, 1);
 		if (expectValue != null) {
 			assertTrue(rs.totalHits > 0);
 
@@ -110,8 +110,9 @@ public class SearcherTest extends AbstractSearcherTester {
 		Set<CompleteEntry> entries = EntryUtilities.getEntries(reptiles);
 
 		RAMDirectory directory = new RAMDirectory();
-		IndexWriter writer = new IndexWriter(directory, analyzer,
-				true, IndexWriter.MaxFieldLength.UNLIMITED);
+		IndexWriter writer = null;
+//				new IndexWriter(directory, analyzer,
+//				true, IndexWriter.MaxFieldLength.UNLIMITED);
 		
 		for (CompleteEntry entry: entries) {
 			Document doc = buildDocument(entry);
@@ -120,16 +121,16 @@ public class SearcherTest extends AbstractSearcherTester {
 		
 		writer.close();
 
-		IndexSearcher searcher = new IndexSearcher(directory);
+		IndexSearcher searcher = null; // new IndexSearcher(directory);
 		return searcher;
 	}
 	public Document buildDocument(Entry entry) {
 		Document doc = new Document();
 		String id = IdCruncher.R26_4.toString(entry.getId());
 //		System.out.println(entry.getId() + " >> " + id);
-		doc.add(new Field(LuceneSearcher.ID, id, Field.Store.YES, Field.Index.NOT_ANALYZED));
-		doc.add(new Field(LuceneSearcher.LATIN, entry.getLatinName(), Field.Store.YES, Field.Index.ANALYZED));
-		doc.add(new Field(LuceneSearcher.COMMON, entry.getCommonName(), Field.Store.NO, Field.Index.ANALYZED));
+//		doc.add(new Field(LuceneSearcher.ID, id, Field.Store.YES, Field.Index.NOT_ANALYZED));
+//		doc.add(new Field(LuceneSearcher.LATIN, entry.getLatinName(), Field.Store.YES, Field.Index.ANALYZED));
+//		doc.add(new Field(LuceneSearcher.COMMON, entry.getCommonName(), Field.Store.NO, Field.Index.ANALYZED));
 		return doc;
 	}
 
