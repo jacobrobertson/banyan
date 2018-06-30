@@ -8,15 +8,14 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LuceneSearcher;
+import com.robestone.species.LuceneSearcher.SearchResult;
 
 @RestController
-@RequestMapping(value = "/", method = RequestMethod.GET)
 public class SearchService {
 
 	@Value("${banyan.lucene.dir}")
@@ -57,16 +56,21 @@ public class SearchService {
 		} else {
 			ids = EntryUtilities.CRUNCHER.toList(existingIds);
 		}
-		int id = searcher.search(query, ids);
+		SearchResult result = searcher.searchForDocument(query, ids);
 		Entry entry = new Entry();
-		entry.setId(id);
+		if (result == null) {
+			entry.setId(-1);
+		} else {
+			entry.setId(result.getId());
+			entry.setCids(result.getCrunchedAncestorIds());
+		}
 		return entry;
 	}
 
-	@RequestMapping("/error")
-	public Entry error() {
-		return new Entry(-666);
-	}
+//	@RequestMapping("/error")
+//	public Entry error() {
+//		return new Entry(-666);
+//	}
 	
 	void addEntry(String cname, String lname, int id, List<CompleteEntry> list) {
 		CompleteEntry e = new CompleteEntry();

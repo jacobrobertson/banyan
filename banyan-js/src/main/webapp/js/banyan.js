@@ -1356,13 +1356,17 @@ function submitSearchQuery(query) {
 	//var url = "json/s/fake.json";
 	var ids = getAllVisibleNodeIds();
 	var cids = crunch(ids);
-	var urlQueryPart = "/search/" + query + "/" + cids + "?callback=submitSearchQuery_callback";
-	var urlBase = "http://localhost:8081";
+	var urlQueryPart = "/search/" + query + "/" + cids;
+	var urlBase = "";//http://localhost:8081";
 	var url = urlBase + urlQueryPart;
-	$.getJSON(url);
+	$.getJSON(url, submitSearchQuery_callback);
 }
 function submitSearchQuery_callback(data) {
-	loadJsonThenMarkNewIdsVisible([data.id]);
+	var ids = uncrunch(data.cids);
+	var pinned = data.id;
+	loadJsonThenMarkNewIdsVisible(ids, function() {
+		pinNode(pinned, true);
+	});
 }
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
@@ -1515,7 +1519,7 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 			}
 		}
 	}
-	var currentCallback = callback; //TODO add back and figure out... build_loadJsonInner_parentIdCallback(idsToProcess, callback);
+	var currentCallback = callback;
 	if (idsWithoutParents.length > 0 && idsToProcess.length > 0) {
 		currentCallback = buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, entries);
 	}
@@ -1528,28 +1532,6 @@ function loadJsonInner(fileNamesOrIds, callback, entries) {
 	// call the last function, it will cascade up
 	currentCallback(entries);
 }
-function build_loadJsonInner_parentIdCallback(idsToProcess, parentCallback) {
-	return function(entries) {
-		var parentIds = [];
-		for (var i = 0; i < idsToProcess.length; i++) {
-			var id = idsToProcess[i];
-			if (isFileName(id)) {
-				continue;
-			}
-			// each of these should be loaded
-			var e = getMapEntry(id);
-			var p = getMapEntry(e.parentId);
-			if (!p) {
-				parentIds.push(e.parentId);
-			}
-		}
-		if (parentIds.length > 0) {
-			loadJsonInner(parentIds, entries, parentCallback);
-		} else {
-			parentCallback(entries);
-		}
-	};
-}
 function isFileName(name) {
 	name = "" + name;
 	if (name.length < 3) {
@@ -1561,14 +1543,7 @@ function isFileName(name) {
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, outerEntries) {
 	return function(newEntries) {
-		var idsToProcess = [].concat(idsWithoutParents);
-		for (var i = 0; i < newEntries.length; i++) {
-			var e = newEntries[i];
-			if (!e.parent) {
-				idsToProcess.push(e.parentId);
-			}
-		}
-		loadJson(idsToProcess, callback, outerEntries);
+		loadJson(idsWithoutParents, callback, outerEntries);
 	};
 }
 // this is a callback in the sense that it is part of a callback chain, 

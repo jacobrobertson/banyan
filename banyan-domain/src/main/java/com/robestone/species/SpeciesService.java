@@ -85,7 +85,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public List<CompleteEntry> findEntriesForLuceneIndex() {
 		List<CompleteEntry> entries = template.query(
-				"select id, common_name, latin_name from species where boring_final = false", this);
+				"select id, interesting_parent_id, common_name, latin_name from species where boring_final = false", this);
 		return entries;
 	}
 	List<Integer> findAllIdsForCaching() {

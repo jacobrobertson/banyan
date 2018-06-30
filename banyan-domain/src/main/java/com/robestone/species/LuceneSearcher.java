@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
@@ -54,6 +56,7 @@ public class LuceneSearcher implements EntrySearcher {
 	public static final String LATIN = "latin_name";
 	public static final String COMMON = "common_name";
 	public static final String ID = "id";
+	private static final String CRUNCHED_ANCESTOR_IDS = "cids";
 	static final String LATIN_NOTOKEN = "latin_name_notoken";
 	static final String COMMON_NOTOKEN = "common_name_notoken";
 	private static final IdCruncher CRUNCHER = IdCruncher.R26_4;
@@ -126,6 +129,21 @@ public class LuceneSearcher implements EntrySearcher {
 	}
 	public LuceneSearcher(ISpeciesService speciesService, String indexDir) {
 		List<CompleteEntry> entries = speciesService.findEntriesForLuceneIndex();
+		
+		Map<Integer, CompleteEntry> map = new HashMap<>();
+		// hook them together so we can get ancestor chain
+		for (CompleteEntry e : entries) {
+			map.put(e.getId(), e);
+		}
+		List<CompleteEntry> filtered = new ArrayList<>();
+		for (CompleteEntry e : entries) {
+			CompleteEntry p = map.get(e.getInterestingParentId());
+			if (p != null || SpeciesService.TREE_OF_LIFE_ID.equals(e.getId())) {
+				e.setParent(p);
+				filtered.add(e);
+			}
+		}
+		
 		LogHelper.speciesLogger.info("LuceneSearcher.entries." + entries.size());
 		this.indexDir = indexDir;
 		buildIndex(entries);
@@ -190,10 +208,21 @@ public class LuceneSearcher implements EntrySearcher {
 	}
 	protected Document buildDocument(Entry entry) {
 		List<String> commonNames = createCommonNames(entry);
-		Document doc = buildDocument(commonNames, entry.getLatinName(), entry.getId());
+		String cids = getCrunchedAncestorIds(entry); 
+		Document doc = buildDocument(commonNames, entry.getLatinName(), entry.getId(), cids);
 		return doc;
 	}
-	protected Document buildDocument(List<String> commonNames, String latinName, Integer entryId) {
+	private String getCrunchedAncestorIds(Entry e) {
+		List<Integer> ids = new ArrayList<>();
+		while (e != null) {
+			ids.add(e.getId());
+			e = e.getParent();
+		}
+		String cids = EntryUtilities.CRUNCHER.toString(ids);
+		return cids;
+	}
+	protected Document buildDocument(List<String> commonNames, String latinName, Integer entryId, 
+			String crunchedAncestorIds) {
 		Document doc = new Document();
 		
 		String id = toQueryId(entryId);
@@ -213,6 +242,7 @@ public class LuceneSearcher implements EntrySearcher {
 		 */
 		
 		doc.add(new Field(ID, id, notAnalyzed));
+		doc.add(new Field(CRUNCHED_ANCESTOR_IDS, crunchedAncestorIds, notAnalyzed));
 		
 		latinName = normalize(latinName);
 
@@ -236,7 +266,7 @@ public class LuceneSearcher implements EntrySearcher {
 	protected String toQueryId(Integer id) {
 		return CRUNCHER.toString(id);
 	}
-	protected Integer toEntryId(String id) {
+	protected static Integer toEntryId(String id) {
 		return CRUNCHER.toInt(id);
 	}
 	protected String normalize(String s) {
@@ -329,32 +359,38 @@ public class LuceneSearcher implements EntrySearcher {
 		}
 	}
 	public int search(String queryString, Collection<Integer> existingIds) {
+		SearchResult result = searchForDocument(queryString, existingIds);
+		if (result != null) {
+			return result.getId();
+		} else {
+			return -1;
+		}
+	}
+	public SearchResult searchForDocument(String queryString, Collection<Integer> existingIds) {
 		// TODO normalize the queryString
 		for (SearchType searchType: searchTypes) {
 			Query baseQuery = buildQuery(queryString, searchType);
 			if (baseQuery == null) {
 				continue;
 			}
-			int found = search(baseQuery, existingIds);
-			if (found >= 0) {
-				return found;
+			Document found = search(baseQuery, existingIds);
+			if (found != null) {
+				return new SearchResult(found);
 			}
 		}
-		return -1;
+		return null;
 	}
-	private int search(Query baseQuery, Collection<Integer> existingIds) {
+	private Document search(Query baseQuery, Collection<Integer> existingIds) {
 		BooleanQuery.Builder queryBuilder = buildExistingIdsSubQuery(existingIds);
 		queryBuilder.add(baseQuery, BooleanClause.Occur.MUST);
 		try {
 			TopDocs rs = searcher.search(queryBuilder.build(), 1);
 			if (rs.totalHits == 0) {
-				return -1;
+				return null;
 			}
 			ScoreDoc[] hits = rs.scoreDocs;
 			Document foundDoc = searcher.doc(hits[0].doc);
-			String rawId = foundDoc.get(ID);
-			Integer id = toEntryId(rawId);
-			return id;
+			return foundDoc;
 		} catch (IOException ioe) {
 			throw new RuntimeException(ioe);
 		}
@@ -379,6 +415,23 @@ public class LuceneSearcher implements EntrySearcher {
 			return list;
 		}
 
+	}
+	
+	public static class SearchResult {
+		
+		private Document doc;
+		
+		public SearchResult(Document doc) {
+			this.doc = doc;
+		}
+		public String getCrunchedAncestorIds() {
+			return doc.get(CRUNCHED_ANCESTOR_IDS);
+		}
+		public int getId() {
+			String rawId = doc.get(ID);
+			Integer id = toEntryId(rawId);
+			return id;
+		}
 	}
 
 }
