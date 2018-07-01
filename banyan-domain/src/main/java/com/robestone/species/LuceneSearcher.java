@@ -13,9 +13,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
+import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -61,11 +61,23 @@ public class LuceneSearcher implements EntrySearcher {
 	static final String COMMON_NOTOKEN = "common_name_notoken";
 	private static final IdCruncher CRUNCHER = IdCruncher.R26_4;
 
+	
+//	private static final int fuzzyQuery_maxEdits = FuzzyQuery.defaultMaxEdits;
+//	private static final int fuzzyQuery_prefixLength = 0;
+//	private static final int fuzzyQuery_maxExpansions = FuzzyQuery.defaultMaxExpansions;
+//	private static final boolean fuzzyQuery_transpositions = true;
+	
 	static enum MatchType {
-		Exact, StartsWith, Phrase, 
-			Fuzzy9(.9f), Fuzzy8(.8f),  
+		Exact, StartsWith, Phrase,
+		LegacyFuzzy, 
+//			Fuzzy9(.9f), Fuzzy8(.8f),
+//			Fuzzy0(0f),
+//			Fuzzy1(1f),
 			Contains, 
-			Fuzzy7(.7f), Fuzzy6(.6f), Fuzzy5(.5f) ;
+			WildCards
+//			Fuzzy7(.7f), Fuzzy6(.6f), Fuzzy5(.5f)
+//			Fuzzy2(2f)
+			;
 		
 		public final float fuzzy;
 		MatchType(float fuzzy) {
@@ -91,6 +103,23 @@ public class LuceneSearcher implements EntrySearcher {
 			this.isPlural = isPlural;
 			this.isLatin = isLatin;
 		}
+		public String getFieldId() {
+			String fieldName;
+			if (isLatin) {
+				if (isTokens) {
+					fieldName = LATIN;
+				} else {
+					fieldName = LATIN_NOTOKEN;
+				}
+			} else {
+				if (isTokens) {
+					fieldName = COMMON;
+				} else {
+					fieldName = COMMON_NOTOKEN;
+				}
+			}
+			return fieldName;
+		}
 	}
 
 	private static List<SearchType> createSearchTypes() {
@@ -101,6 +130,9 @@ public class LuceneSearcher implements EntrySearcher {
 		boolean[] isTokens = { false, true };
 		
 		for (MatchType matchType: MatchType.values()) {
+			if (matchType == MatchType.WildCards) {
+				continue;
+			}
 			for (boolean tokens: isTokens) {
 				for (boolean plural: isPlural) {
 					for (boolean latin: isLatin) {
@@ -110,6 +142,8 @@ public class LuceneSearcher implements EntrySearcher {
 				}
 			}
 		}
+		types.add(new SearchType(MatchType.WildCards, false, false, true));
+		types.add(new SearchType(MatchType.WildCards, false, false, false));
 		
 		return types;
 	}
@@ -169,7 +203,7 @@ public class LuceneSearcher implements EntrySearcher {
 		}
 	}
 	private static String defaultWindowsPath = "D:\\banyan-db\\lucene";
-	private static String defaultLinuxPath = "/home/private/banyan-lucene";
+	public static final String defaultLinuxPath = "/home/private/banyan-lucene";
 	private File getDirectory() {
 		String fileName = indexDir;
 		if (fileName == null) {
@@ -193,9 +227,11 @@ public class LuceneSearcher implements EntrySearcher {
 		int count = 0;
 		for (Entry entry: entries) {
 			Document doc = buildDocument(entry);
+			if (doc != null) {
 //			LogHelper.speciesLogger.info(EntryComparator.getCompareName(entry) + " =>" + doc);
-			writer.addDocument(doc);
-			count++;
+				writer.addDocument(doc);
+				count++;
+			}
 		}
 		LogHelper.speciesLogger.info("doBuildIndex." + count);
 		// This article recomends not to use this option, and it's been removed
@@ -208,15 +244,23 @@ public class LuceneSearcher implements EntrySearcher {
 	}
 	protected Document buildDocument(Entry entry) {
 		List<String> commonNames = createCommonNames(entry);
-		String cids = getCrunchedAncestorIds(entry); 
+		String cids = getCrunchedAncestorIds(entry);
+		if (cids == null) {
+			return null;
+		}
 		Document doc = buildDocument(commonNames, entry.getLatinName(), entry.getId(), cids);
 		return doc;
 	}
 	private String getCrunchedAncestorIds(Entry e) {
 		List<Integer> ids = new ArrayList<>();
+		Integer lastId = null;
 		while (e != null) {
-			ids.add(e.getId());
+			lastId = e.getId();
+			ids.add(lastId);
 			e = e.getParent();
+		}
+		if (!lastId.equals(SpeciesService.TREE_OF_LIFE_ID)) {
+			return null;
 		}
 		String cids = EntryUtilities.CRUNCHER.toString(ids);
 		return cids;
@@ -227,9 +271,9 @@ public class LuceneSearcher implements EntrySearcher {
 		
 		String id = toQueryId(entryId);
 		
-		FieldType notAnalyzed = new FieldType(StringField.TYPE_STORED);
-		notAnalyzed.setOmitNorms(false);
-		FieldType analyzed = new FieldType(StringField.TYPE_STORED);
+//		FieldType notAnalyzed = new FieldType(StringField.TYPE_STORED);
+//		notAnalyzed.setOmitNorms(false);
+//		FieldType analyzed = new FieldType(StringField.TYPE_STORED);
 		
 		/*
 		 https://lucene.apache.org/core/4_0_0/MIGRATE.html
@@ -241,13 +285,13 @@ public class LuceneSearcher implements EntrySearcher {
 		 
 		 */
 		
-		doc.add(new Field(ID, id, notAnalyzed));
-		doc.add(new Field(CRUNCHED_ANCESTOR_IDS, crunchedAncestorIds, notAnalyzed));
+		doc.add(new StringField(ID, id, Store.YES));
+		doc.add(new StringField(CRUNCHED_ANCESTOR_IDS, crunchedAncestorIds, Store.YES));
 		
 		latinName = normalize(latinName);
 
-		doc.add(new Field(LATIN, latinName, analyzed));
-		doc.add(new Field(LATIN_NOTOKEN, latinName, notAnalyzed));
+		doc.add(new TextField(LATIN, latinName, Store.YES));
+		doc.add(new StringField(LATIN_NOTOKEN, latinName, Store.YES));
 		
 		if (commonNames != null) {
 			for (String commonName: commonNames) {
@@ -255,10 +299,10 @@ public class LuceneSearcher implements EntrySearcher {
 				if (StringUtils.isEmpty(commonName)) {
 					continue;
 				}
-				doc.add(new Field(COMMON, commonName, analyzed));
-				doc.add(new Field(COMMON_NOTOKEN, commonName, notAnalyzed));
+				doc.add(new TextField(COMMON, commonName, Store.YES));
+				doc.add(new StringField(COMMON_NOTOKEN, commonName, Store.YES));
 			}
-			doc.add(new Field(COMMON_NOTOKEN, StringUtils.join(commonNames, " "), notAnalyzed));
+			doc.add(new StringField(COMMON_NOTOKEN, StringUtils.join(commonNames, " "), Store.YES));
 		}
 //		LogHelper.speciesLogger.info("buildDocument." + doc);
 		return doc;
@@ -294,25 +338,12 @@ public class LuceneSearcher implements EntrySearcher {
 	}
 
 	public Query buildQuery(String queryString, SearchType searchType) {
+		
 		if (searchType.isPlural) {
 			queryString = pluralMaker.getPluralAlternate(queryString);
 		}
 		
-		String fieldName;
-		if (searchType.isLatin) {
-			if (searchType.isTokens) {
-				fieldName = LATIN;
-			} else {
-				fieldName = LATIN_NOTOKEN;
-			}
-		} else {
-			if (searchType.isTokens) {
-				fieldName = COMMON;
-			} else {
-				fieldName = COMMON_NOTOKEN;
-			}
-		}
-		
+		String fieldName = searchType.getFieldId();
 		Query query;
 		if (searchType.matchType == MatchType.Phrase) {
 			// some searches won't work with phrase or are redundant
@@ -334,10 +365,21 @@ public class LuceneSearcher implements EntrySearcher {
 			
 			if (searchType.matchType == MatchType.Exact) {
 				query = new TermQuery(term);
-			} else if (searchType.matchType.isFuzzy()) {
+			} else if (searchType.matchType == MatchType.LegacyFuzzy) {
 				// the API changed to be based on # of edits, and has
 				// a preferred default setting
+				// TODO if I am using this, I don't need to have more than one fuzzy enum
 				query = new FuzzyQuery(term); // , searchType.matchType.fuzzy, 0);
+				/*
+				 * this isn't getting any additional results, not matter how I tweak it
+			} else if (searchType.matchType.isFuzzy()) {
+				// TODO I don't know what max terms is for
+				int maxTerms = (int) (20 * searchType.matchType.fuzzy);
+				FuzzyLikeThisQuery fquery = new FuzzyLikeThisQuery(maxTerms, analyzer);
+				int distance = (int) searchType.matchType.fuzzy;
+				fquery.addTerms(queryString, fieldName, distance, 0);
+				query = fquery;
+				*/
 			} else if (searchType.matchType == MatchType.StartsWith) {
 				query = new PrefixQuery(term);
 			} else {
@@ -366,19 +408,68 @@ public class LuceneSearcher implements EntrySearcher {
 			return -1;
 		}
 	}
+	private WildcardQuery buildWildcardQuery(String queryString, String fieldId, int pos) {
+		String newQuery;
+		if (pos == queryString.length() - 1) {
+			newQuery = queryString.substring(0, pos) + "*";
+		} else {
+			newQuery = queryString.substring(0, pos) + "*" + queryString.substring(pos + 1);
+		}
+		if (!newQuery.startsWith("*")) {
+			newQuery = "*" + newQuery;
+		}
+		if (!newQuery.endsWith("*")) {
+			newQuery = newQuery + "*";
+		}
+//		System.out.println(queryString + ", " + pos + ", " + replace + ", " + newQuery);
+		Term term = new Term(fieldId, newQuery);
+		return new WildcardQuery(term);
+	}
 	public SearchResult searchForDocument(String queryString, Collection<Integer> existingIds) {
-		// TODO normalize the queryString
-		for (SearchType searchType: searchTypes) {
-			Query baseQuery = buildQuery(queryString, searchType);
-			if (baseQuery == null) {
-				continue;
-			}
-			Document found = search(baseQuery, existingIds);
-			if (found != null) {
-				return new SearchResult(found);
+		
+		Document found = null;
+		
+		if (StringUtils.isNumeric(queryString)) {
+			// allow ID search
+			Integer id = Integer.parseInt(queryString);
+			String qid = toQueryId(id);
+			Term term = new Term(ID, qid);
+			Query query = new TermQuery(term);
+			found = search(query, existingIds);
+			
+		} else {
+			queryString = normalize(queryString);
+	
+			for (SearchType searchType: searchTypes) {
+				Query baseQuery = null;
+				if (searchType.matchType == MatchType.WildCards) {
+					// try all wildcards like this TERM -> *ERM*, *T*RM*, *TER*
+					for (int i = 0; i < queryString.length(); i++) {
+						baseQuery = buildWildcardQuery(queryString, searchType.getFieldId(), i);
+						found = search(baseQuery, existingIds);
+						if (found != null) {
+							break;
+						}
+					}
+				} else {
+					baseQuery = buildQuery(queryString, searchType);
+					if (baseQuery == null) {
+						continue;
+					}
+					found = search(baseQuery, existingIds);
+				}
+				if (found != null) {
+	//				System.out.println("searchForDocument.(" + queryString + ").matched:"
+	//						+ baseQuery.getClass() + "." + baseQuery);
+					break;
+				}
 			}
 		}
-		return null;
+		if (found != null) {
+			return new SearchResult(found);
+		} else {
+			return null;
+		}
 	}
 	private Document search(Query baseQuery, Collection<Integer> existingIds) {
 		BooleanQuery.Builder queryBuilder = buildExistingIdsSubQuery(existingIds);
@@ -397,8 +488,10 @@ public class LuceneSearcher implements EntrySearcher {
 	}
 	protected BooleanQuery.Builder buildExistingIdsSubQuery(Collection<Integer> existingIds) {
 		BooleanQuery.Builder queryBuilder = new BooleanQuery.Builder();
-		for (Integer id: existingIds) {
-			queryBuilder.add(new TermQuery(new Term(ID, toQueryId(id))), BooleanClause.Occur.MUST_NOT);
+		if (existingIds != null) {
+			for (Integer id: existingIds) {
+				queryBuilder.add(new TermQuery(new Term(ID, toQueryId(id))), BooleanClause.Occur.MUST_NOT);
+			}
 		}
 		return queryBuilder;
 	}

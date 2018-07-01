@@ -14,8 +14,33 @@ import com.robestone.species.Tree;
 
 public class Mocks {
 
-	private void addIds(CompleteEntry root, Set<Integer> used) {
-		int id = 0;
+	public Mocks() {
+		getRoot();
+	}
+	
+	private void addIds(CompleteEntry root) {
+//		addIds(root, new HashSet<Integer>());
+		addIds(root, 0, new HashSet<Integer>());
+	}
+	
+	int addIds(CompleteEntry root, int seed, Set<Integer> used) {
+		boolean added = used.add(seed);
+		if (!added) {
+			throw new IllegalStateException("duplicate id " + seed);
+		}
+//		System.out.println("addIds." + seed + ":" + root.getLatinName() + "/" + root.getCommonName());
+		root.setId(seed);
+		int nextId = seed + 100;
+		if (root.getChildren() != null) {
+			for (CompleteEntry child: root.getCompleteEntryChildren()) {
+				nextId = addIds(child, nextId, used);
+				nextId = nextId + 1;
+			}
+		}
+		return nextId;
+	}
+	void addIds(CompleteEntry root, Set<Integer> used) {
+		int id = 10;
 		while (!used.add(id)) {
 			id = new Random().nextInt(50000);
 		}
@@ -27,6 +52,9 @@ public class Mocks {
 		}
 	}
 
+	public Entry getEntryForId(int id) {
+		return EntryUtilities.findEntry(getRoot(), id);
+	}
 	public Entry getEntryForName(String name) {
 		Entry root = getRoot();
 		Entry found = findForName(name, root);
@@ -55,6 +83,9 @@ public class Mocks {
 	
 	private CompleteEntry root;
 	private Tree tree;
+	public Set<CompleteEntry> getEntries() {
+		return EntryUtilities.getEntries(getRoot());
+	}
 	public Tree getTree() {
 		if (tree == null) {
 			tree = EntryUtilities.buildTree(getRoot());
@@ -92,7 +123,7 @@ public class Mocks {
 		addChild(next, getGigantopithecus());
 		addChild(next, getContrivedForTesting());
 		
-		addIds(top, new HashSet<Integer>());
+		addIds(top);
 		
 		return top;
 	}

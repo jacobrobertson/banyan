@@ -2,6 +2,8 @@ package com.robestone.species.js;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +27,8 @@ import com.robestone.species.ExampleGroup;
 
 // mostly just a very dumb implementation for testing purposes
 public class JsonParser {
+
+	private static final CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
 
 	public static void main(String[] args) throws Exception {
 		JsonParser p = new JsonParser();
@@ -227,8 +231,24 @@ public class JsonParser {
 	}
 	private String escape(Object val) {
 		String v = val.toString();
-		v = v.replace("\"", "\\\"");
-		return v;
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < v.length(); i++) {
+			char c = v.charAt(i);
+			if (!asciiEncoder.canEncode(c)) {
+				buf.append("\\u");
+				String h = Integer.toHexString((int) c);
+				for (int j = 0; j < 4 - h.length(); j++) {
+					buf.append('0');
+				}
+				buf.append(h);
+			} else if (c == '"') {
+				buf.append('\\');
+				buf.append('"');
+			} else {
+				buf.append(c);
+			}
+		}
+		return buf.toString();
 	}
 
 	public String toJsonString(List<ExampleGroup> groups) {

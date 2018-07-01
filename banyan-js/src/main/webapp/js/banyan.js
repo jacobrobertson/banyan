@@ -129,7 +129,7 @@ function pinNode(id, pinned) {
 	renderCurrentTree();
 }
 function showContextMenu(e, img) {
-	var imgId = img.name;
+	var imgId = img.id;
 	// create the right control panel links
 	var e = getMapEntry(imgId);
 	var buttons = $("#controlpanel a");
@@ -654,7 +654,7 @@ function collapseNodesForSiblingsToShow(e) {
 }
 /**
  * Phase 1 algorithm:
- * Always reduce any list of 7 or more (with chain root) to 5
+ * Always reduce any list of more than 5 (with chain root) to 5
  *	1 - Root keep
 	2 - First in chain - keep and mark as +
 	3 - remove
@@ -664,19 +664,59 @@ function collapseNodesForSiblingsToShow(e) {
 	7 - remove
 	8 - remove
 	9 - Tail keep
+	
+	These are already split up such that there won't be any pinned nodes in this "smaller" chain.
  */
 function hideLongCollapsed(e) {
+	
+	// check the last in the chain only, we don't care if the pin is before, only after
+	// TODO actually, let's collapse @3 if there is even one pinned child, not just
+	//		if there is only one pinned child
 	var len = e.collapsed.length + 1;
-	if (len >= 7) {
+	var isPinnedAfterChain = false;
+	var maxLen = 6;
+	if (e.collapsed.length > 0) {
+		var last = e.collapsed[e.collapsed.length - 1];
+		if (last.childrenToShow.length == 1 && last.childrenToShow[0].pinned) {
+			isPinnedAfterChain = true;
+			maxLen = 3;
+		}
+	}
+
+	// the collapse strategy is different depending on the pin proximity
+
+	if (len >= maxLen) {
 		var collapsed = [];
 		var mid = Math.ceil(len / 2) - 1;
-		for (var i = 0; i < e.collapsed.length; i++) {
-			var c = e.collapsed[i];
-			if (i == 0 || i == mid + 1) {
-				collapsed.push(c);
-				c.collapsedPinned = true;
-			} else if (i == mid || i == e.collapsed.length - 1) {
-				collapsed.push(c);
+		if (isPinnedAfterChain) {
+			// loop over the nodes to find which one is the most interesting
+			// but keep the last one no matter what
+			var score = 0;
+			var chosenNode;
+			var chosenPos;
+			for (var i = 0; i < e.collapsed.length - 1; i++) {
+				var c = e.collapsed[i];
+				// we will keep the most interesting one, but break ties by which is closer to center
+				if (c.interestingScore > score || 
+					(c.interestingScore == score && Math.abs(mid - i) < Math.abs(mid - chosenPos))) {
+					score = c.interestingScore;
+					chosenNode = c;
+					chosenPos = i;
+				}
+			}
+			collapsed.push(chosenNode);
+			chosenNode.collapsedPinned = true;
+			collapsed.push(e.collapsed[e.collapsed.length - 1]);
+		} else {
+			// this strategy pushes the exact mid and the two outer nodes, no other math
+			for (var i = 0; i < e.collapsed.length; i++) {
+				var c = e.collapsed[i];
+				if (i == 0 || i == mid + 1) {
+					collapsed.push(c);
+					c.collapsedPinned = true;
+				} else if (i == mid || i == e.collapsed.length - 1) {
+					collapsed.push(c);
+				}
 			}
 		}
 		e.collapsed = collapsed;
@@ -714,19 +754,22 @@ function collapseNodesForChildrenToShow(e) {
 		collapseNodesForChildrenToShow(r);
 	}
 }
-function getTotalChildrenShownCountingSiblings(e) {
-	var count = 0;
+function getChildrenIdsShownCountingSiblings(e) {
+	var childrenIds = [];
 	for (var i = 0; i < e.childrenToShow.length; i++) {
 		var c = e.childrenToShow[i];
-		count++;
+		childrenIds.push(c.id);
 		if (c.siblings) {
-			count += c.siblings.length;
+			for (var j = 0; j < c.siblings.length; j++) {
+				childrenIds.push(c.siblings[j].id);
+			}
 		}
 	}
-	return count;
+	return childrenIds;
 }
 function prepareEntryForContextMenu(e) {
-	var hiddenCount = e.childrenIds.length - getTotalChildrenShownCountingSiblings(e);
+	var childrenShownIds = getChildrenIdsShownCountingSiblings(e);
+	var hiddenCount = e.childrenIds.length - childrenShownIds.length;
 	if (hiddenCount == 0) {
 		e.cpShowChildren = false;
 		e.cpShowChildrenCaption = false;
@@ -737,9 +780,11 @@ function prepareEntryForContextMenu(e) {
 
 	e.cpHide = (e.childrenToShow.length > 0);
 	
-	var showMoreVisible = countVisible(e.showMoreLeafIds);
+	var visibleShowMoreIds = getVisibleIds(e.showMoreLeafIds);
+	var showMoreVisible = visibleShowMoreIds.length;
 	var showMoreHidden = e.showMoreLeafIds.length - showMoreVisible;
-	if (showMoreHidden == 0) {
+	var isSame = isShowMoreAndShowChildrenSame(childrenShownIds, e.childrenIds, visibleShowMoreIds, e.showMoreLeafIds);
+	if (showMoreHidden == 0 || isSame) {
 		e.cpShowMore = false;
 		e.cpShowMoreCaption = false;
 	} else {
@@ -759,8 +804,33 @@ function prepareEntryForContextMenu(e) {
 		prepareEntryForContextMenu(e.siblings[i]);
 	}
 	
-	e.cpPin = !e.pinned;
-	e.cpUnpin = e.pinned;
+	var pinnable = (e.img);
+	e.cpPin = (!e.pinned && pinnable);
+	e.cpUnpin = (e.pinned && pinnable);
+}
+function getArrayOfFirstMinusSecond(first, second) {
+	var a = [];
+	for (var i = 0; i < first.length; i++) {
+		if (second.indexOf(first[i]) < 0) {
+			a.push(first[i]);
+		}
+	}
+	return a;
+}
+function isShowMoreAndShowChildrenSame(childrenShownIds, childrenIds, visibleShowMoreIds, showMoreLeafIds) {
+	var childrenToShow = getArrayOfFirstMinusSecond(childrenIds, childrenShownIds);
+	var moreToShow = getArrayOfFirstMinusSecond(showMoreLeafIds, visibleShowMoreIds);
+	if (childrenToShow.length != moreToShow.length) {
+		return false;
+	}
+	childrenToShow.sort(sortIntCompare);
+	moreToShow.sort(sortIntCompare);
+	for (var i = 0; i < childrenToShow.length; i++) {
+		if (childrenToShow[i] != moreToShow[i]) {
+			return false;
+		}
+	}
+	return true;
 }
 // are there any non-descendant leafs
 function isFocusNeeded(e) {
@@ -786,14 +856,14 @@ function getShowCaption(visibleCount, hiddenCount, label1, labelPlural) {
 	}
 	return caption;
 }
-function countVisible(ids) {
-	var count = 0;
+function getVisibleIds(ids) {
+	var visibleIds = [];
 	for (var i = 0; i < ids.length; i++) {
 		if (isEntryShown(ids[i])) {
-			count++;
+			visibleIds.push(ids[i]);
 		}
 	}
-	return count;
+	return visibleIds;
 }
 function getInitIds(ids) {
 	if (!ids) {
@@ -822,6 +892,25 @@ function initEntry(e) {
 	}  else {
 		e.alt = e.lname;
 	}
+	e.interestingScore = getInterestingScore(e);
+}
+function getInterestingScore(e) {
+	var score = 0;
+	if (e.cnames) {
+		score += 10;
+		var paren = e.cname.indexOf('(');
+		if (paren < 0) {
+			score += 4;
+		}
+		// this is an extremely simplified version of "is common name boring"
+		if (e.cname.toLowerCase().indexOf(e.lname.toLowerCase()) < 0) {
+			score += 5;
+		}
+	}
+	if (e.img) {
+		score += 20;
+	}
+	return score;
 }
 function initEntryDetailsCrunchedIds(e) {
 	var ids = [];
@@ -861,7 +950,12 @@ function getEntryDisplayName(e) {
 		if (e.cnames && e.cnames.length > 1) {
 			return e.cname + "...";
 		} else {
-			return e.cname;
+			var pos = e.cname.indexOf("(");
+			if (pos > 0) {
+				return e.cname.substring(0, pos) + "...";
+			} else {
+				return e.cname;
+			}
 		}
 	} else {
 		return "<i>(" + e.lname + ")</i>";
@@ -928,7 +1022,9 @@ function addAllToRenderMapDownstream(e) {
 // ------ Tree/HTML Rendering
 function __TreeHtmlRendering() {}
 function renderCurrentTree(skipUrl) {
-	renderTree(getRootEntry().id, true);
+	var rootId = getRootEntry().id;
+	markEntryAsShown(rootId, true);
+	renderTree(rootId, true);
 	if (!skipUrl) {
 		setUrlToAllVisibleIds();
 	}
@@ -1048,17 +1144,17 @@ function renderNodeEntryLine(h, e, depth) {
 	}
 	var span = $('<span class="' + spanClass + '"></span>').appendTo(h);
 	// detail button
-	var detailIcon = "detail_first.png";
+	var detailIcon = "detail.png";
 	var detailClass = "tree-detail_first";
 	if (e.collapsedPinned) {
 		detailIcon = "open_children.png";
 		detailClass = "tree-open_children";
 	} else if (depth > 0) {
-		detailIcon = "detail_indented.png";
+		detailIcon = "detail.png";
 		detailClass = "tree-detail_indented";
 	}
 	if (!e.parentId) {
-		detailIcon = "tree_root.png";
+		detailIcon = "banyan-icon.png";
 		detailClass = "tree-tree_root";
 	}
 	// the green button on the left of the line
@@ -1104,7 +1200,7 @@ function renderNodeEntryLine(h, e, depth) {
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	span.append('<a href="search.tree/CRUNCHED#' + e.id + '" name="' + e.id + '" class="opener">'
+	span.append('<a href="#menu' + e.id + '" id="' + e.id + '" class="opener">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu"></a>');
 }
 function getNbsps(count) {
@@ -1270,7 +1366,7 @@ function renderDetails(id) {
 function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
 	$("<a href='#" + href 
-		+ "'><img src='icons/green_button.png' class='detail-button'></a>").appendTo(td);
+		+ "'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
 	var taxoName = getRenderTaxoDisplayName(e);
 	var previewClass = "preview";
 	var linkTitle;
@@ -1320,13 +1416,15 @@ function loadCommandFromURL() {
 		value = hashValue;
 	}
 
-	if (command == "e") {
+	if (command == "e" || command == "r") {
 		loadExampleFile(hashValue);
 	} else if (command == "t") {
 		if (value == "random") {
 			loadRandomFile(commandParam);
 		} else if (value == "startOver") {
 			loadExampleFile(defaultTree);
+		} else if (value == "blankTree") {
+			loadBlankTree();
 		} else if (value == "details") {
 			loadDetails(commandParam);
 		} else if (value == "examplesTab") {
@@ -1354,9 +1452,19 @@ function loadCommandFromURL() {
 }
 function submitSearchQuery(query) {
 	//var url = "json/s/fake.json";
+	if (query) {
+		query = query.trim();
+	} else {
+		return;
+	}
+	var cids;
 	var ids = getAllVisibleNodeIds();
-	var cids = crunch(ids);
-	var urlQueryPart = "/search/" + query + "/" + cids;
+	if (!ids || ids.length == 0) {
+		cids = "+";
+	} else {
+		cids = crunch(ids);
+	}
+	var urlQueryPart = "/search/" + query + "/" + cids + "/";
 	var urlBase = "";//http://localhost:8081";
 	var url = urlBase + urlQueryPart;
 	$.getJSON(url, submitSearchQuery_callback);
@@ -1365,8 +1473,13 @@ function submitSearchQuery_callback(data) {
 	var ids = uncrunch(data.cids);
 	var pinned = data.id;
 	loadJsonThenMarkNewIdsVisible(ids, function() {
-		pinNode(pinned, true);
+		if (getMapEntry(pinned).img) {
+			pinNode(pinned, true);
+		}
 	});
+}
+function loadBlankTree() {
+	hideChildren(getRootEntry().id);
 }
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {

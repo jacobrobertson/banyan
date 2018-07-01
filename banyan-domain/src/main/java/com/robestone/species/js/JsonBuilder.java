@@ -18,32 +18,34 @@ import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
+import com.robestone.species.LuceneSearcher;
 import com.robestone.species.parse.AbstractWorker;
 import com.robestone.species.parse.ImagesCreater;
 
 public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
+		
+		System.setProperty("banyan.lucene.dir", LuceneSearcher.defaultLinuxPath);
+		
 		JsonBuilder b = new JsonBuilder();
 		
-//		b.buildExampleIndexFile();
-		
-		// should delete all json first
-//		new JsonBuilder().runGenerateFullJsonDB();
+		b.rebuildAllJson();
+//		b.partitionFromDB();
 //		b.buildRandomFiles();
-		b.runExamples();
-//		b.outputRandomFileIndex();
-//		b.partitionFromFileSystem2();
-		
-//		b.outputExampleFromCrunchedIds();
-		
-//		b.runOneId(1, 6);
-//		b.partitionFromFileSystem2();
+//		b.runExamples();
 	}
 	
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
+	
+	public void rebuildAllJson() throws Exception {
+		partitionFromDB();
+		runExamples();
+		// this is the longest running
+		buildRandomFiles();
+	}
 	
 	public void buildExampleIndexFile() throws Exception {
 		examplesService.findExampleGroups(); // inits it
@@ -73,9 +75,16 @@ public class JsonBuilder extends AbstractWorker {
 		@SuppressWarnings("unchecked")
 		List<String> lines = 
 				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
+		Set<String> terms = new HashSet<>();
 		for (String line : lines) {
-			buildOneRandomFileFromQuery(line);
+			terms.add(line.toLowerCase().trim());
 		}
+		System.out.println(terms.size() + " unique terms");
+
+		for (String term : terms) {
+			buildOneRandomFileFromQuery(term);
+		}
+		outputRandomFileIndex();
 	}
 	private void buildOneRandomFileFromQuery(String query) throws Exception {
 		query = query.trim();
@@ -349,6 +358,7 @@ public class JsonBuilder extends AbstractWorker {
 		je.setExtinct(e.isExtinct());
 		je.setAncestorExtinct(e.isAncestorExtinct());
 		je.setRank(e.getRank().getCommonName());
+		je.setPinned(e.isPinned());
 
 		// TODO research why some of these have one but not the other
 		if (e.getImage() != null && e.getImageLink() != null) {

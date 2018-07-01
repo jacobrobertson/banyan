@@ -2,6 +2,7 @@ package com.robestone.species.js;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -9,7 +10,9 @@ import java.util.Set;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.SpeciesService;
 import com.robestone.species.parse.AbstractWorker;
+import com.robestone.species.parse.ImagesCreater;
 
 public class RandomTreeBuilder extends AbstractWorker {
 	
@@ -19,20 +22,125 @@ public class RandomTreeBuilder extends AbstractWorker {
 		if (entries == null) {
 			entries = buildRandomTreeForLeaves(pinnedId);
 		}
+		if (entries != null) {
+			unpinAncestorsWithSameImage(entries);
+			unpinWithNoImage(entries);
+		}
 		return entries;
 	}
-
+	
+	private void unpinWithNoImage(Collection<CompleteEntry> entries) {
+		for (CompleteEntry e : entries) {
+			if (e.getImage() == null) {
+				e.setPinned(false);
+			}
+		}
+	}
+	private void unpinAncestorsWithSameImage(Collection<CompleteEntry> entries) {
+		for (CompleteEntry e : entries) {
+			unpinAncestorsWithSameImage(e);
+		}
+	}
+	private void unpinAncestorsWithSameImage(CompleteEntry entry) {
+		if (entry.getImage() == null) {
+			return;
+		}
+		String image = ImagesCreater.getImageFileName(entry);
+		CompleteEntry p = entry.getParent();
+		while (p != null) {
+			if (p.getImage() != null) {
+				String pimage = ImagesCreater.getImageFileName(p);
+				if (pimage.equals(image)) {
+					p.setPinned(false);
+				}
+			}
+			
+			p = p.getParent();
+		}
+	}
+	
+	// not sure why I need to do this, but apparently some interesting species aren't hooked in
+	private boolean isValidEntry(Integer iid) throws Exception {
+		int id;
+		while (true) {
+			id = iid;
+			if (id == -1) {
+				return false;
+			} else if (id == SpeciesService.TREE_OF_LIFE_ID) {
+				return true;
+			}
+			CompleteEntry e = speciesService.findEntry(id);
+			iid = e.getParentId();
+			if (iid == null) {
+				return false;
+			}
+		}
+	}
+	
 	/**
 	 * Since we couldn't find the matching tree, just look for any tree with 4 leaves.
 	 * But no more than 2 leaves from a given parent.
 	 */
 	private Collection<CompleteEntry> buildRandomTreeForLeaves(Integer pinnedId) throws Exception {
 		
-//		List<CompleteEntry> entries = new ArrayList<>();
-//		CompleteEntry pinned = speciesService.findEntry(pinnedId);
+		if (!isValidEntry(pinnedId)) {
+			return null;
+		}
 		
+		List<CompleteEntry> entries = new ArrayList<>();
+		CompleteEntry pinned = speciesService.findEntry(pinnedId);
+		entries.add(pinned);
 		
-		return null;
+		// first try to get two children
+		findInterestingChildren(pinned);
+		if (pinned.getChildren().size() > 1) {
+			entries.add(pinned.getCompleteEntryChildren().get(0));
+			entries.add(pinned.getCompleteEntryChildren().get(1));
+		}
+		
+		// one sibling
+		CompleteEntry parent = speciesService.findEntry(pinned.getParentId());
+		findInterestingChildren(parent);
+		for (CompleteEntry sibling : parent.getCompleteEntryChildren()) {
+			if (sibling.getId().equals(pinned.getId())) {
+				continue;
+			}
+			entries.add(sibling);
+			break;
+		}
+		
+		CompleteEntry nextParent = parent;
+		while (entries.size() < 5) {
+			// one cousin, and a nephew.  If not, go up one level
+			CompleteEntry gparent = speciesService.findEntry(nextParent.getParentId());
+			findInterestingChildren(gparent);
+			for (CompleteEntry uncle : gparent.getCompleteEntryChildren()) {
+				if (uncle.getId().equals(nextParent.getId())) {
+					continue;
+				}
+				findInterestingChildren(uncle);
+				if (!uncle.getCompleteEntryChildren().isEmpty()) {
+					entries.add(uncle);
+					entries.add(uncle.getCompleteEntryChildren().get(0));
+				}
+				break;
+			}
+			nextParent = gparent;
+		}
+		
+		Set<Integer> ids = new HashSet<>();
+		for (CompleteEntry e : entries) {
+			ids.add(e.getId());
+		}
+		CompleteEntry root = speciesService.findTreeForNodes(ids);
+		Set<CompleteEntry> set = EntryUtilities.getEntries(root);
+		for (CompleteEntry e : set) {
+			if (ids.contains(e.getId())) {
+				e.setPinned(true);
+			}
+		}
+		
+		return set;
 	}
 
 	private Collection<CompleteEntry> buildRandomTreeByMatching(Integer pinnedId) throws Exception {
@@ -410,6 +518,7 @@ public class RandomTreeBuilder extends AbstractWorker {
 				interesting.add(entry);
 			}
 		}
+		Collections.shuffle(interesting); // so we don't get the same "uncles" for all similar species
 		return interesting;
 	}
 

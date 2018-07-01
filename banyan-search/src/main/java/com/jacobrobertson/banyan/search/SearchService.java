@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.robestone.species.CompleteEntry;
@@ -28,18 +29,8 @@ public class SearchService {
 	
 	@PostConstruct
 	public void init() {
-		
 		System.out.println(">>>--->>>" + locations + "<<<===<<<");
-		
 		List<CompleteEntry> entries = new ArrayList<CompleteEntry>();
-		
-//		int id = 1;
-//		addEntry("Wolves", "Lupin", id++, entries);
-//		addEntry("Banana", "Barga", id++, entries);
-//		addEntry(null, "Vespus", id++, entries);
-//		addEntry(null, "Vespusi", id++, entries);
-//		addEntry(null, "Vespusii", id++, entries);
-		
 		searcher = new LuceneSearcher(entries, luceneDir);
 	}
 
@@ -48,23 +39,32 @@ public class SearchService {
 		return search(query, null);
 	}
 
-	@RequestMapping(value = "/search/{query}/{existingIds}")
+	@RequestMapping(
+			value = "/search/{query}/{existingIds}/", 
+			method = RequestMethod.GET, produces = "application/json")
 	public Entry search(@PathVariable String query, @PathVariable String existingIds) {
-		List<Integer> ids;
-		if (existingIds == null) {
-			ids = new ArrayList<Integer>();
-		} else {
-			ids = EntryUtilities.CRUNCHER.toList(existingIds);
+		try {
+			System.out.println("search." + query);
+			List<Integer> ids;
+			if (existingIds == null || existingIds.length() == 0 || "+".equals(existingIds)) {
+				ids = new ArrayList<Integer>();
+			} else {
+				ids = EntryUtilities.CRUNCHER.toList(existingIds);
+			}
+			SearchResult result = searcher.searchForDocument(query, ids);
+			Entry entry = new Entry();
+			if (result == null) {
+				entry.setId(-1);
+			} else {
+				entry.setId(result.getId());
+				entry.setCids(result.getCrunchedAncestorIds());
+			}
+			System.out.println("search." + query + "=" + entry.getId());
+			return entry;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
 		}
-		SearchResult result = searcher.searchForDocument(query, ids);
-		Entry entry = new Entry();
-		if (result == null) {
-			entry.setId(-1);
-		} else {
-			entry.setId(result.getId());
-			entry.setCids(result.getCrunchedAncestorIds());
-		}
-		return entry;
 	}
 
 //	@RequestMapping("/error")

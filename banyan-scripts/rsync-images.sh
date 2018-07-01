@@ -1,10 +1,10 @@
 
 
 # TINY ONLY
-rsync --chmod=777 -avz -e "ssh -vvvv -i ~/.ssh/id_rsa.pub" --progress /cygdrive/D/banyan-images/tiny pepblast_jrob@ssh.phx.nearlyfreespeech.net:/home/public/banyan-images
+rsync --chmod=777 -avz -e "ssh -vvvv -i ~/.ssh/id_rsa.pub" --progress /cygdrive/D/banyan-images/tiny pepblast_jrob@ssh.phx.nearlyfreespeech.net:/home/public/banyan-images --delete
 
 # PREVIEW ONLY
-rsync --chmod=777 -avz -e "ssh -vvvv -i ~/.ssh/id_rsa.pub" --progress /cygdrive/D/banyan-images/preview pepblast_jrob@ssh.phx.nearlyfreespeech.net:/home/public/banyan-images
+rsync --chmod=777 -avz -e "ssh -vvvv -i ~/.ssh/id_rsa.pub" --progress /cygdrive/D/banyan-images/preview pepblast_jrob@ssh.phx.nearlyfreespeech.net:/home/public/banyan-images --delete
 
 # NOT doing DETAIL
 

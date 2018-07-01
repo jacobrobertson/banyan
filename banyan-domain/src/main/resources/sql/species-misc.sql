@@ -1,8 +1,8 @@
 SELECT count(*) FROM species;
 SELECT count(*) FROM images;
 
-select * from species where latin_name in ('Cynognathus');
-
+select * from species where latin_name in ('Amanipodagrion gilliesi');
+select * from species where id in (140665);
 
 select * from species where (rank = -1 or parent_latin_name is null) and (image_link is not null and common_name is not null);
 
@@ -48,7 +48,7 @@ select count(*) from species where rank = 680;
 select * from species where latin_name in ('Archaea', 'Bacteria', 'Eukaryota', 'Virus');
 
 select latin_name from species where image_link like '%Eristalis_tenax_auf_Tragopogon_pratensis%' limit 10000;
-
+select latin_name from species where latin_name like '%itrus%urantium'
 
 select * from species where latin_name = 'Archaea';
 select * from species where parent_id = 1;

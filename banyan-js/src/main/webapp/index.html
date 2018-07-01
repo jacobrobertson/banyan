@@ -4,7 +4,7 @@
 <head>
 <script src="js/jquery-1.12.4.js"></script>
 <script src="js/banyan.js"></script>
-<link rel="stylesheet" type="text/css" href="style/species.css" />
+<link rel="stylesheet" type="text/css" href="style/banyan.css" />
 </head>
 
 <body>
@@ -12,19 +12,21 @@
 <div class="Node">
 	<div class="HeaderDiv">
 		<form id="searchForm">
-		<input class="Box" id="textfield" name="textfield" type="text"></input><input 
-			class="Button" value="Search" name="search" type="submit"></input>
+		<input class="Box" id="textfield" type="text"></input><input 
+			class="Button" value="Search" id="search" type="submit"></input>
 		</form><span class="Spacer">|</span><a 
 			class="Link" href="#" id="treeLink">#Tree</a><span 
-			class="Spacer">|</span><a 
-			class="Link" href="#t:startOver">Start Over</a><span 
+			class="Spacer">|</span><a id="startOverLink"
+			class="Link" href="#t:startOver">Home</a><span 
+			class="Spacer">|</span><a id="blankTreeLink"
+			class="Link" href="#t:blankTree">Clear</a><span 
 			class="Spacer">|</span><a 
 			class="Link" href="#t:examplesTab">Examples</a><span 
 			class="Spacer">|</span><a 
 			class="Link" id="RandomLink" href="#t:random:0">Random</a><span 
 			class="Spacer">|</span><a 
 			class="Link" href="#t:faqTab">FAQ</a><span 
-			class="Logo"><img alt="Banyan" src="icons/banyan-logo.png"></img></span>
+			class="Logo"><img alt="Banyan" src="icons/banyan-icon.png"></img></span>
 	</div>
 </div>
 <div class="Quote">
@@ -44,7 +46,7 @@
 	<br/>
 	<img class="faqButton-detail_first" src="icons/menu_more.png"/> and <img class="faqButton-detail_first" src="icons/menu_less.png"/> - <b>Show Menu</b> - Hover over these buttons to show a menu of options. The button looks like <img class="faqButton-detail_first" src="icons/menu_less.png"/> when there are no sub-species available to open up.
 	<br/>
-	<img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail_first.png"/> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.
+	<img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail.png"/> - <b>Go to Details</b> - Takes you to a page that gives details about the chosen species, with helpful links to get more information.
 	<br/>
 	<img class="faqButton" src="icons/open_children.png"/> - <b>Show Children</b> - Will show all direct children of the chosen species.
 	<br/>
@@ -58,7 +60,7 @@
 	<br/>
 	<img class="faqButton" src="icons/close.png"/> - <b>Close</b> - Closes the chosen species, and all its children.
 	<br/>
-	<span class="HugeCross">† </span> - Indicates that the given species is extinct.
+	<span class="FaqExtinct">† </span> - Indicates that the given species is extinct.
 	<br/>
 	<a id="faqImage" href="#" class="preview"><img src="#willInit" class="Thumb" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
 	</div>
@@ -66,17 +68,14 @@
 	<td rowspan="2"><span class="Node">All Species images are from <a href="http://species.wikimedia.org" class="CreditLink">WikiSpecies</a><br clear="none">
 	and are licensed either under the <br clear="none"><a href="http://en.wikipedia.org/wiki/GNU_Free_Documentation_License" class="CreditLink">GNU Free Documentation License</a> 
 	or a <br clear="none"><a href="http://creativecommons.org/licenses/by-sa/2.5/" class="CreditLink">Creative Commons Attribution ShareAlike License</a>.</span></td>
-	<td class="b">&nbsp</td>
-	<td rowspan="2"><span class="Node">All icons are by <br clear="none"><a href="http://dryicons.com" class="CreditLink">http://dryicons.com</a><br clear="none">
-	and are licensed under their <br clear="none"><a href="http://dryicons.com/terms/free/" class="CreditLink">DryIcons Free License Agreement</a>.</span></td>
-	<td class="b">&nbsp</td>
+	<td class="b">&nbsp;</td>
 	<td rowspan="2"><span class="Node">All other content <br clear="none"><a href="#" class="CreditLink">© Jacob Robertson 2009-2018</a></span></td>
 	</tr>
-	<tr><td>&nbsp</td><td>&nbsp</td></tr>
+	<tr><td>&nbsp;</td><td>&nbsp;</td></tr>
 	</table>
 </div>
 <div id="detailsTab" class="tabCommand">
-	<div class="Node"><table><tbody>
+	<div class="DetailsNode Node"><table><tbody>
 		<tr><td>
 			<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
 			<div class="DetailLatinTitle" id="DetailLatinTitle">Latin Name</div>
@@ -84,10 +83,10 @@
 			</td>
 			<td>
 			<div class="Queries">
-				<a id="DetailGoogleLink" href="http://www.google.com/images?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
-				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google Images</span></a><br clear="none">
-				<a id="DetailGoogleImageLink" href="http://www.google.com/search?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/globe_search.png" class="detail-button-search">
-				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google (Web Search)</span></a></div></td></tr><tr>
+				<a id="DetailGoogleLink" href="http://www.google.com/images?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/search.png" class="detail-button-search">
+				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google (Web Search)</span></a><br clear="none">
+				<a id="DetailGoogleImageLink" href="http://www.google.com/search?q=Tree+of+Life+Arbor+vitae"><img alt="search" src="icons/search.png" class="detail-button-search">
+				Lookup <span class="SearchTerm">Search Terms Title</span> on <span class="SearchSite">Google Images</span></a></div></td></tr><tr>
 			<td id="TaxonomyCell">
 				<span class="Entry"></span>
 			</td>
@@ -96,10 +95,10 @@
 		<div class="DetailImage">
 		<a id="DetailImageWikiSpeciesLink" href="#FILL"><img id="DetailImage" alt="Tree of Life" height="188" width="250" src="#FILL"><br clear="none"><span class="ImageSourceLink"><i>View original image at WikiSpecies</i></span></a></div></td></tr></tbody></table>
 		<br/>
-		<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">View your current Tree of Life</a></div>
+		<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">Back to your #Tree</a></div>
 	</div>
 	<br/>
-	<div id="SubSpeciesTableNode" class="Node"><div class="DetailTitle">Sub-species of <span class="DetailTitleName">Tree of Life</span></div>
+	<div id="SubSpeciesTableNode" class="DetailsNode Node"><div class="DetailTitle">Sub-species of <span class="DetailTitleName">Tree of Life</span></div>
 	<br/>
 	<table id="SubSpeciesTable">
 		<!--  will be filled or hidden -->
@@ -145,13 +144,13 @@ Non Visual Elements
 		<a class="cpButton" id="cpPin" href="TBD">
 			<div class="MenuRow">
 				<img alt="pin" src="icons/pin_image.png"></img>&nbsp;
-				Pin Species
+				Pin Image
 			</div>
 		</a>
 		<a class="cpButton" id="cpUnpin" href="TBD">
 			<div class="MenuRow">
 				<img alt="unpin" src="icons/unpin_image.png"></img>&nbsp;
-				Unpin Species
+				Unpin Image
 			</div>
 		</a>
 		<a class="cpButton" id="cpDetail" href="TBD">
