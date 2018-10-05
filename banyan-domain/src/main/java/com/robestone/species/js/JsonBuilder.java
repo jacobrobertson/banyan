@@ -34,12 +34,8 @@ public class JsonBuilder extends AbstractWorker {
 		
 		JsonBuilder b = new JsonBuilder();
 		
-		System.out.println(b.createImageDataString("C:\\Users\\jacob.robertson\\Desktop\\wikimedia\\Chondrichthyes-20px.png"));
-		
-		// this is what I run to get all json files built
+		b.rebuildLuceneIndex();
 //		b.rebuildAllJson();
-		
-		// don't normally need to run these
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
 //		b.runExamples();
@@ -49,6 +45,10 @@ public class JsonBuilder extends AbstractWorker {
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
+	
+	public void rebuildLuceneIndex() throws Exception {
+		new LuceneSearcher(speciesService, LuceneSearcher.defaultLinuxPath);
+	}
 	
 	public void rebuildAllJson() throws Exception {
 		partitionFromDB();
