@@ -1470,9 +1470,15 @@ function submitSearchQuery(query) {
 	} else {
 		cids = crunch(ids);
 	}
-	var urlQueryPart = "/search/" + query + "/" + cids + "/";
-	var urlBase = "";//http://localhost:8081";
-	var url = urlBase + urlQueryPart;
+	var base;
+	var test = window.location.href;
+	if (test.startsWith("http://localhost")) {
+		// this is a hack to run both under spring-boot locally
+		base = "/search/";
+	} else {
+		base = "/banyan-search/search/";
+	}
+	var url = base + query + "/" + cids + "/";
 	$.getJSON(url, submitSearchQuery_callback);
 }
 function submitSearchQuery_callback(data) {
