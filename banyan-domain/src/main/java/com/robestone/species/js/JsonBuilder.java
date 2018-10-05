@@ -1,7 +1,10 @@
 package com.robestone.species.js;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.CrunchedIds;
@@ -30,12 +34,18 @@ public class JsonBuilder extends AbstractWorker {
 		
 		JsonBuilder b = new JsonBuilder();
 		
-		b.rebuildAllJson();
+		System.out.println(b.createImageDataString("C:\\Users\\jacob.robertson\\Desktop\\wikimedia\\Chondrichthyes-20px.png"));
+		
+		// this is what I run to get all json files built
+//		b.rebuildAllJson();
+		
+		// don't normally need to run these
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
 //		b.runExamples();
 	}
 	
+	private String imagesDir = "E:/banyan-images";
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
@@ -108,12 +118,6 @@ public class JsonBuilder extends AbstractWorker {
 			System.out.println(query + " >> Not Found");
 			return null;
 		}
-	}
-	
-	public void runGenerateFullJsonDB() throws Exception {
-		runExamples();
-		outputRandomFileIndex();
-		partitionFromDB();
 	}
 	
 	public void partitionFromDB() throws Exception {
@@ -368,6 +372,9 @@ public class JsonBuilder extends AbstractWorker {
 			je.setpHeight(e.getImage().getPreviewHeight());
 			je.setpWidth(e.getImage().getPreviewWidth());
 			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
+			String localImageRelativePath = imagesDir + "/" + e.getImage().getImagePathPart();
+			String data = createImageDataString(localImageRelativePath);
+			je.setImgData(data);
 		}
 		je.setChildrenIds(new ArrayList<Integer>(getChildrenIds(e)));
 		Collections.sort(je.getChildrenIds()); // for indexing in js
@@ -442,5 +449,21 @@ public class JsonBuilder extends AbstractWorker {
 			buf.append(speciesService.findEntry(id).getLatinName());
 		}
 		System.out.println(buf);
+	}
+	
+	/**
+	 * Right now, these "tiny" images are actually much larger than how I'm rendering them.
+	 * I should either get wikicommons to resize them all for me (could download "tiny" and "embedded size") or resize here
+	 */
+	public String createImageDataString(String localImageRelativePath) {
+		File file = new File(localImageRelativePath);
+		byte[] bytes;
+		try {
+			bytes = IOUtils.toByteArray(new FileInputStream(file));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		String encoded = Base64.getEncoder().encodeToString(bytes);
+		return encoded;
 	}
 }

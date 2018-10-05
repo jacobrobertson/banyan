@@ -9,6 +9,7 @@ public class JsonEntry {
 	private String lname;
 	private Integer parentId;
 	private String img;
+	private String imgData;
 	private Integer tHeight;
 	private Integer tWidth;
 	private Integer pHeight;
@@ -53,6 +54,12 @@ public class JsonEntry {
 	}
 	public void setImg(String img) {
 		this.img = img;
+	}
+	public String getImgData() {
+		return imgData;
+	}
+	public void setImgData(String imgData) {
+		this.imgData = imgData;
 	}
 	public Integer gettHeight() {
 		return tHeight;
