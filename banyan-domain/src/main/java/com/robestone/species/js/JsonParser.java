@@ -117,6 +117,7 @@ public class JsonParser {
 				entry.settWidth(obj.getInt("tWidth"));
 				entry.setpHeight(obj.getInt("pHeight"));
 				entry.setpWidth(obj.getInt("pWidth"));
+				entry.setImgData(obj.getString("imgData"));
 			}
 
 			if (obj.containsKey("cnames")) {
@@ -322,6 +323,7 @@ public class JsonParser {
 				append(buf, true, "pHeight", e.getpHeight());
 				append(buf, true, "pWidth", e.getpWidth());
 				append(buf, true, "iLink", e.getWikiSpeciesLink());
+				append(buf, true, "imgData", e.getImgData());
 			}
 	
 			appendIntList(buf, true, "childrenIds", e.getChildrenIds());

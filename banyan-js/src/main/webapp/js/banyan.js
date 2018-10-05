@@ -1172,8 +1172,14 @@ function renderNodeEntryLine(h, e, depth) {
 	var imgClass;
 	if (e.img) {
 		if (!e.pinned) {
+			var imgSrc;
+			if (e.imgData) {
+				src = "data:image;base64," + e.imgData;
+			} else {
+				src = getImagesPath() + '/tiny/' + e.img;
+			}
 			img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
-				getImagesPath() + '/tiny/' + e.img + '" class="Thumb" />';
+				imgSrc + '" class="Thumb" />';
 		} else {
 			img = "";
 		}
