@@ -12,6 +12,13 @@
 NOTE, under NFSN, you will need to pass in the lucene dir, but
 locally this seems to work coming from application.properties
 
+To run this from eclipse
+1. Set the banyan-js/src/main as a linked source from banyan-search's build sources.  This will place it in target
+2. Run as spring-boot
+3. browse to the following - I don't think it works without index.html 
+	http://localhost:8081/webapp/index.html
+4. You probably have to refresh banyan-search anytime a resource in banyan-js changes
+
  -->
 
 	<parent>
