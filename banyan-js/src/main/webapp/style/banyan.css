@@ -270,24 +270,24 @@ td {
 	font-style: italic;
 	color: #547a29;
 }
-#controlpanel {
+#menu {
 	display: none;
 	position: absolute;
 	border: solid #466522 1px;
 	padding: 0px;
 	background: white;
 }
-#controlpanel a {
+#menu a {
 	text-decoration: none;
 	color: #628e2f;
 	padding: 0px;
 	margin: 0px;
 }
-.cpButton {
+.mButton {
 	width: 100%;
 	margin: 0px;
 }
-.cpButton img {
+.mButton img {
 	margin: 0px;
 	vertical-align: middle;
 	width: 20px;

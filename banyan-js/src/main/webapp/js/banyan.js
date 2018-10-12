@@ -57,7 +57,7 @@ function onHashChange() {
 }
 function hideContextMenu() {
 	isMenuActive = false;
-	$("#controlpanel").hide();
+	$("#menu").hide();
 }
 function checkContextMenuActive(e) {
 	if (!isMenuActive && (cancelerEvent == null || cancelerEvent == e)) {
@@ -69,18 +69,17 @@ function checkContextMenuActive(e) {
 	}
 }
 function initContextMenu() {
-	$("#controlpanel").mouseenter(function(e) {
+	$("#menu").mouseenter(function(e) {
 		isMenuActive = true;
 	});
-	$("#controlpanel").mouseleave(function(e) {
+	$("#menu").mouseleave(function(e) {
 		hideContextMenu();
 	});
-	$("#controlpanel").mousemove(function(e) {
+	$("#menu").mousemove(function(e) {
 		isMenuActive = true;
 	});
 	
-	// <a shape="rect" class="cpButton" id="cpHide" href="TBD">
-	$(".cpButton").bind("click", function(e) {
+	$(".mButton").bind("click", function(e) {
 		contextMenuClicked(this);
 		return false;
 	});
@@ -102,21 +101,21 @@ function contextMenuClicked(aTag) {
 	var id = aTag.href.substring(pos + 1);
 	hideContextMenu();
 	
-	if (action == "cpClose") {
+	if (action == "mClose") {
 		closeNode(id);
-	} else if (action == "cpHide") {
+	} else if (action == "mHide") {
 		hideChildren(id);
-	} else if (action == "cpShowChildren") {
+	} else if (action == "mShowChildren") {
 		loadAllChildren(id);
-	} else if (action == "cpShowMore") {
+	} else if (action == "mShowMore") {
 		loadAllShowMore(id);
-	} else if (action == "cpFocus") {
+	} else if (action == "mFocus") {
 		focusOnNode(id);
-	} else if (action == "cpDetail") {
+	} else if (action == "mDetail") {
 		setUrlForDetail(aTag.href.substring(pos + 1));
-	} else if (action == "cpPin") {
+	} else if (action == "mPin") {
 		pinNode(id, true);
-	} else if (action == "cpUnpin") {
+	} else if (action == "mUnpin") {
 		pinNode(id, false);
 	}
 }
@@ -130,9 +129,9 @@ function pinNode(id, pinned) {
 }
 function showContextMenu(e, img) {
 	var imgId = img.id;
-	// create the right control panel links
+	// create the right menu links
 	var e = getMapEntry(imgId);
-	var buttons = $("#controlpanel a");
+	var buttons = $("#menu a");
 	var rowsShownCount = 0;
 	var maxWidth = 0;
 	for ( var i = 0; i < buttons.length; i++) {
@@ -146,25 +145,25 @@ function showContextMenu(e, img) {
 		} else {
 			$(button).hide();
 		}
-		if (buttonId == 'cpHide') {
+		if (buttonId == 'mHide') {
 			maxWidth = Math.max(maxWidth, maxWidthHide);
-		} else if (buttonId == 'cpClose') {
+		} else if (buttonId == 'mClose') {
 			maxWidth = Math.max(maxWidth, maxWidthClose);
-		} else if (buttonId == 'cpFocus') {
+		} else if (buttonId == 'mFocus') {
 			maxWidth = Math.max(maxWidth, maxWidthFocus);
-		} else if (buttonId == 'cpDetail') {
+		} else if (buttonId == 'mDetail') {
 			maxWidth = Math.max(maxWidth, maxWidthDetail);
 			link = "#" + getEntryDetailsHash(e);
-		} else if (buttonId == 'cpShowChildren') {
-			var showCaption = e.cpShowChildrenCaption;
+		} else if (buttonId == 'mShowChildren') {
+			var showCaption = e.mShowChildrenCaption;
 			if (showCaption) {
-				$("#cpShowChildrenCaption").text(showCaption);
+				$("#mShowChildrenCaption").text(showCaption);
 				maxWidth = getVariableWidth(showCaption, 20, maxWidthShowChildren, maxWidth);
 			}
-		} else if (buttonId == 'cpShowMore') {
-			var showMoreCaption = e.cpShowMoreCaption;
+		} else if (buttonId == 'mShowMore') {
+			var showMoreCaption = e.mShowMoreCaption;
 			if (showMoreCaption) {
-				$("#cpShowMoreCaption").text(showMoreCaption);
+				$("#mShowMoreCaption").text(showMoreCaption);
 				maxWidth = getVariableWidth(showMoreCaption, 19, maxWidthShowMore, maxWidth);
 			}
 		}
@@ -193,7 +192,7 @@ function showContextMenu(e, img) {
 		left = docViewRight - maxWidth;
 	}
 	
-	$("#controlpanel").show().css( {
+	$("#menu").show().css( {
 		"top" : top,
 		"left" : left
 	});
@@ -771,29 +770,29 @@ function prepareEntryForContextMenu(e) {
 	var childrenShownIds = getChildrenIdsShownCountingSiblings(e);
 	var hiddenCount = e.childrenIds.length - childrenShownIds.length;
 	if (hiddenCount == 0) {
-		e.cpShowChildren = false;
-		e.cpShowChildrenCaption = false;
+		e.mShowChildren = false;
+		e.mShowChildrenCaption = false;
 	} else {
-		e.cpShowChildren = true;
-		e.cpShowChildrenCaption = getShowCaption(e.childrenToShow.length, hiddenCount, "Child", "Children");
+		e.mShowChildren = true;
+		e.mShowChildrenCaption = getShowCaption(e.childrenToShow.length, hiddenCount, "Child", "Children");
 	}
 
-	e.cpHide = (e.childrenToShow.length > 0);
+	e.mHide = (e.childrenToShow.length > 0);
 	
 	var visibleShowMoreIds = getVisibleIds(e.showMoreLeafIds);
 	var showMoreVisible = visibleShowMoreIds.length;
 	var showMoreHidden = e.showMoreLeafIds.length - showMoreVisible;
 	var isSame = isShowMoreAndShowChildrenSame(childrenShownIds, e.childrenIds, visibleShowMoreIds, e.showMoreLeafIds);
 	if (showMoreHidden == 0 || isSame) {
-		e.cpShowMore = false;
-		e.cpShowMoreCaption = false;
+		e.mShowMore = false;
+		e.mShowMoreCaption = false;
 	} else {
-		e.cpShowMore = true;
-		e.cpShowMoreCaption = getShowCaption(showMoreVisible, showMoreHidden, "Species", "Species");
+		e.mShowMore = true;
+		e.mShowMoreCaption = getShowCaption(showMoreVisible, showMoreHidden, "Species", "Species");
 	}
 
 	// focus doesn't show any additional nodes, it just hides everything not up or downstream of this node
-	e.cpFocus = isFocusNeeded(e);
+	e.mFocus = isFocusNeeded(e);
 	
 	// recurse
 	var i;
@@ -805,8 +804,8 @@ function prepareEntryForContextMenu(e) {
 	}
 	
 	var pinnable = (e.img);
-	e.cpPin = (!e.pinned && pinnable);
-	e.cpUnpin = (e.pinned && pinnable);
+	e.mPin = (!e.pinned && pinnable);
+	e.mUnpin = (e.pinned && pinnable);
 }
 function getArrayOfFirstMinusSecond(first, second) {
 	var a = [];
@@ -874,11 +873,11 @@ function getInitIds(ids) {
 }
 // only those things that need to be done exactly one time when first loaded
 function initEntry(e) {
-	e.cpDetail = true;
+	e.mDetail = true;
 	e.childrenIds = getInitIds(e.childrenIds);
 	e.showMoreLeafIds = getInitIds(e.showMoreLeafIds);
 	e.showMoreOtherIds = getInitIds(e.showMoreOtherIds);
-	e.cpClose = true;
+	e.mClose = true;
 	if (!e.extinct) {
 		e.extinct = false;
 	}
@@ -1174,9 +1173,9 @@ function renderNodeEntryLine(h, e, depth) {
 		if (!e.pinned) {
 			var imgSrc;
 			if (e.imgData) {
-				src = "data:image;base64," + e.imgData;
+				imgSrc = "data:image;base64," + e.imgData;
 			} else {
-				src = getImagesPath() + '/tiny/' + e.img;
+				imgSrc = getImagesPath() + '/tiny/' + e.img;
 			}
 			img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
 				imgSrc + '" class="Thumb" />';
@@ -1200,14 +1199,14 @@ function renderNodeEntryLine(h, e, depth) {
 	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
-	// menu button
-	var canShowMore = (e.cpShowChildren || e.cpShowMore);
+	// menu button style/image
+	var canShowMore = (e.mShowChildren || e.mShowMore);
 	var menuMore = "menu_more.png";
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	span.append('<a href="#menu' + e.id + '" id="' + e.id + '" class="opener">'
-			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu"></a>');
+	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="opener">'
+			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 }
 function getNbsps(count) {
 	var pad = "";
