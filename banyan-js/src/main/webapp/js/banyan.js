@@ -92,7 +92,6 @@ function initPageElements() {
 	img.attr("alt", e.alt);
 	img.attr("height", e.tHeight);
 	img.attr("width", e.tWidth);
-	setRandomLinkIndex();
 	initPreviewEvents();
 }
 function contextMenuClicked(aTag) {
@@ -1524,30 +1523,37 @@ function showTab(id) {
 	$(".tabCommand").hide();
 	$("#" + id).show();
 }
-function loadRandomFile() {
+function loadRandomFile(command) {
 	if (!dbRandomFiles) {
 		loadRandomFileIndexFromJson();
 	} else {
 		setRandomLinkIndex();
-		// choose a random file and load it
-		var index = Math.floor(Math.random() * dbRandomFiles.length);
+		var index = parseInt(command);
 		var next = dbRandomFiles[index];
 		loadExampleFile("r:" + next);
 	}
 }
 function setRandomLinkIndex() {
-	// change the random link, so that it will trigger the listener
 	var link = $("#RandomLink");
 	var href = link.attr("href");
-	var pos = href.lastIndexOf(":");
-	var index = parseInt(href.substring(pos + 1)) + 1;
+	// choose a random number, because that way pressing back, etc will keep that number random
+	var index = Math.floor(Math.random() * dbRandomFiles.length);
 	link.attr("href", "#t:random:" + index);
 }
 function loadRandomFileIndexFromJson() {
 	$.getJSON("json/r/random-index.json", function(data) {
 		dbRandomFiles = data.files;
-		loadRandomFile();
+		shuffleArray(dbRandomFiles);
+		loadRandomFile(0);
 	});
+}
+function shuffleArray(array) {
+    for (var i = array.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
 }
 function loadExampleFile(fileName) {
 	hideAllNodes();
