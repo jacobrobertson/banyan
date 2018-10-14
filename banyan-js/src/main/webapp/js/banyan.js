@@ -88,11 +88,18 @@ function initPageElements() {
 	// FAQ items that need to come from entries
 	var img = $("#faqImage img");
 	var e = getRootEntry();
-	img.attr("src", getImagesPath() + '/tiny/' + e.img);
+	img.attr("src", getImageTinySrcPath(e));
 	img.attr("alt", e.alt);
 	img.attr("height", e.tHeight);
 	img.attr("width", e.tWidth);
 	initPreviewEvents();
+}
+function getImageTinySrcPath(e) {
+	if (e.imgData) {
+		return "data:image;base64," + e.imgData;
+	} else {
+		return getImagesPath() + '/tiny/' + e.img;
+	}
 }
 function contextMenuClicked(aTag) {
 	var action = aTag.id;
@@ -1170,12 +1177,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var imgClass;
 	if (e.img) {
 		if (!e.pinned) {
-			var imgSrc;
-			if (e.imgData) {
-				imgSrc = "data:image;base64," + e.imgData;
-			} else {
-				imgSrc = getImagesPath() + '/tiny/' + e.img;
-			}
+			var imgSrc = getImageTinySrcPath(e);
 			img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
 				imgSrc + '" class="Thumb" />';
 		} else {
