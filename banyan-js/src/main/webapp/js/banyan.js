@@ -1222,7 +1222,7 @@ function getImagesPath() {
 function iconPath() {
 	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
 }
-function getRenderTaxoDisplayName(e) {
+function getRenderDetailsTaxoDisplayName(e) {
 	var name = "<i>(" + e.lname + ")</i>";
 	if (e.cname) {
 		name = e.cname + " " + name;
@@ -1302,14 +1302,21 @@ function renderDetails(id) {
 	}
 	$(".SearchTerm").html(searchName);
 	
-	var img = $("#DetailImage");
-	img.attr("alt", "");
-	img.attr("height", e.pHeight);
-	img.attr("width", e.pWidth);
-	img.attr("src", getImagesPath() + "/preview/" + e.img);
-
-	var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
-	$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
+	var div = $(".DetailImageDiv");
+	if (e.img) {
+		var img = $("#DetailImage");
+		img.attr("alt", "");
+		img.attr("height", e.pHeight);
+		img.attr("width", e.pWidth);
+		img.attr("src", getImagesPath() + "/preview/" + e.img);
+	
+		var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
+		$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
+		
+		div.show();
+	} else {
+		div.hide();
+	}
 
 	var taxoEntry = $("#TaxonomyCell .Entry");
 	taxoEntry.empty();
@@ -1373,12 +1380,18 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
 	$("<a href='#" + href 
 		+ "'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
-	var taxoName = getRenderTaxoDisplayName(e);
+	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
 	var linkTitle;
 	if (!e.img) {
 		previewClass = "no-preview";
-		linkTitle = ' title="' + taxoName + '"';
+		var titleName;
+		if (e.cname) {
+			titleName = e.cname;
+		} else {
+			titleName = e.lname;
+		}
+		linkTitle = ' title="' + titleName + '"';
 	} else {
 		linkTitle = "";
 	}
