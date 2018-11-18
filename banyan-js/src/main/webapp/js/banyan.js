@@ -88,11 +88,18 @@ function initPageElements() {
 	// FAQ items that need to come from entries
 	var img = $("#faqImage img");
 	var e = getRootEntry();
-	img.attr("src", getImagesPath() + '/tiny/' + e.img);
+	img.attr("src", getImageTinySrcPath(e));
 	img.attr("alt", e.alt);
 	img.attr("height", e.tHeight);
 	img.attr("width", e.tWidth);
 	initPreviewEvents();
+}
+function getImageTinySrcPath(e) {
+	if (e.imgData) {
+		return "data:image;base64," + e.imgData;
+	} else {
+		return getImagesPath() + '/tiny/' + e.img;
+	}
 }
 function contextMenuClicked(aTag) {
 	var action = aTag.id;
@@ -1170,12 +1177,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var imgClass;
 	if (e.img) {
 		if (!e.pinned) {
-			var imgSrc;
-			if (e.imgData) {
-				imgSrc = "data:image;base64," + e.imgData;
-			} else {
-				imgSrc = getImagesPath() + '/tiny/' + e.img;
-			}
+			var imgSrc = getImageTinySrcPath(e);
 			img = '<img alt="' + e.alt + '" height="' + e.tHeight + '" width="' + e.tWidth + '" src="' + 
 				imgSrc + '" class="Thumb" />';
 		} else {
@@ -1220,7 +1222,7 @@ function getImagesPath() {
 function iconPath() {
 	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
 }
-function getRenderTaxoDisplayName(e) {
+function getRenderDetailsTaxoDisplayName(e) {
 	var name = "<i>(" + e.lname + ")</i>";
 	if (e.cname) {
 		name = e.cname + " " + name;
@@ -1300,14 +1302,21 @@ function renderDetails(id) {
 	}
 	$(".SearchTerm").html(searchName);
 	
-	var img = $("#DetailImage");
-	img.attr("alt", "");
-	img.attr("height", e.pHeight);
-	img.attr("width", e.pWidth);
-	img.attr("src", getImagesPath() + "/preview/" + e.img);
-
-	var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
-	$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
+	var div = $(".DetailImageDiv");
+	if (e.img) {
+		var img = $("#DetailImage");
+		img.attr("alt", "");
+		img.attr("height", e.pHeight);
+		img.attr("width", e.pWidth);
+		img.attr("src", getImagesPath() + "/preview/" + e.img);
+	
+		var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
+		$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
+		
+		div.show();
+	} else {
+		div.hide();
+	}
 
 	var taxoEntry = $("#TaxonomyCell .Entry");
 	taxoEntry.empty();
@@ -1371,12 +1380,18 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
 	$("<a href='#" + href 
 		+ "'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
-	var taxoName = getRenderTaxoDisplayName(e);
+	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
 	var linkTitle;
 	if (!e.img) {
 		previewClass = "no-preview";
-		linkTitle = ' title="' + taxoName + '"';
+		var titleName;
+		if (e.cname) {
+			titleName = e.cname;
+		} else {
+			titleName = e.lname;
+		}
+		linkTitle = ' title="' + titleName + '"';
 	} else {
 		linkTitle = "";
 	}
