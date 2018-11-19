@@ -248,9 +248,9 @@ function initPreviewEvents() {
 			}
 		}
 	});
-	
-	$(".opener").off(".preview");
-	$(".opener").on({
+
+	$(".menuopener").off(".preview");
+	$(".menuopener").on({
 		"click.preview mouseenter.preview": function(e) {
 			cancelerEvent = e;
 			e.preventDefault();
@@ -1206,7 +1206,7 @@ function renderNodeEntryLine(h, e, depth) {
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="opener">'
+	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 }
 function getNbsps(count) {
