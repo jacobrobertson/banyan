@@ -126,12 +126,15 @@ function contextMenuClicked(aTag) {
 	}
 }
 function closeNode(id) {
+	var parentId = getMapEntry(id).parentId;
 	markIdAsShown(id, false);
 	renderCurrentTree();
+	highlightNodes(parentId);
 }
 function pinNode(id, pinned) {
 	getMapEntry(id).pinned = pinned;
 	renderCurrentTree();
+	highlightNodes(id);
 }
 function showContextMenu(e, img) {
 	var imgId = img.id;
@@ -271,6 +274,7 @@ function initPreviewEvents() {
 function hideChildren(id) {
 	markChildrenAsShown(id, false);
 	renderCurrentTree();
+	highlightNodes(id);
 }
 // do not call directly - call from wrapper only
 function setUrlInner(afterHash) {
@@ -450,6 +454,7 @@ function focusOnNode(id) {
 	var p = e.parent;
 	focusOnNodeParent(p, e);
 	renderCurrentTree();
+	highlightNodes(id);
 }
 function focusOnNodeParent(p, e) {
 	for (var i = 0; i < p.children.length; i++) {
@@ -461,6 +466,26 @@ function focusOnNodeParent(p, e) {
 	if (p.parent) {
 		focusOnNodeParent(p.parent, p);
 	}
+}
+function highlightNodes(ids) {
+	if (!Array.isArray(ids)) {
+		ids = [ ids ];
+	}
+	var entries = $();
+	for (var i = 0; i < ids.length; i++) {
+		var id = ids[i];
+		var entry = $("#entry-" + id);
+		while (entry.length == 0) {
+			id = getMapEntry(id).parentId;
+			entry = $("#entry-" + id);
+		}
+		entries = entries.add(entry);
+	}
+	var nodes = entries.closest(".Node");
+	nodes
+		.animate({opacity: .2}, 100)
+		.animate({opacity: 1}, 500)
+	;
 }
 function hideAllNodes() {
 	if (getRootEntry()) {
@@ -989,6 +1014,11 @@ function getAllPinnedNodeIds() {
 function sortIntCompare(a, b) {
 	return a - b;
 }
+function removeSecondFromFirst(array1, array2) {
+	return array1.filter(function(x) { 
+  		return array2.indexOf(x) < 0;
+	});
+}
 function getVisibleNodeIds(e, ids) {
 	if (isEntryShown(e.id)) {
 		ids.push(e.id);
@@ -1033,6 +1063,7 @@ function renderCurrentTree(skipUrl) {
 	if (!skipUrl) {
 		setUrlToAllVisibleIds();
 	}
+	hideContextMenu();
 }
 function renderTree(id, keepOnlyNew) {
 	$("#treeTab").empty();
@@ -1454,7 +1485,7 @@ function loadCommandFromURL() {
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
-		loadJsonThenMarkOnlyNewVisible(ids, false);
+		loadAndShowNewIds(ids, false);
 	} else if (command == "c") {
 		var pinnedIds = false;
 		if (commandParam) {
@@ -1466,7 +1497,7 @@ function loadCommandFromURL() {
 			}
 		}
 		var ids = uncrunch(value);
-		loadJsonThenMarkOnlyNewVisible(ids, pinnedIds);
+		loadAndShowNewIds(ids, pinnedIds);
 	}
 }
 function submitSearchQuery(query) {
@@ -1593,19 +1624,48 @@ function build_loadExampleFile_callback(fileName) {
 	};
 }
 function loadAllChildren(id) {
-	var childrenIds = getMapEntry(id).childrenIds;
-	loadJsonThenMarkNewIdsVisible(childrenIds);
+	var allChildrenIds = getMapEntry(id).childrenIds;
+	var visible = [];
+	getVisibleNodeIds(getMapEntry(id), visible);
+	var newChildrenIds = removeSecondFromFirst(allChildrenIds, visible);
+	loadJsonThenMarkNewIdsVisible(newChildrenIds, function() {highlightNodes(newChildrenIds)});
 }
 function loadAllShowMore(id) {
 	var e = getMapEntry(id);
 	// build the full list
 	var allShowMoreIds = e.showMoreLeafIds.concat(e.showMoreOtherIds);
-	loadJsonThenMarkNewIdsVisible(allShowMoreIds);
+	var visibleIds = [];
+	getVisibleNodeIds(e, visibleIds);
+	var newIds = removeSecondFromFirst(allShowMoreIds, visibleIds);
+	loadJsonThenMarkNewIdsVisible(newIds, function() {highlightNodes(newIds)});
 }
 
-function loadJsonThenMarkOnlyNewVisible(fileNamesOrIds, pinnedIds) {
-	hideAllNodes();
-	loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true);
+function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
+	var currentVisibleIds = getAllVisibleNodeIds();
+	var same = areArraysSame(currentVisibleIds, fileNamesOrIds);
+	if (same && pinnedIds) {
+		var currentPinnedIds = getAllPinnedNodeIds();
+		same = areArraysSame(pinnedIds, currentPinnedIds);
+	}
+	
+	if (!same) {
+		hideAllNodes();
+		loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true);
+	}
+}
+function areArraysSame(a1, a2) {
+	var same = (a1.length == a2.length);
+	if (same) {
+		var foundCount = 0;
+		for (var i = 0; i < a1.length; i++) {
+			var found = (a2.indexOf(a1[i]) >= 0);
+			if (found) {
+				foundCount++;
+			}
+		}
+		same = (foundCount == a1.length);
+	}
+	return same;
 }
 // these are the master "load ids" methods, and should be altered to accomodate the one or two scenarios we have
 // - load these nodes/files exactly, and then mark exactly those nodes visible in addition to current tree, then render tree
