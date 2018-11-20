@@ -20,17 +20,21 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	
 	public static void main(String[] args) {
 		
-//		args = new String[] {"Cetraria islandica"};
+		args = new String[] {"Protoceratidae"};
+		
+		WikipediaImageAndNameFinder finder = new WikipediaImageAndNameFinder();
+		finder.ignoreCommonNames = true;
 		
 		if (args != null && args.length == 1) {
-			new WikipediaImageAndNameFinder().runOne(args[0]);
+			finder.runOne(args[0]);
 		} else {
-			new WikipediaImageAndNameFinder().run();
+			finder.run();
 		}
 	}
 	private String outFilePath = "D:\\eclipse-workspaces\\git\\banyan-parent\\banyan-jstests\\src\\main\\webapp\\page-list.js";
 	private WikipediaCrawler crawler = new WikipediaCrawler();
 	private TaxoboxFormatter formatter = new TaxoboxFormatter();
+	private boolean ignoreCommonNames = false;
 
 	public void runOne(String latinName) {
 		CompleteEntry one = speciesService.findEntryByLatinName(latinName);
@@ -134,7 +138,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 		if (box.getImage() != null && entry.getImageLink() == null) {
 			return true;
 		}
-		if (isNamesInteresting(box, entry)) {
+		if (ignoreCommonNames || isNamesInteresting(box, entry)) {
 			return true;
 		}
 		return false;

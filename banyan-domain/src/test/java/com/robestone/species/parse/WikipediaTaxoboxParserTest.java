@@ -120,5 +120,77 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		}
 		return page;
 	}
+	
+	public void testGetTaxoBoxString() {
+		doTestGetTaxoBoxString(
+				"abc {{Taxobox {{abc}} def {{xyz}} qq}} bb", 
+				"{{abc}} def {{xyz}} qq");
+		doTestGetTaxoBoxString(
+				"abc {{Taxobox {{ {{abc}} def {{xyz}} qq}} bb }} ww", 
+				"{{ {{abc}} def {{xyz}} qq}} bb");
+		doTestGetTaxoBoxString(
+				"{{Automatic Taxobox\r\n" + 
+				"| name = Protoceratids\r\n" + 
+				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431–438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
+				"| image = Synthetoceras_BW.jpg\r\n" + 
+				"| image_caption = ''[[Synthetoceras]]''\r\n" + 
+				"| image_upright = 0.7\r\n" + 
+				"| taxon = Protoceratidae\r\n" + 
+				"| authority =\r\n" + 
+				"| subdivision_ranks = Subfamilies and Genera\r\n" + 
+				"| subdivision =\r\n" + 
+				"†Leptotragulinae (same as Protoceratid)\r\n" + 
+				"* †''[[Heteromeryx]]''\r\n" + 
+				"* †''[[Leptoreodon]]''\r\n" + 
+				"* †''[[Leptotragulus]]''\r\n" + 
+				"* †''[[Poabromylus]]''\r\n" + 
+				"* †''[[Toromeryx]]''\r\n" + 
+				"* †''[[Trigenicus]]''\r\n" + 
+				"†[[Protoceratinae]]\r\n" + 
+				"* †''[[Paratoceras]]''\r\n" + 
+				"* †''[[Protoceras]]''\r\n" + 
+				"* †''[[Pseudoprotoceras]]''\r\n" + 
+				"†[[Synthetoceratinae]]\r\n" + 
+				"* †''[[Kyptoceras]]''\r\n" + 
+				"*''†[[Lambdoceras]]''\r\n" + 
+				"* †''[[Prosynthetoceras]]''\r\n" + 
+				"* †''[[Synthetoceras]]''\r\n" + 
+				"* †''[[Syndyoceras]]''\r\n" + 
+				"|range_map = Protoceratidae range.png\r\n" + 
+				"|range_map_caption = Range of Protoceratidae based on fossil record.\r\n" + 
+				"}}", 
+				"| name = Protoceratids\r\n" + 
+				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431–438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
+				"| image = Synthetoceras_BW.jpg\r\n" + 
+				"| image_caption = ''[[Synthetoceras]]''\r\n" + 
+				"| image_upright = 0.7\r\n" + 
+				"| taxon = Protoceratidae\r\n" + 
+				"| authority =\r\n" + 
+				"| subdivision_ranks = Subfamilies and Genera\r\n" + 
+				"| subdivision =\r\n" + 
+				"†Leptotragulinae (same as Protoceratid)\r\n" + 
+				"* †''[[Heteromeryx]]''\r\n" + 
+				"* †''[[Leptoreodon]]''\r\n" + 
+				"* †''[[Leptotragulus]]''\r\n" + 
+				"* †''[[Poabromylus]]''\r\n" + 
+				"* †''[[Toromeryx]]''\r\n" + 
+				"* †''[[Trigenicus]]''\r\n" + 
+				"†[[Protoceratinae]]\r\n" + 
+				"* †''[[Paratoceras]]''\r\n" + 
+				"* †''[[Protoceras]]''\r\n" + 
+				"* †''[[Pseudoprotoceras]]''\r\n" + 
+				"†[[Synthetoceratinae]]\r\n" + 
+				"* †''[[Kyptoceras]]''\r\n" + 
+				"*''†[[Lambdoceras]]''\r\n" + 
+				"* †''[[Prosynthetoceras]]''\r\n" + 
+				"* †''[[Synthetoceras]]''\r\n" + 
+				"* †''[[Syndyoceras]]''\r\n" + 
+				"|range_map = Protoceratidae range.png\r\n" + 
+				"|range_map_caption = Range of Protoceratidae based on fossil record.");
+	}
+	private void doTestGetTaxoBoxString(String edit, String expectString) {
+		String found = WikipediaTaxoboxParser.getTaxoboxString(edit);
+		assertEquals(expectString, found);
+	}
 
 }

@@ -34,7 +34,7 @@ public class WikipediaCrawler {
 		if (page == null) {
 			return null;
 		}
-		Taxobox box = parser.parseHtmlPage(latinName, page);
+		Taxobox box = parser.parseEditString(latinName, page);
 		return box;
 	}
 	public String toTemplate(Taxobox box) {
@@ -43,7 +43,7 @@ public class WikipediaCrawler {
 	}
 	private String toLink(String key) {
 		key = key.replace(" ", "_");
-		return "https://en.wikipedia.org/w/index.php?title=" + key + "&action=edit";
+		return "https://en.wikipedia.org/w/index.php?title=" + key + "&action=raw";
 	}
 	private String getWikipediaPage(String latinName) {
 		String link = toLink(latinName);

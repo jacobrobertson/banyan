@@ -1333,8 +1333,13 @@ function renderDetails(id) {
 	gquery = gquery.replace(/ /g, '+');
 	
 	var displayName = getEntrySimpleDisplayName(e);
-	$(".DetailTitleName").html(displayName); // TODO should list all names
-	$("#DetailLatinTitle").html(e.lname);
+	$("#DetailTitle").html(displayName); // TODO should list all names
+	if (e.cname) {
+		$("#DetailLatinTitle").html(e.lname);
+		$("#DetailLatinTitle").show();
+	} else {
+		$("#DetailLatinTitle").hide();
+	}
 	$("#DetailGoogleLink").attr("href", gbase + "search" + gquery);
 	$("#DetailGoogleImageLink").attr("href", gbase + "images" + gquery);
 	

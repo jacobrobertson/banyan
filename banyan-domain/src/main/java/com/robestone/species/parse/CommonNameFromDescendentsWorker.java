@@ -25,7 +25,9 @@ package com.robestone.species.parse;
  * Before calculating, select the common name portion.
  * Should take into account the number of descendents in each sub-tree to settle ties.  
  * 	For example, look at all immediate children, and if there are 100 descendents in one, check it out.
- * 
+ * Should only count terminal nodes if it's going to dig deep, because it's not "interesting"
+ * 	to have 3 species in a chain with the same common name, and no other branching.
+ *  See Ruminantia (girraffes, opaki and pronghorns
  * @author jacob
  */
 public class CommonNameFromDescendentsWorker extends AbstractWorker {

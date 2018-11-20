@@ -81,6 +81,10 @@ public class WikipediaTaxoboxParser {
 		if (edit == null) {
 			return null;
 		}
+		return parseEditString(originalLatinName, edit);
+	}
+	public Taxobox parseEditString(String originalLatinName, String edit) {
+		
 		String taxoboxString = getTaxoboxString(edit);
 		if (taxoboxString == null) {
 			return null;
@@ -170,21 +174,43 @@ public class WikipediaTaxoboxParser {
 		String name = WikiSpeciesParser.getGroup(pattern, value);
 		return name;
 	}
-	private String getTaxoboxString(String text) {
+	public static String getTaxoboxString(String text) {
 		String startToken = "{{Taxobox";
 		int pos = text.indexOf(startToken);
 		if (pos < 0) {
+			startToken = "{{Automatic Taxobox";
+			pos = text.indexOf(startToken);
+		}
+		if (pos < 0) {
 			return null;
 		}
-		pos += startToken.length();
-		boolean done = false;
-		int bpos = pos;
-		while (!done) {
-			int bposPre = text.indexOf("{{", bpos);
-			bpos = text.indexOf("}}", bpos + 2);
-			done = bposPre < 0 || bposPre > bpos;
+		// the goal here is to skip all nested brackets, and get the last taxo-bracket
+		// for example:
+		// {{Taxobox abc {{def}} xyz {{123}} 456}} skip anything here
+		
+		int bracketCount = 1;
+		int bracketPos = pos;
+		while (bracketCount > 0 && bracketPos >= 0) {
+			int nextOpenBracket = text.indexOf("{{", bracketPos + 2);
+			int nextCloseBracket = text.indexOf("}}", bracketPos + 2);
+			if (nextCloseBracket < 0) {
+				// this is an error condition
+				bracketPos = -1;
+			} else if (nextOpenBracket < 0 || nextCloseBracket < nextOpenBracket) {
+				bracketCount--;
+				bracketPos = nextCloseBracket;
+			} else if (nextOpenBracket > 0) {
+				bracketCount++;
+				bracketPos = nextOpenBracket;
+			} else {
+				// this is an error condition
+				bracketPos = -1;
+			}
 		}
-		return text.substring(pos, bpos);
+		if (bracketPos < 0) {
+			return null;
+		}
+		return text.substring(pos + startToken.length(), bracketPos).trim();
 	}
 	private String getImageSpeciesDepicted(List<Line> lines) {
 		String caption = getValue("image_description", lines);
@@ -237,11 +263,12 @@ public class WikipediaTaxoboxParser {
 		return n;
 	}
 	private String getLatinNameWithMatchExact(List<Line> lines, String matchExact) {
-		String n = parseLineValue("binomial", lines, latinNamePattern0);
-		if (n != null) {
-			if (matchExact == null || matchExact.equals(n)) {
-				return n;
-			}
+		String n = parseLineValue("taxon", lines, latinNamePattern0);
+		if (n == null) {
+			n = parseLineValue("binomial", lines, latinNamePattern0);
+		}
+		if (n != null && (matchExact == null || matchExact.equals(n))) {
+			return n;
 		}
 		Pattern[] patterns = { latinNamePattern, latinNamePattern2, latinNamePattern3, latinNamePattern4 };
 		for (Pattern pattern: patterns) {
