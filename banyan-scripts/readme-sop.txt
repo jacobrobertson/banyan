@@ -1,3 +1,5 @@
+/cygdrive/D/eclipse-workspaces/git/banyan-parent/banyan-scripts
+
 Release checklist for banyan-js (complete re-build and redeploy for new species findings, etc.)
 - run JsWorker (will delete and re-generate all json and rebuild lucene index)
 - run rsync-banyan-js-all-flat-files.sh
