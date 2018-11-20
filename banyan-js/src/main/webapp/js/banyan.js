@@ -280,10 +280,12 @@ function initPreviewEvents() {
 		}
 	});
 }
-function hideChildren(id) {
+function hideChildren(id, skipUrl, skipHighlight) {
 	markChildrenAsShown(id, false);
-	renderCurrentTree();
-	highlightNodes(id);
+	renderCurrentTree(skipUrl);
+	if (!skipHighlight) {
+		highlightNodes(id);
+	}
 }
 // do not call directly - call from wrapper only
 function setUrlInner(afterHash) {
@@ -1549,7 +1551,7 @@ function submitSearchQuery_callback(data) {
 	});
 }
 function loadBlankTree() {
-	hideChildren(getRootEntry().id);
+	hideChildren(getRootEntry().id, true, true);
 }
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
