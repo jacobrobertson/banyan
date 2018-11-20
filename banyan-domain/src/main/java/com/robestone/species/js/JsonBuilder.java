@@ -22,7 +22,6 @@ import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
-import com.robestone.species.LuceneSearcher;
 import com.robestone.species.parse.AbstractWorker;
 import com.robestone.species.parse.ImagesCreater;
 
@@ -30,24 +29,21 @@ public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		
-		System.setProperty("banyan.lucene.dir", LuceneSearcher.defaultLinuxPath);
-		
 		JsonBuilder b = new JsonBuilder();
 		
-		b.rebuildLuceneIndex();
-//		b.rebuildAllJson();
+		b.rebuildAllJson();
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
 //		b.runExamples();
 	}
 	
-	private String imagesDir = "E:/banyan-images";
+	private String imagesDir = "D:/banyan-images";
 	private String outputDir = "../banyan-js/src/main/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
 	
-	public void rebuildLuceneIndex() throws Exception {
-		new LuceneSearcher(speciesService, LuceneSearcher.defaultLinuxPath);
+	public void deleteJsonDir() throws Exception {
+		new File(outputDir).delete();
 	}
 	
 	public void rebuildAllJson() throws Exception {
@@ -372,7 +368,7 @@ public class JsonBuilder extends AbstractWorker {
 			je.setpHeight(e.getImage().getPreviewHeight());
 			je.setpWidth(e.getImage().getPreviewWidth());
 			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
-			String localImageRelativePath = imagesDir + "/" + e.getImage().getImagePathPart();
+			String localImageRelativePath = imagesDir + "/tiny/" + e.getImage().getImagePathPart();
 			String data = createImageDataString(localImageRelativePath);
 			je.setImgData(data);
 		}

@@ -26,6 +26,7 @@ $(document).ready(function() {
 		event.preventDefault();
 		submitSearchQuery($("#textfield").val());
 	});
+	$("*").mousemove(function() {areMenusAllowed = true;});
 });
 
 //------ Global vars
@@ -49,6 +50,7 @@ var digitWidth = 9;
 
 var isMenuActive = false;
 var cancelerEvent = null;
+var areMenusAllowed = true;
 
 // ------ GUI Events/Behavior/Menus
 function __EventsBehaviorMenus() {}
@@ -76,6 +78,7 @@ function initContextMenu() {
 		hideContextMenu();
 	});
 	$("#menu").mousemove(function(e) {
+		areMenusAllowed = true;
 		isMenuActive = true;
 	});
 	
@@ -137,6 +140,9 @@ function pinNode(id, pinned) {
 	highlightNodes(id);
 }
 function showContextMenu(e, img) {
+	if (!areMenusAllowed) {
+		return false;
+	}
 	var imgId = img.id;
 	// create the right menu links
 	var e = getMapEntry(imgId);
@@ -206,14 +212,17 @@ function showContextMenu(e, img) {
 		"left" : left
 	});
 }
-function removePreviewPanel() {
+function hidePreviewPanel() {
 	var previewE = $("#preview");
 	if (previewE) {
 		previewE.remove();
 	}
 }
 function showPreviewPanel(e) {
-	removePreviewPanel();
+	if (!areMenusAllowed) {
+		return false;
+	}
+	hidePreviewPanel();
 	var img = e.currentTarget;
 	var imageBorderWidth = 2; // represents the two borders, left/right
 	var width = getImageWidth(img) + imageBorderWidth;
@@ -238,17 +247,17 @@ function initPreviewEvents() {
 			showPreviewPanel(e);
 		}, 
 		"mouseleave.preview": function() {
-			removePreviewPanel();
+			hidePreviewPanel();
 		},
 		"mousemove.preview": function(e) {
+			areMenusAllowed = true;
 			var previewE = $("#preview");
-			if (previewE) {
-				var img = e.currentTarget;
-				previewE.css("top", getPreviewTop(e, img) + "px").css(
-					"left", getPreviewLeft(e, img) + "px");
-			} else {
-				showPreviewPanel(e);
+			if (previewE.is(":hidden") || previewE.length == 0) {
+				showPreviewPanel(e);	
 			}
+			var img = e.currentTarget;
+			previewE.css("top", getPreviewTop(e, img) + "px").css(
+				"left", getPreviewLeft(e, img) + "px");
 		}
 	});
 
@@ -1437,6 +1446,11 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 // ------ JSON Functions
 function __JsonFunctions() {}
 function loadCommandFromURL() {
+
+	areMenusAllowed = false;
+	hidePreviewPanel();
+	hideContextMenu();
+
 	var url = window.location.href;
 	var index = url.indexOf("#");
 	var hashValue = "";
@@ -1651,6 +1665,8 @@ function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
 	if (!same) {
 		hideAllNodes();
 		loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true);
+	} else {
+		showTreeTab();
 	}
 }
 function areArraysSame(a1, a2) {
