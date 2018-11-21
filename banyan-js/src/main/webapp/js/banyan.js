@@ -227,18 +227,29 @@ function showPreviewPanel(e) {
 	var imageBorderWidth = 2; // represents the two borders, left/right
 	var width = getImageWidth(img) + imageBorderWidth;
 	var src = getPreviewImageSrc(img); // this.href;
-	var caption = getImageCaption(img);
-	caption = (caption != "") ? "<br/>" + caption : "";
 	
 	var previewHolder = $("body");
 	var previewE = $("<span id='preview'></span>");
 	$('<img id="previewImage" src="' + src + '">').appendTo(previewE);
+
+	var caption = getPreviewImageCaption(img);
 	previewE.append(caption);
 	
 	previewE.css("top", getPreviewTop(e, img) + "px").css(
-			"left", getPreviewLeft(e, img) + "px").css("width", width + "px");
+			"left", getPreviewLeft(e, img) + "px"); 
 	previewHolder.append(previewE);
 	previewE.show("fast");
+}
+function getPreviewImageCaption(img) {
+	var e = getImageEntry(img);
+	var latinNameCaption = "<span id='previewLatin'>(" + e.lname + ")</span>";
+	var names = e.cnames || [];
+	var commonNamesCaption = "";
+	for (var i = 0; i < names.length; i++) {
+		commonNamesCaption = commonNamesCaption + "<b>" + names[i] + "</b><br/>";
+	}
+	return "<div id='previewCaptions'>" + 
+		commonNamesCaption + latinNameCaption + "</span><br/>";
 }
 function initPreviewEvents() {
 	$("a.preview").off(".preview");
@@ -378,16 +389,6 @@ function getImageWidth(img) {
 }
 function getImageHeight(img) {
 	return getImageEntry(img).pHeight;
-}
-function getImageCaption(img) {
-	var e = getImageEntry(img);
-	var latinNameCaption = "<span class='PopupLatin'>(" + e.lname + ")</span>";
-	var names = e.cnames || [];
-	var commonNamesCaption = "";
-	for (var i = 0; i < names.length; i++) {
-		commonNamesCaption = commonNamesCaption + "<b>" + names[i] + "</b><br/>";
-	}
-	return commonNamesCaption + latinNameCaption;
 }
 function getImageEntry(img) {
 	if (img.id == "faqImage") {
@@ -1331,7 +1332,7 @@ function renderDetails(id) {
 	}
 	gquery += e.lname;
 	gquery = gquery.replace(/ /g, '+');
-	
+
 	var displayName = getEntrySimpleDisplayName(e);
 	$("#DetailTitle").html(displayName); // TODO should list all names
 	if (e.cname) {

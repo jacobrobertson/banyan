@@ -20,7 +20,7 @@ body {height:90%;background: #e8f3db;}
 .NodeTable { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
 .NodeTable td { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
 
-#preview{
+#preview {
 	position:absolute;
 	border:2px solid #f8fbf4;
 	background:#628e2f;
@@ -29,22 +29,27 @@ body {height:90%;background: #e8f3db;}
 	color:#fff;
 	border-radius: 27px 63px 5px 50px;
 }
+#previewCaptions {
+	text-align: right;
+	width: 100%;
+}
+#previewLatin {
+	font-style: italic;
+	font-weight: bold;
+	color: black;
+	white-space: nowrap;
+	padding-left: 30px;
+	padding-right: 5px;
+}
+#preview b {
+	padding-left: 23px;
+	white-space: nowrap;
+	padding-right: 5px;
+}
 #preview img {
 	border:2px solid #f8fbf4;
-	text-align: center;
 	border-radius: 25px 60px 5px 50px;
 }
-#preview .PopupLatin {
-	padding-top: 10px; /* not working... */
-	padding-left: 23px;
-}
-
-#preview b {
-	text-align: initial;
-	padding-top: 10px; /* not working... */
-	padding-left: 23px;
-}
-
 .NodeButtons { width: 12px; }
 .NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
 .NodeButtons img { margin: 0px; padding: 0px; border: 0px;}
@@ -210,11 +215,6 @@ td {
 	font-size: 105%;
 	color: #7eb63d;
 	font-style: italic;
-}
-.PopupLatin {
-	font-style: italic;
-	font-weight: bold;
-	color: black;
 }
 .Return {
 	font-size: 100%;
