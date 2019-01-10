@@ -258,16 +258,6 @@ td {
 	color: #70a236;
 }
 
-.ExamplesTable td {
-	vertical-align: top;
-	padding-bottom: 15px;
-}
-.ExampleTitle {
-	font-size: 125%;
-	font-weight: bold;
-	font-style: italic;
-	color: #547a29;
-}
 #menu {
 	display: none;
 	position: absolute;
@@ -427,6 +417,16 @@ td {
 .ExamplesTable td.Node td.Node {
 	background:#d1e7b7;
 	padding-bottom: .5em;
+}
+.ExamplesTable td {
+	vertical-align: top;
+	padding-bottom: 15px;
+}
+.ExampleTitle {
+	font-size: 125%;
+	font-weight: bold;
+	font-style: italic;
+	color: #547a29;
 }
 .ExampleInnerCaption {
 	padding-right: .25em;

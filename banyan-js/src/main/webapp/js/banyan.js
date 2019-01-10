@@ -215,7 +215,7 @@ function showContextMenu(e, img) {
 function hidePreviewPanel() {
 	var previewE = $("#preview");
 	if (previewE) {
-		previewE.remove();
+		previewE.hide();
 	}
 }
 function showPreviewPanel(e) {
@@ -228,17 +228,19 @@ function showPreviewPanel(e) {
 	var width = getImageWidth(img) + imageBorderWidth;
 	var src = getPreviewImageSrc(img); // this.href;
 	
-	var previewHolder = $("body");
-	var previewE = $("<span id='preview'></span>");
-	$('<img id="previewImage" src="' + src + '">').appendTo(previewE);
+	var previewImage = $("#previewImage");
+	previewImage.attr("src", src);
 
+	var previewCaption = $("#previewCaption");
 	var caption = getPreviewImageCaption(img);
-	previewE.append(caption);
+	previewCaption.html(caption);
 	
-	previewE.css("top", getPreviewTop(e, img) + "px").css(
-			"left", getPreviewLeft(e, img) + "px"); 
-	previewHolder.append(previewE);
-	previewE.show("fast");
+	var previewOuter = $("#preview");
+	var previewWidth = previewOuter.width();
+	
+	previewOuter.css("top", getPreviewTop(e, img) + "px").css(
+			"left", getPreviewLeftForWidth(e, previewWidth) + "px"); 
+	previewOuter.show();
 }
 function getPreviewImageCaption(img) {
 	var e = getImageEntry(img);
@@ -246,29 +248,32 @@ function getPreviewImageCaption(img) {
 	var names = e.cnames || [];
 	var commonNamesCaption = "";
 	for (var i = 0; i < names.length; i++) {
-		commonNamesCaption = commonNamesCaption + "<b>" + names[i] + "</b><br/>";
+		var name = getCaptionNameWithIndicator(names[i]);
+		commonNamesCaption = commonNamesCaption + "<b>" + name + "</b><br/>";
 	}
 	return "<div id='previewCaptions'>" + 
 		commonNamesCaption + latinNameCaption + "</span><br/>";
+}
+function getCaptionNameWithIndicator(name) {
+	if (name.indexOf("...") >= 0) {
+		return "<i>(" + name + ")</i>";
+	} else {
+		return name;
+	}
 }
 function initPreviewEvents() {
 	$("a.preview").off(".preview");
 	$("a.preview").on({
 		"mouseenter.preview": function(e) {
 			showPreviewPanel(e);
-		}, 
-		"mouseleave.preview": function() {
-			hidePreviewPanel();
+		},
+		"mouseout.preview": function() {
+ 			hidePreviewPanel();
 		},
 		"mousemove.preview": function(e) {
 			areMenusAllowed = true;
 			var previewE = $("#preview");
-			if (previewE.is(":hidden") || previewE.length == 0) {
-				showPreviewPanel(e);	
-			}
-			var img = e.currentTarget;
-			previewE.css("top", getPreviewTop(e, img) + "px").css(
-				"left", getPreviewLeft(e, img) + "px");
+				showPreviewPanel(e);
 		}
 	});
 
@@ -345,10 +350,12 @@ function log(m, level) {
 	}
 }
 function getPreviewLeft(e, img) {
+	var imageWidth = getImageWidth(img);
+	return getPreviewLeftForWidth(e, imageWidth);
+}
+function getPreviewLeftForWidth(e, imageWidth) {
 	var w = $("body").width();
 	var x = e.pageX;
-
-	var imageWidth = getImageWidth(img);
 
 	var left;
 	if (x > w / 2) {
@@ -363,8 +370,8 @@ function getPreviewLeft(e, img) {
 function getPreviewTop(e, img) {
 	var imageHeight = getImageHeight(img);
 	// to account for two rows of text
-	var textHeight = 75; 
-	return getTop(e, imageHeight, textHeight);
+	var textBaseHeight = 75;
+	return getTop(e, imageHeight, textBaseHeight);
 }
 function getTop(e, popupHeight, bottomFudge) {
 	var docViewTop = $(window).scrollTop();
@@ -989,7 +996,9 @@ function getEntryDetailsHash(e) {
 }
 function getEntryDisplayName(e) {
 	if (e.cname) {
-		if (e.cnames && e.cnames.length > 1) {
+		if (e.cname.indexOf("...") >= 0) {
+			return getCaptionNameWithIndicator(e.cname);
+		} else if (e.cnames && e.cnames.length > 1) {
 			return e.cname + "...";
 		} else {
 			var pos = e.cname.indexOf("(");
