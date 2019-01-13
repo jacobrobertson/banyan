@@ -101,7 +101,7 @@ function getImageTinySrcPath(e) {
 	if (e.imgData) {
 		return "data:image;base64," + e.imgData;
 	} else {
-		return getImagesPath() + '/tiny/' + e.img;
+		return getImagesPath("tiny") + '/' + e.img;
 	}
 }
 function contextMenuClicked(aTag) {
@@ -389,7 +389,7 @@ function getTop(e, popupHeight, bottomFudge) {
 	return top;
 }
 function getPreviewImageSrc(img) {
-	return getImagesPath() + "/preview/" + getImageEntry(img).img;
+	return getImagesPath("preview") + "/" + getImageEntry(img).img;
 }
 function getImageWidth(img) {
 	return getImageEntry(img).pWidth;
@@ -1193,7 +1193,7 @@ function renderNodeEntryLine(h, e, depth) {
 		var height = pinnedScaling * e.pHeight;
 		var width = pinnedScaling * e.pWidth;
 		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
-			getImagesPath() + '/preview/' + e.img + '" class="PinnedImage" />';
+			getImagesPath("preview") + '/' + e.img + '" class="PinnedImage" />';
 		h.append(pimg);
 		h.append("<br/>");
 	} else if (depth == 0) {
@@ -1268,8 +1268,8 @@ function getNbsps(count) {
 	}
 	return pad;
 }
-function getImagesPath() {
-	return "http://jacobrobertson.com/banyan-images"; // "images";
+function getImagesPath(key) {
+	return "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-images/" + key;
 }
 function iconPath() {
 	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
@@ -1312,7 +1312,7 @@ function renderExamplesTab(data) {
 			var w = example.width * exampleImageScaling;
 			var h = example.height * exampleImageScaling;
 			exampleLink.append('<img alt="' + example.caption + '" height="' + h + '" width="' + w + '" src="'
-				+ getImagesPath() + "/preview/" + example.image + '" class="PinnedImage"></img>');
+				+ getImagesPath("preview") + "/" + example.image + '" class="PinnedImage"></img>');
 			var captionLines = example.caption.split("/");
 			for (var k = 0; k < captionLines.length; k++) {
 				exampleLink.append("<br/>");
@@ -1363,9 +1363,9 @@ function renderDetails(id) {
 	if (e.img) {
 		var img = $("#DetailImage");
 		img.attr("alt", "");
-		img.attr("height", e.pHeight);
-		img.attr("width", e.pWidth);
-		img.attr("src", getImagesPath() + "/preview/" + e.img);
+		img.attr("height", e.dHeight);
+		img.attr("width", e.dWidth);
+		img.attr("src", getImagesPath("detail") + "/" + e.img);
 	
 		var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
 		$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
@@ -1456,12 +1456,16 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 			+ linkTitle + " class='" + previewClass + "' href='#" + href + "'>" + taxoName + "</a>").appendTo(td);
 	if (e.img) {
 		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
-			+ "' class='Thumb' src='" + getImagesPath() + '/tiny/' + e.img + "'></img>").appendTo(previewA);
+			+ "' class='Thumb' src='" + getImageTinySrcPath(e) + "'></img>").appendTo(previewA);
 	}
 }
 
 // ------ JSON Functions
 function __JsonFunctions() {}
+function getJsonUrl(relativePath) {
+	var baseUrl = "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-website/";
+	return (baseUrl + relativePath);
+}
 function loadCommandFromURL() {
 
 	areMenusAllowed = false;
@@ -1532,7 +1536,6 @@ function loadCommandFromURL() {
 	}
 }
 function submitSearchQuery(query) {
-	//var url = "json/s/fake.json";
 	if (query) {
 		query = query.trim();
 	} else {
@@ -1554,6 +1557,7 @@ function submitSearchQuery(query) {
 		base = "/banyan-search/search/";
 	}
 	var url = base + query + "/" + cids + "/";
+	// this get is not going to amazon, url will be relative
 	$.getJSON(url, submitSearchQuery_callback);
 }
 function submitSearchQuery_callback(data) {
@@ -1570,7 +1574,8 @@ function loadBlankTree() {
 }
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
-		$.getJSON("json/e/examples-index.json", function(data) {
+		var url = getJsonUrl("json/e/examples-index.json");
+		$.getJSON(url, function(data) {
 			renderExamplesTab(data);
 			examplesIndexLoaded = true;
 			loadExamplesTab();
@@ -1618,7 +1623,8 @@ function setRandomLinkIndex() {
 	link.attr("href", "#t:random:" + index);
 }
 function loadRandomFileIndexFromJson() {
-	$.getJSON("json/r/random-index.json", function(data) {
+	var url = getJsonUrl("json/r/random-index.json");
+	$.getJSON(url, function(data) {
 		dbRandomFiles = data.files;
 		shuffleArray(dbRandomFiles);
 		loadRandomFile(0);
@@ -1794,7 +1800,7 @@ function build_loadJsonInner_callbackChain(id, parentCallback) {
 function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
 	log("loadOneJsonDocument: " + jsonId, 1);
-	var url = "json/";
+	var url = getJsonUrl("json/");
 	var loadNeeded = true;
 	if (isFileName(jsonId)) {
 		url = url + jsonId.charAt(0) + "/" + jsonId.substring(2) + ".json";
@@ -1844,7 +1850,8 @@ function buildInnerJsonSuccessCallback(entries, callback) {
 	};
 }
 function loadPartitionIndex(callback) {
-	return $.getJSON("json/p/index.json", 
+	var url = getJsonUrl("json/p/index.json");
+	return $.getJSON(url, 
 		function(data) {
 			loadPartitionIndexDb(data);
 			callback();
