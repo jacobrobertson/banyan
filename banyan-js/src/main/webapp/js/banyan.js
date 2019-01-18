@@ -472,6 +472,7 @@ function focusOnNode(id) {
 	var e = getMapEntry(id);
 	var p = e.parent;
 	focusOnNodeParent(p, e);
+	getMapEntry(id).pinned = true;
 	renderCurrentTree();
 	highlightNodes(id);
 }
