@@ -451,6 +451,7 @@ function setEntryShownAs(entryOrId, shown) {
 	entryOrId.show = shown;
 	if (!shown) {
 		entryOrId.pinned = false;
+		entryOrId.showDetail = false;
 	}
 }
 function setEntryShown(entryOrId) {
@@ -474,12 +475,12 @@ function getMapEntry(key) {
 function focusOnNode(id) {
 	var e = getMapEntry(id);
 	var p = e.parent;
-	focusOnNodeParent(p, e);
+	markNonAncestorsHidden(p, e);
 	e.pinned = true;
 	renderCurrentTree();
 	highlightNodes(id);
 }
-function focusOnNodeParent(p, e) {
+function markNonAncestorsHidden(p, e) {
 	for (var i = 0; i < p.children.length; i++) {
 		var c = p.children[i];
 		if (c != e) {
@@ -487,7 +488,7 @@ function focusOnNodeParent(p, e) {
 		}
 	}
 	if (p.parent) {
-		focusOnNodeParent(p.parent, p);
+		markNonAncestorsHidden(p.parent, p);
 	}
 }
 function highlightNodes(ids) {
@@ -513,6 +514,12 @@ function highlightNodes(ids) {
 function hideAllNodes() {
 	if (getRootEntry()) {
 		markEntryChildrenAsShown(getRootEntry(), false);
+	}
+}
+function markOneForShowDetail(e, showDetailEntry) {
+	e.showDetail = (e == showDetailEntry);
+	for (var i = 0; i < e.children.length; i++) {
+		markOneForShowDetail(e.children[i], showDetailEntry);
 	}
 }
 function markAllIdsAsUnpinned(e) {
@@ -652,7 +659,10 @@ function prepareNodesForRender(e) {
 	buildShownNodes(e);
 	cleanNodes(e);
 	collapseNodesForChildrenToShow(e);
-	hideLongCollapsed(e);
+	var detailId = getPinnedDetailId(e);
+	if (!detailId) {
+		hideLongCollapsed(e);
+	}
 	collapseNodesForSiblingsToShow(e);
 	prepareEntryForContextMenu(e);
 }
@@ -1053,15 +1063,13 @@ function getVisibleNodeIds(e, ids) {
 	}
 }
 function getPinnedDetailId(e) {
-	if (isEntryShown(e.id)) {
-		if (e.pinned && e.showDetail) {
-			return e.id;
-		}
-		for (var i = 0; i < e.children.length; i++) {
-			var foundId = getPinnedDetailId(e.children[i]);
-			if (foundId) {
-				return foundId;
-			}
+	if (e.pinned && e.showDetail) {
+		return e.id;
+	}
+	for (var i = 0; i < e.children.length; i++) {
+		var foundId = getPinnedDetailId(e.children[i]);
+		if (foundId) {
+			return foundId;
 		}
 	}
 	return false;
@@ -1111,9 +1119,10 @@ function renderTree(id, keepOnlyNew) {
 		id = addAllToRenderMap(getMapEntry(id));
 	}
 	var e = getMapEntry(id);
+	var detailId = getPinnedDetailId(e);
 	// we need to collapse nodes only once we know the map is done
 	prepareNodesForRender(e);
-	renderTreeAndRows($("#treeTab"), e);
+	renderTreeAndRows($("#treeTab"), e, (detailId != false));
 	initPreviewEvents();
 	showTreeTab();
 }
@@ -1125,7 +1134,7 @@ function getPinnedNodeFromCollapsed(e) {
 	}
 	return e;
 }
-function renderTreeAndRows(h, e) {
+function renderTreeAndRows(h, e, isDetail) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	var tr = $("<tr></tr>").appendTo(table);
 	var children = e.childrenToShow;
@@ -1137,7 +1146,7 @@ function renderTreeAndRows(h, e) {
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
-	renderEntryLinesElement(td, e, showLine);
+	renderEntryLinesElement(td, e, showLine, isDetail);
 
 	var lastIndex = children.length - 1;
 	for (var index = 0; index < children.length; index++) {
@@ -1154,7 +1163,7 @@ function renderTreeAndRows(h, e) {
 		// this td holds the given child
 		var childTd = $("<td rowspan='2'></td>").appendTo(tr);
 		// render recursively
-		renderTreeAndRows(childTd, children[index]);
+		renderTreeAndRows(childTd, children[index], isDetail);
 		if (index != lastIndex) {
 			blankClass = " class='l'";
 		} else {
@@ -1166,7 +1175,7 @@ function renderTreeAndRows(h, e) {
 /**
  * This is just the table element that holds the Entry Lines
  */
-function renderEntryLinesElement(h, e, showLine) {
+function renderEntryLinesElement(h, e, showLine, isDetail) {
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
@@ -1178,17 +1187,17 @@ function renderEntryLinesElement(h, e, showLine) {
 	
 	var div = $("<div id='node-" + e.id + "' class='" + nodeClass + "'></div>").appendTo(td); 
 	
-	renderNodeEntryLine(div, e, 0);
+	renderNodeEntryLine(div, e, 0, isDetail);
 	if (!e.pinned) {
 		for (var i = 0; i < e.siblings.length; i++) {
 			div.append($("<br/>"));
-			renderNodeEntryLine(div, e.siblings[i], 0);
+			renderNodeEntryLine(div, e.siblings[i], 0, isDetail);
 		}
 	
 		// this will always be empty if we are rendering children
 		for (var i = 0; i < e.collapsed.length; i++) {
 			div.append($("<br/>"));
-			renderNodeEntryLine(div, e.collapsed[i], i + 1);
+			renderNodeEntryLine(div, e.collapsed[i], i + 1, isDetail);
 		}
 	}
 	
@@ -1199,27 +1208,41 @@ function renderEntryLinesElement(h, e, showLine) {
 	}
 	table.appendTo(h);
 }
-
-function renderNodeEntryLine(h, e, depth) {
+function renderNodeEntryLine(h, e, depth, isDetail) {
+	if (e.showDetail) {
+		renderNodeEntryLine_detailNode(h, e);
+	} else {
+		renderNodeEntryLine_nonDetail(h, e, depth, isDetail);
+	}
+}
+function renderNodeEntryLine_detailNode(h, e) {
+	var tname = getEntryDisplayName(e);
+	$("<div class='DetailTitle DetailTitleName' id='DetailTitle'>" + tname + "</div>").appendTo(h);
+	if (e.lname) {
+		$("<div class='DetailLatinTitle' id='DetailLatinTitle'>" + e.lname + "</div>").appendTo(h);
+	}
+// 	<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
+// 			<div class="DetailLatinTitle" id="DetailLatinTitle">Latin Name</div>
+// 			<br/>
+	
+	if (e.img) {
+		var height = e.dHeight;
+		var width = e.dWidth;
+		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
+			getImagesPath("detail") + '/' + e.img + '" class="PinnedImage" />';
+		h.append(pimg);
+	}
+}
+function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
 	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
 		if (e.img) {
-			var height;
-			var width;
-			var imagePath;
-			if (e.showDetail) {
-				height = e.dHeight;
-				width = e.dWidth;
-				imagePath = "detail";
-			} else {
-				var pinnedScaling = .75;
-				height = pinnedScaling * e.pHeight;
-				width = pinnedScaling * e.pWidth;
-				imagePath = "preview";
-			}
+			var pinnedScaling = .75;
+			var height = pinnedScaling * e.pHeight;
+			var width = pinnedScaling * e.pWidth;
 			var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
-				getImagesPath(imagePath) + '/' + e.img + '" class="PinnedImage" />';
+				getImagesPath("preview") + '/' + e.img + '" class="PinnedImage" />';
 			h.append(pimg);
 			h.append("<br/>");
 		}
@@ -1230,7 +1253,9 @@ function renderNodeEntryLine(h, e, depth) {
 	// detail button
 	var detailIcon = "detail.png";
 	var detailClass = "tree-detail_first";
-	if (e.collapsedPinned) {
+	if (isDetail) {
+		// nothing
+	} else if (e.collapsedPinned) {
 		detailIcon = "open_children.png";
 		detailClass = "tree-open_children";
 	} else if (depth > 0) {
@@ -1242,7 +1267,12 @@ function renderNodeEntryLine(h, e, depth) {
 		detailClass = "tree-tree_root";
 	}
 	// the green button on the left of the line
-	var pad = getNbsps(depth);
+	var pad;
+	if (isDetail) {
+		pad = "";
+	} else {
+		pad = getNbsps(depth);
+	}
 	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
 		span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
@@ -1250,7 +1280,6 @@ function renderNodeEntryLine(h, e, depth) {
 			detailClass + '" alt="search.detail" /></a>');
 	}
 	// image and link
-	var name = getEntryDisplayName(e);
 	var img;
 	var linkTitle;
 	var imgClass;
@@ -1276,17 +1305,20 @@ function renderNodeEntryLine(h, e, depth) {
 		}
 		span.append('<a title="Extinct" href="#"><span class="' + eClass + '">&dagger;</span></a>');
 	}
+	var name = getEntryDisplayName(e);
 	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
-	// menu button style/image
-	var canShowMore = (e.mShowChildren || e.mShowMore);
-	var menuMore = "menu_more.png";
-	if (!canShowMore) {
-		menuMore = "menu_less.png";
+	if (!isDetail) {
+		// menu button style/image
+		var canShowMore = (e.mShowChildren || e.mShowMore);
+		var menuMore = "menu_more.png";
+		if (!canShowMore) {
+			menuMore = "menu_less.png";
+		}
+		span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
+				+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 	}
-	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
-			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 }
 function getNbsps(count) {
 	var pad = "";
@@ -1725,16 +1757,20 @@ function loadDetailTree_callback(treeIds, detailId) {
 	markChildrenAsShown(detailId, false);
 	// show just that node
 	var e = getMapEntry(detailId);
-	e.showDetail = true;
-	focusOnNodeParent(e.parent, e);
+	markOneForShowDetail(getRootEntry(), e);
+	markNonAncestorsHidden(e.parent, e);
 	// then "open all children" - which will require json
-	loadJsonThenAddEntries(e.childrenIds, [detailId], true, loadDetailTree_finalCallback); 
+	var loadIds = e.childrenIds;
+	if (loadIds.length == 0) {
+		loadIds = [detailId];
+	}
+	loadJsonThenAddEntries(loadIds, [detailId], true, false);
 }
-function loadDetailTree_finalCallback(entries) {
-	// set the new url to be just those crunched ids, and the detail pin - in the correct format, NOT "p:xxx" 
-	//		- can probably change that url logic to look at other pin flag
-	
-	// not sure if I need to do anything here... the outer code set everything up already, I just need to plugin the correct rendering
+function markNodeAndAncestorsShown(e) {
+	e.show = true;
+	if (e.parent) {
+		markNodeAndAncestorsShown(e.parent);
+	}
 }
 function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
 	var currentVisibleIds = getAllVisibleNodeIds();
