@@ -315,13 +315,16 @@ function setUrlInner(afterHash) {
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
 	var pids = getAllPinnedNodeIds();
-	setUrlsToIdsArray(ids, pids, true, true);
+	var detailId = getPinnedDetailId(getRootEntry());
+	setUrlsToIdsArray(ids, pids, detailId, true, true);
 }
-function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
+function setUrlsToIdsArray(ids, pinnedIds, detailId, setWindowUrl, setLinkUrls) {
 	// set global var
 	var cids = crunch(ids);
 	var idsString = "c:" + cids;
-	if (pinnedIds && pinnedIds.length > 0) {
+	if (detailId) {
+		idsString = idsString + ":d:" + detailId;
+	} else if (pinnedIds && pinnedIds.length > 0) {
 		idsString = idsString + ":p:" + crunch(pinnedIds);
 	}
 	if (setLinkUrls) {
@@ -1049,6 +1052,20 @@ function getVisibleNodeIds(e, ids) {
 		}
 	}
 }
+function getPinnedDetailId(e) {
+	if (isEntryShown(e.id)) {
+		if (e.pinned && e.showDetail) {
+			return e.id;
+		}
+		for (var i = 0; i < e.children.length; i++) {
+			var foundId = getPinnedDetailId(e.children[i]);
+			if (foundId) {
+				return foundId;
+			}
+		}
+	}
+	return false;
+}
 function getPinnedNodeIds(e, ids) {
 	if (isEntryShown(e.id)) {
 		if (e.pinned) {
@@ -1188,11 +1205,21 @@ function renderNodeEntryLine(h, e, depth) {
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
 		if (e.img) {
-			var pinnedScaling = .75;
-			var height = pinnedScaling * e.pHeight;
-			var width = pinnedScaling * e.pWidth;
+			var height;
+			var width;
+			var imagePath;
+			if (e.showDetail) {
+				height = e.dHeight;
+				width = e.dWidth;
+				imagePath = "detail";
+			} else {
+				var pinnedScaling = .75;
+				height = pinnedScaling * e.pHeight;
+				width = pinnedScaling * e.pWidth;
+				imagePath = "preview";
+			}
 			var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
-				getImagesPath("preview") + '/' + e.img + '" class="PinnedImage" />';
+				getImagesPath(imagePath) + '/' + e.img + '" class="PinnedImage" />';
 			h.append(pimg);
 			h.append("<br/>");
 		}
@@ -1428,7 +1455,7 @@ function renderDetails(id) {
 		}
 		linkIds = linkIds.concat(e.childrenIds);
 		linkIds.sort(sortIntCompare);
-		setUrlsToIdsArray(linkIds, false, false, true);
+		setUrlsToIdsArray(linkIds, false, false, false, true);
 	}
 	
 	initPreviewEvents();
@@ -1520,19 +1547,30 @@ function loadCommandFromURL() {
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
+		for (var i = 0; i < ids.length; i++) {
+			ids[i] = parseInt(ids[i]);
+		}
 		loadAndShowNewIds(ids, false);
 	} else if (command == "c") {
 		var pinnedIds = false;
+		var isDetail = false;
 		if (commandParam) {
 			var pinType = commandParam.charAt(0);
 			if (pinType == "p") {
 				pinnedIds = uncrunch(commandParam.substring(2));
+			} else if (pinType == "d") {
+				isDetail = true;
+				pinnedIds = [parseInt(commandParam.substring(2))];
 			} else {
 				pinnedIds = commandParam.substring(2).split(",");
 			}
 		}
 		var ids = uncrunch(value);
-		loadAndShowNewIds(ids, pinnedIds);
+		if (isDetail) {
+			loadDetailTree(ids, pinnedIds[0]);
+		} else {
+			loadAndShowNewIds(ids, pinnedIds);
+		}
 	}
 }
 function submitSearchQuery(query) {
@@ -1677,6 +1715,27 @@ function loadAllShowMore(id) {
 	loadJsonThenMarkNewIdsVisible(newIds, function() {highlightNodes(newIds)});
 }
 
+function loadDetailTree(treeIds, detailId) {
+	loadJsonThenAddEntries(treeIds, [detailId], false, function() {
+		loadDetailTree_callback(treeIds, detailId);
+	});
+}
+function loadDetailTree_callback(treeIds, detailId) {
+	// hide children
+	markChildrenAsShown(detailId, false);
+	// show just that node
+	var e = getMapEntry(detailId);
+	e.showDetail = true;
+	focusOnNodeParent(e.parent, e);
+	// then "open all children" - which will require json
+	loadJsonThenAddEntries(e.childrenIds, [detailId], true, loadDetailTree_finalCallback); 
+}
+function loadDetailTree_finalCallback(entries) {
+	// set the new url to be just those crunched ids, and the detail pin - in the correct format, NOT "p:xxx" 
+	//		- can probably change that url logic to look at other pin flag
+	
+	// not sure if I need to do anything here... the outer code set everything up already, I just need to plugin the correct rendering
+}
 function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
 	var currentVisibleIds = getAllVisibleNodeIds();
 	var same = areArraysSame(currentVisibleIds, fileNamesOrIds);
