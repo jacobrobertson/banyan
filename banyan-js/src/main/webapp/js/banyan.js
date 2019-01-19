@@ -472,7 +472,7 @@ function focusOnNode(id) {
 	var e = getMapEntry(id);
 	var p = e.parent;
 	focusOnNodeParent(p, e);
-	getMapEntry(id).pinned = true;
+	e.pinned = true;
 	renderCurrentTree();
 	highlightNodes(id);
 }
@@ -1096,13 +1096,9 @@ function renderTree(id, keepOnlyNew) {
 	var e = getMapEntry(id);
 	// we need to collapse nodes only once we know the map is done
 	prepareNodesForRender(e);
-	buildTree($("#treeTab"), e);
+	renderTreeAndRows($("#treeTab"), e);
 	initPreviewEvents();
 	showTreeTab();
-}
-function buildTree(h, e) {
-	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
-	buildRowsForTree(table, e);
 }
 function getPinnedNodeFromCollapsed(e) {
 	for (var i = 0; i < e.collapsed.length; i++) {
@@ -1112,7 +1108,8 @@ function getPinnedNodeFromCollapsed(e) {
 	}
 	return e;
 }
-function buildRowsForTree(table, e) {
+function renderTreeAndRows(h, e) {
+	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	var tr = $("<tr></tr>").appendTo(table);
 	var children = e.childrenToShow;
 	if (e.collapsed.length > 0) {
@@ -1123,7 +1120,7 @@ function buildRowsForTree(table, e) {
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
-	appendEntryLinesElement(td, e, showLine);
+	renderEntryLinesElement(td, e, showLine);
 
 	var lastIndex = children.length - 1;
 	for (var index = 0; index < children.length; index++) {
@@ -1140,7 +1137,7 @@ function buildRowsForTree(table, e) {
 		// this td holds the given child
 		var childTd = $("<td rowspan='2'></td>").appendTo(tr);
 		// render recursively
-		buildTree(childTd, children[index]);
+		renderTreeAndRows(childTd, children[index]);
 		if (index != lastIndex) {
 			blankClass = " class='l'";
 		} else {
@@ -1152,7 +1149,7 @@ function buildRowsForTree(table, e) {
 /**
  * This is just the table element that holds the Entry Lines
  */
-function appendEntryLinesElement(h, e, showLine) {
+function renderEntryLinesElement(h, e, showLine) {
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
@@ -1190,13 +1187,15 @@ function renderNodeEntryLine(h, e, depth) {
 	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
-		var pinnedScaling = .75;
-		var height = pinnedScaling * e.pHeight;
-		var width = pinnedScaling * e.pWidth;
-		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
-			getImagesPath("preview") + '/' + e.img + '" class="PinnedImage" />';
-		h.append(pimg);
-		h.append("<br/>");
+		if (e.img) {
+			var pinnedScaling = .75;
+			var height = pinnedScaling * e.pHeight;
+			var width = pinnedScaling * e.pWidth;
+			var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
+				getImagesPath("preview") + '/' + e.img + '" class="PinnedImage" />';
+			h.append(pimg);
+			h.append("<br/>");
+		}
 	} else if (depth == 0) {
 		spanClass += " EntryLineTop";
 	}
