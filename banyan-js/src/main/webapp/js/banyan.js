@@ -315,16 +315,13 @@ function setUrlInner(afterHash) {
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
 	var pids = getAllPinnedNodeIds();
-	var detailId = getPinnedDetailId(getRootEntry());
-	setUrlsToIdsArray(ids, pids, detailId, true, true);
+	setUrlsToIdsArray(ids, pids, true, true);
 }
-function setUrlsToIdsArray(ids, pinnedIds, detailId, setWindowUrl, setLinkUrls) {
+function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
 	// set global var
 	var cids = crunch(ids);
 	var idsString = "c:" + cids;
-	if (detailId) {
-		idsString = idsString + ":d:" + detailId;
-	} else if (pinnedIds && pinnedIds.length > 0) {
+	if (pinnedIds && pinnedIds.length > 0) {
 		idsString = idsString + ":p:" + crunch(pinnedIds);
 	}
 	if (setLinkUrls) {
@@ -451,7 +448,6 @@ function setEntryShownAs(entryOrId, shown) {
 	entryOrId.show = shown;
 	if (!shown) {
 		entryOrId.pinned = false;
-		entryOrId.showDetail = false;
 	}
 }
 function setEntryShown(entryOrId) {
@@ -475,12 +471,12 @@ function getMapEntry(key) {
 function focusOnNode(id) {
 	var e = getMapEntry(id);
 	var p = e.parent;
-	markNonAncestorsHidden(p, e);
+	focusOnNodeParent(p, e);
 	e.pinned = true;
 	renderCurrentTree();
 	highlightNodes(id);
 }
-function markNonAncestorsHidden(p, e) {
+function focusOnNodeParent(p, e) {
 	for (var i = 0; i < p.children.length; i++) {
 		var c = p.children[i];
 		if (c != e) {
@@ -488,7 +484,7 @@ function markNonAncestorsHidden(p, e) {
 		}
 	}
 	if (p.parent) {
-		markNonAncestorsHidden(p.parent, p);
+		focusOnNodeParent(p.parent, p);
 	}
 }
 function highlightNodes(ids) {
@@ -514,12 +510,6 @@ function highlightNodes(ids) {
 function hideAllNodes() {
 	if (getRootEntry()) {
 		markEntryChildrenAsShown(getRootEntry(), false);
-	}
-}
-function markOneForShowDetail(e, showDetailEntry) {
-	e.showDetail = (e == showDetailEntry);
-	for (var i = 0; i < e.children.length; i++) {
-		markOneForShowDetail(e.children[i], showDetailEntry);
 	}
 }
 function markAllIdsAsUnpinned(e) {
@@ -659,10 +649,7 @@ function prepareNodesForRender(e) {
 	buildShownNodes(e);
 	cleanNodes(e);
 	collapseNodesForChildrenToShow(e);
-	var detailId = getPinnedDetailId(e);
-	if (!detailId) {
-		hideLongCollapsed(e);
-	}
+	hideLongCollapsed(e);
 	collapseNodesForSiblingsToShow(e);
 	prepareEntryForContextMenu(e);
 }
@@ -1062,18 +1049,6 @@ function getVisibleNodeIds(e, ids) {
 		}
 	}
 }
-function getPinnedDetailId(e) {
-	if (e.pinned && e.showDetail) {
-		return e.id;
-	}
-	for (var i = 0; i < e.children.length; i++) {
-		var foundId = getPinnedDetailId(e.children[i]);
-		if (foundId) {
-			return foundId;
-		}
-	}
-	return false;
-}
 function getPinnedNodeIds(e, ids) {
 	if (isEntryShown(e.id)) {
 		if (e.pinned) {
@@ -1119,10 +1094,9 @@ function renderTree(id, keepOnlyNew) {
 		id = addAllToRenderMap(getMapEntry(id));
 	}
 	var e = getMapEntry(id);
-	var detailId = getPinnedDetailId(e);
 	// we need to collapse nodes only once we know the map is done
 	prepareNodesForRender(e);
-	renderTreeAndRows($("#treeTab"), e, (detailId != false));
+	renderTreeAndRows($("#treeTab"), e);
 	initPreviewEvents();
 	showTreeTab();
 }
@@ -1134,7 +1108,7 @@ function getPinnedNodeFromCollapsed(e) {
 	}
 	return e;
 }
-function renderTreeAndRows(h, e, isDetail) {
+function renderTreeAndRows(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	var tr = $("<tr></tr>").appendTo(table);
 	var children = e.childrenToShow;
@@ -1146,7 +1120,7 @@ function renderTreeAndRows(h, e, isDetail) {
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
-	renderEntryLinesElement(td, e, showLine, isDetail);
+	renderEntryLinesElement(td, e, showLine);
 
 	var lastIndex = children.length - 1;
 	for (var index = 0; index < children.length; index++) {
@@ -1163,7 +1137,7 @@ function renderTreeAndRows(h, e, isDetail) {
 		// this td holds the given child
 		var childTd = $("<td rowspan='2'></td>").appendTo(tr);
 		// render recursively
-		renderTreeAndRows(childTd, children[index], isDetail);
+		renderTreeAndRows(childTd, children[index]);
 		if (index != lastIndex) {
 			blankClass = " class='l'";
 		} else {
@@ -1175,7 +1149,7 @@ function renderTreeAndRows(h, e, isDetail) {
 /**
  * This is just the table element that holds the Entry Lines
  */
-function renderEntryLinesElement(h, e, showLine, isDetail) {
+function renderEntryLinesElement(h, e, showLine) {
 	var table = $("<table></table>");
 	var tr = $("<tr></tr>").appendTo(table);
 	var td = $("<td class='n' rowspan='2'></td>").appendTo(tr);
@@ -1187,17 +1161,17 @@ function renderEntryLinesElement(h, e, showLine, isDetail) {
 	
 	var div = $("<div id='node-" + e.id + "' class='" + nodeClass + "'></div>").appendTo(td); 
 	
-	renderNodeEntryLine(div, e, 0, isDetail);
+	renderNodeEntryLine(div, e, 0);
 	if (!e.pinned) {
 		for (var i = 0; i < e.siblings.length; i++) {
 			div.append($("<br/>"));
-			renderNodeEntryLine(div, e.siblings[i], 0, isDetail);
+			renderNodeEntryLine(div, e.siblings[i], 0);
 		}
 	
 		// this will always be empty if we are rendering children
 		for (var i = 0; i < e.collapsed.length; i++) {
 			div.append($("<br/>"));
-			renderNodeEntryLine(div, e.collapsed[i], i + 1, isDetail);
+			renderNodeEntryLine(div, e.collapsed[i], i + 1);
 		}
 	}
 	
@@ -1208,32 +1182,8 @@ function renderEntryLinesElement(h, e, showLine, isDetail) {
 	}
 	table.appendTo(h);
 }
-function renderNodeEntryLine(h, e, depth, isDetail) {
-	if (e.showDetail) {
-		renderNodeEntryLine_detailNode(h, e);
-	} else {
-		renderNodeEntryLine_nonDetail(h, e, depth, isDetail);
-	}
-}
-function renderNodeEntryLine_detailNode(h, e) {
-	var tname = getEntryDisplayName(e);
-	$("<div class='DetailTitle DetailTitleName' id='DetailTitle'>" + tname + "</div>").appendTo(h);
-	if (e.lname) {
-		$("<div class='DetailLatinTitle' id='DetailLatinTitle'>" + e.lname + "</div>").appendTo(h);
-	}
-// 	<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
-// 			<div class="DetailLatinTitle" id="DetailLatinTitle">Latin Name</div>
-// 			<br/>
-	
-	if (e.img) {
-		var height = e.dHeight;
-		var width = e.dWidth;
-		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
-			getImagesPath("detail") + '/' + e.img + '" class="PinnedImage" />';
-		h.append(pimg);
-	}
-}
-function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
+
+function renderNodeEntryLine(h, e, depth) {
 	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
@@ -1253,9 +1203,7 @@ function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
 	// detail button
 	var detailIcon = "detail.png";
 	var detailClass = "tree-detail_first";
-	if (isDetail) {
-		// nothing
-	} else if (e.collapsedPinned) {
+	if (e.collapsedPinned) {
 		detailIcon = "open_children.png";
 		detailClass = "tree-open_children";
 	} else if (depth > 0) {
@@ -1267,12 +1215,7 @@ function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
 		detailClass = "tree-tree_root";
 	}
 	// the green button on the left of the line
-	var pad;
-	if (isDetail) {
-		pad = "";
-	} else {
-		pad = getNbsps(depth);
-	}
+	var pad = getNbsps(depth);
 	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
 		span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
@@ -1280,6 +1223,7 @@ function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
 			detailClass + '" alt="search.detail" /></a>');
 	}
 	// image and link
+	var name = getEntryDisplayName(e);
 	var img;
 	var linkTitle;
 	var imgClass;
@@ -1305,20 +1249,17 @@ function renderNodeEntryLine_nonDetail(h, e, depth, isDetail) {
 		}
 		span.append('<a title="Extinct" href="#"><span class="' + eClass + '">&dagger;</span></a>');
 	}
-	var name = getEntryDisplayName(e);
 	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
-	if (!isDetail) {
-		// menu button style/image
-		var canShowMore = (e.mShowChildren || e.mShowMore);
-		var menuMore = "menu_more.png";
-		if (!canShowMore) {
-			menuMore = "menu_less.png";
-		}
-		span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
-				+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
+	// menu button style/image
+	var canShowMore = (e.mShowChildren || e.mShowMore);
+	var menuMore = "menu_more.png";
+	if (!canShowMore) {
+		menuMore = "menu_less.png";
 	}
+	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
+			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 }
 function getNbsps(count) {
 	var pad = "";
@@ -1328,10 +1269,14 @@ function getNbsps(count) {
 	return pad;
 }
 function getImagesPath(key) {
-	return "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-images/" + key;
+	if (isLocalhost()) {
+		return "banyan-images/" + key;
+	} else {
+		return "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-images/" + key;
+	}
 }
 function iconPath() {
-	return "icons"; // "http://jacobrobertson.com/banyan/icons"; // "icons";
+	return "icons";
 }
 function getRenderDetailsTaxoDisplayName(e) {
 	var name = "<i>(" + e.lname + ")</i>";
@@ -1487,7 +1432,7 @@ function renderDetails(id) {
 		}
 		linkIds = linkIds.concat(e.childrenIds);
 		linkIds.sort(sortIntCompare);
-		setUrlsToIdsArray(linkIds, false, false, false, true);
+		setUrlsToIdsArray(linkIds, false, false, true);
 	}
 	
 	initPreviewEvents();
@@ -1522,8 +1467,14 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 // ------ JSON Functions
 function __JsonFunctions() {}
 function getJsonUrl(relativePath) {
-	var baseUrl = "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-website/";
+	var baseUrl = "";
+	if (!isLocalhost()) {
+		baseUrl = "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-website/";
+	}
 	return (baseUrl + relativePath);
+}
+function isLocalhost() {
+	return window.location.href.startsWith("http://localhost");
 }
 function loadCommandFromURL() {
 
@@ -1579,30 +1530,19 @@ function loadCommandFromURL() {
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
-		for (var i = 0; i < ids.length; i++) {
-			ids[i] = parseInt(ids[i]);
-		}
 		loadAndShowNewIds(ids, false);
 	} else if (command == "c") {
 		var pinnedIds = false;
-		var isDetail = false;
 		if (commandParam) {
 			var pinType = commandParam.charAt(0);
 			if (pinType == "p") {
 				pinnedIds = uncrunch(commandParam.substring(2));
-			} else if (pinType == "d") {
-				isDetail = true;
-				pinnedIds = [parseInt(commandParam.substring(2))];
 			} else {
 				pinnedIds = commandParam.substring(2).split(",");
 			}
 		}
 		var ids = uncrunch(value);
-		if (isDetail) {
-			loadDetailTree(ids, pinnedIds[0]);
-		} else {
-			loadAndShowNewIds(ids, pinnedIds);
-		}
+		loadAndShowNewIds(ids, pinnedIds);
 	}
 }
 function submitSearchQuery(query) {
@@ -1619,8 +1559,7 @@ function submitSearchQuery(query) {
 		cids = crunch(ids);
 	}
 	var base;
-	var test = window.location.href;
-	if (test.startsWith("http://localhost")) {
+	if (isLocalhost()) {
 		// this is a hack to run both under spring-boot locally
 		base = "/search/";
 	} else {
@@ -1747,31 +1686,6 @@ function loadAllShowMore(id) {
 	loadJsonThenMarkNewIdsVisible(newIds, function() {highlightNodes(newIds)});
 }
 
-function loadDetailTree(treeIds, detailId) {
-	loadJsonThenAddEntries(treeIds, [detailId], false, function() {
-		loadDetailTree_callback(treeIds, detailId);
-	});
-}
-function loadDetailTree_callback(treeIds, detailId) {
-	// hide children
-	markChildrenAsShown(detailId, false);
-	// show just that node
-	var e = getMapEntry(detailId);
-	markOneForShowDetail(getRootEntry(), e);
-	markNonAncestorsHidden(e.parent, e);
-	// then "open all children" - which will require json
-	var loadIds = e.childrenIds;
-	if (loadIds.length == 0) {
-		loadIds = [detailId];
-	}
-	loadJsonThenAddEntries(loadIds, [detailId], true, false);
-}
-function markNodeAndAncestorsShown(e) {
-	e.show = true;
-	if (e.parent) {
-		markNodeAndAncestorsShown(e.parent);
-	}
-}
 function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
 	var currentVisibleIds = getAllVisibleNodeIds();
 	var same = areArraysSame(currentVisibleIds, fileNamesOrIds);
