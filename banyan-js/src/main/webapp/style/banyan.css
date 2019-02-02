@@ -475,7 +475,8 @@ img.question {
 }
 div.FaqNode {
 	padding-left: .75em;
-	padding-bottom: .75em;
+	padding-right: .75em;
+	padding-bottom: .25em;
 }
 img.PinnedImage {
 	background:#d1e7b7; 
