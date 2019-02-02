@@ -210,15 +210,23 @@ td {
 	font-weight: bold;
 	color: #547a29;
 }
-.DetailLatinTitle {
+#DetailLatinTitle {
 	text-align: left;
 	font-size: 105%;
 	color: #7eb63d;
+	font-style: italic;
+	padding-bottom: .25em;
+}
+.DetailSubParentName {
+	font-size: 65%;
+	font-weight: normal;
 	font-style: italic;
 }
 .Return {
 	font-size: 100%;
 	color: #c89;
+	padding-left: 1em;
+	padding-top: .25em;
 }
 .DetailColumn {
 	vertical-align: top;
@@ -232,7 +240,9 @@ td {
 	padding-left: 4em;
 }
 .DetailImage {
-	padding-top: 3px;
+}
+.DetailImageDiv {
+	padding-top: 1em;
 }
 .ImageSourceLink {
 	text-align: center;
@@ -243,7 +253,7 @@ td {
 }
 .Rank {
 	color: #7eb63d;
-	padding-right: 0px;
+	padding-right: 1em;
 	width: 1%;
 	white-space:nowrap;
 }
@@ -298,14 +308,6 @@ td {
 	padding-right: 2px;
 }
 .detail-button-back {
-	margin: 0px;
-	vertical-align: middle;
-	width: 20px;
-	height: 20px;
-	padding-bottom: 3px;
-	padding-right: 2px;
-}
-.detail-button-search {
 	margin: 0px;
 	vertical-align: middle;
 	width: 20px;
@@ -452,9 +454,12 @@ td {
 	border-radius: 5px 7px 0px 7px;
 	border-color: #f8fbf4;
 }
-.DetailsNode {
+#TaxonomyCell {
 	padding-left: .75em;
-	padding-bottom: .75em;
+	padding-right: .25em;
+}
+.DetailsRow {
+	white-space: nowrap;
 }
 img.question {
 	margin: 0px;

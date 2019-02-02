@@ -1335,17 +1335,6 @@ function renderExamplesTab(data) {
 function renderDetails(id) {
 	var e = getMapEntry(id);
 
-	var gbase = "http://www.google.com/";
-	var gquery = "?q=";
-	if (e.cnames) {
-		for (var i = 0; i < e.cnames.length; i++) {
-			gquery += e.cnames[i];
-			gquery += " ";
-		}
-	}
-	gquery += e.lname;
-	gquery = gquery.replace(/ /g, '+');
-
 	var displayName = getEntrySimpleDisplayName(e);
 	$("#DetailTitle").html(displayName); // TODO should list all names
 	if (e.cname) {
@@ -1354,32 +1343,21 @@ function renderDetails(id) {
 	} else {
 		$("#DetailLatinTitle").hide();
 	}
-	$("#DetailGoogleLink").attr("href", gbase + "search" + gquery);
-	$("#DetailGoogleImageLink").attr("href", gbase + "images" + gquery);
+	$('.DetailTitleName').html(displayName);
 	
-	var searchName = e.lname;
-	if (e.cname) {
-		searchName = e.cname + " (" + searchName + ")";
-	}
-	$(".SearchTerm").html(searchName);
-	
-	var div = $(".DetailImageDiv");
+	var div = $(".DetailImageHolder");
 	if (e.img) {
 		var img = $("#DetailImage");
 		img.attr("alt", "");
 		img.attr("height", e.dHeight);
 		img.attr("width", e.dWidth);
 		img.attr("src", getImagesPath("detail") + "/" + e.img);
-	
-		var wikiLink = "http://species.wikimedia.org/wiki/File:" + e.iLink;
-		$("#DetailImageWikiSpeciesLink").attr("href", wikiLink);
-		
 		div.show();
 	} else {
 		div.hide();
 	}
 
-	var taxoEntry = $("#TaxonomyCell .Entry");
+	var taxoEntry = $("#TaxonomyCell");
 	taxoEntry.empty();
 	var table = $("<table></table>").appendTo(taxoEntry);
 	var ancestors = [];
@@ -1391,7 +1369,7 @@ function renderDetails(id) {
 	var i;
 	for (i = ancestors.length - 1; i >= 0; i--) {
 		var a = ancestors[i];
-		var tr = $("<tr><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
+		var tr = $("<tr class='DetailsRow'><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
 		var td = $("<td></td>").appendTo(tr);
 		renderDetailsEntryPreviewPart(td, a, "taxo");
 	}
@@ -1400,23 +1378,20 @@ function renderDetails(id) {
 	var subTableNode = $("#SubSpeciesTableNode");
 	if (!children || children.length == 0) {
 		subTableNode.hide();
+		$('#SubSpeciesLine').hide();
 	} else {
+		var subRank = getRankOfChildren(e);
+		$('.DetailSubRank').html(subRank);
+		
+		$('#SubSpeciesLine').show();
 		subTableNode.show();
 		var subTable = $("#SubSpeciesTable");
 		// divide them up into columns
-		var cols = 3;
-		var neededExtraCells = (Math.ceil(children.length / cols) * cols) - children.length;
 		subTable.empty();
-		var tr = false;
 		for (i = 0; i < children.length; i++) {
-			if (i % cols == 0) {
-				tr = $("<tr></tr>").appendTo(subTable);
-			}
-			var td = $("<td></td>").appendTo(tr);
+			var tr = $("<tr></tr>").appendTo(subTable);
+			var td = $("<td class='DetailsRow'></td>").appendTo(tr);
 			renderDetailsEntryPreviewPart(td, children[i], "child");
-		}
-		for (i = 0; i < neededExtraCells; i++) {
-			$("<td></td>").appendTo(tr);
 		}
 	}
 	
@@ -1436,6 +1411,14 @@ function renderDetails(id) {
 	}
 	
 	initPreviewEvents();
+}
+function getRankOfChildren(e) {
+	if (e.children && e.children.length > 0) {
+		return e.children[0].rank;
+	} else {
+		// doesn't matter
+		return null;
+	}
 }
 function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
@@ -1595,6 +1578,10 @@ function loadExamplesTab() {
 }
 // should be from "t:details:id,crunchedId"
 function loadDetails(params) {
+
+	// need to hide the current tree so we can rebuild it under certain conditions
+	hideAllNodes();
+
 	var comma = params.indexOf(",");
 	var id = params.substring(0, comma);
 	var otherIds = params.substring(comma + 1);
