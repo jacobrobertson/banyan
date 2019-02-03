@@ -1108,6 +1108,152 @@ function getPinnedNodeFromCollapsed(e) {
 	}
 	return e;
 }
+function getExamplesStructure() {
+	// TODO move this to a json file, and should only have to load all examples once
+	var s = 
+	
+{
+	"type": "example", "root": true,
+	"image": "5e/Arbor vitae.jpg",
+	"caption": "Examples / From the Tree of Life", 
+	"children": [
+		{
+			"type": "question", "number": 0,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 1,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 2,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 3,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}	
+;
+
+	return s;
+
+}
+function initExamplesStructure(data, structure, groupNumber) {
+	var e = structure;
+	if (!e.children) {
+		e.children = [];
+	}
+	e.childrenToShow = e.children;
+	e.siblings = [];
+	e.collapsed = [];
+	e.example = true;
+	e.id = -1;
+	if (e.type == "example") {
+		if (e.root) {
+			e.pWidth = 187;
+			e.pHeight = 141;
+			e.caption = structure.caption;
+			e.image = structure.image;
+		} else {
+			var example = data.groups[groupNumber].examples[e.number];
+			e.caption = example.caption;
+			e.file = example.file;
+			e.pWidth = example.width;
+			e.pHeight = example.height;
+			e.image = example.image;
+		}
+	} else if (e.type == "question") {
+		groupNumber = e.number;
+		e.caption = data.groups[groupNumber].caption;
+	}
+	for (var i = 0; i < e.children.length; i++) {
+		initExamplesStructure(data, e.children[i], groupNumber);
+	}
+}
+function renderExamplesTab(data) {
+	// walk over the structure and set all helper properties
+	var structure = getExamplesStructure();
+	initExamplesStructure(data, structure);
+	renderTreeAndRows($("#examplesTab"), structure);
+}
 function renderTreeAndRows(h, e) {
 	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
 	var tr = $("<tr></tr>").appendTo(table);
@@ -1183,7 +1329,41 @@ function renderEntryLinesElement(h, e, showLine) {
 	table.appendTo(h);
 }
 
+function renderExampleNode(h, e, depth) {
+	if (e.type == "example") {
+		var pinnedScaling = .50;
+		var height = pinnedScaling * e.pHeight;
+		var width = pinnedScaling * e.pWidth;
+		var pimg = '<img alt="' + e.alt + '" height="' + height + '" width="' + width + '" src="' + 
+			getImagesPath("preview") + '/' + e.image + '" class="PinnedImage" />';
+		h.append(pimg);
+		
+		var exampleLink = $('<a href="#e:' + e.file + '"></a>').appendTo(h);
+		
+		var captionLines = e.caption.split("/");
+		for (var k = 0; k < captionLines.length; k++) {
+			var cls = "ExampleInnerCaption";
+			if (k == 0) {
+				cls += " ExampleInnerCaptionFirstLine";
+			}
+			var span = $("<div class='" + cls + "'>" + captionLines[k] + "</div>").appendTo(exampleLink);
+			if (k == 0 && !e.root) {
+				span.append('<img class="ExampleGotoIcon" src="icons/show-interesting.png" />');
+			}
+		}
+		
+		
+	} else if (e.type == "question") {
+		var titleDiv = $('<div class="ExampleTitle"></div>').appendTo(h);
+		titleDiv.append('<img alt="question" class="question" src="icons/question.png" />');
+		titleDiv.append(e.caption);
+	}
+}
 function renderNodeEntryLine(h, e, depth) {
+	if (e.example) {
+		renderExampleNode(h, e, depth);
+		return;
+	}
 	var spanClass = "EntryLine";
 	if (e.pinned) {
 		spanClass += " PinnedImageEntryLine";
@@ -1284,53 +1464,6 @@ function getRenderDetailsTaxoDisplayName(e) {
 		name = e.cname + " " + name;
 	}
 	return name;
-}
-// only needs to be called once
-// much of this is based off an assumed structure of 2x2
-function renderExamplesTab(data) {
-	var exampleImageScaling = .5;
-	var tab = $("#examplesTab");
-	tab.empty();
-	var groupsTable = $('<table class="ExamplesTable"></table>').appendTo($('<div class="Node"></div>')).appendTo(tab);
-	var groups = data.groups;
-	var groupsRow = $("<tr></tr>").appendTo(groupsTable);
-	for (var i = 0; i < groups.length; i++) {
-		var group = groups[i];
-		if (i == 2) {
-			groupsRow = $("<tr></tr>").appendTo(groupsTable);
-		}
-		var groupsCell = $('<td class="Node"></td>').appendTo(groupsRow);
-		var titleDiv = $('<div class="ExampleTitle"></div>').appendTo(groupsCell);
-		titleDiv.append('<img alt="question" class="question" src="icons/question.png" />');
-		titleDiv.append(group.caption);
-		
-		var exampleTable = $("<table></table>").appendTo(groupsCell);
-		var exampleRow = $("<tr></tr>").appendTo(exampleTable);
-		for (var j = 0; j < group.examples.length; j++) {
-			if (j == 2) {
-				exampleRow = $("<tr></tr>").appendTo(exampleTable);
-			}
-			var example = group.examples[j];
-			var exampleCell = $('<td class="Node"></td>').appendTo(exampleRow);
-			var exampleLink = $('<a href="#e:' + example.file + '"></a>').appendTo(exampleCell);
-			var w = example.width * exampleImageScaling;
-			var h = example.height * exampleImageScaling;
-			exampleLink.append('<img alt="' + example.caption + '" height="' + h + '" width="' + w + '" src="'
-				+ getImagesPath("preview") + "/" + example.image + '" class="PinnedImage"></img>');
-			var captionLines = example.caption.split("/");
-			for (var k = 0; k < captionLines.length; k++) {
-				exampleLink.append("<br/>");
-				var cls = "ExampleInnerCaption";
-				if (k == 0) {
-					cls += " ExampleInnerCaptionFirstLine";
-				}
-				var span = $("<span class='" + cls + "'>" + captionLines[k] + "</span>").appendTo(exampleLink);
-				if (k == captionLines.length - 1) {
-					span.append('<img class="ExampleGotoIcon" src="icons/show-interesting.png" />');
-				}
-			}
-		}
-	}
 }
 function renderDetails(id) {
 	var e = getMapEntry(id);
