@@ -1108,114 +1108,6 @@ function getPinnedNodeFromCollapsed(e) {
 	}
 	return e;
 }
-function getExamplesStructure() {
-	// TODO move this to a json file, and should only have to load all examples once
-	var s = 
-	
-{
-	"type": "example", "root": true,
-	"image": "5e/Arbor vitae.jpg",
-	"caption": "Examples / From the Tree of Life", 
-	"children": [
-		{
-			"type": "question", "number": 0,
-			"children": [
-				{
-					"type": "example", "number": 0,
-					"children": [
-						{
-							"type": "example", "number": 1,
-							"children": [
-								{
-									"type": "example", "number": 2,
-									"children": [
-										{
-											"type": "example", "number": 3
-										}
-									]
-								}
-							]
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "question", "number": 1,
-			"children": [
-				{
-					"type": "example", "number": 0,
-					"children": [
-						{
-							"type": "example", "number": 1,
-							"children": [
-								{
-									"type": "example", "number": 2,
-									"children": [
-										{
-											"type": "example", "number": 3
-										}
-									]
-								}
-							]
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "question", "number": 2,
-			"children": [
-				{
-					"type": "example", "number": 0,
-					"children": [
-						{
-							"type": "example", "number": 1,
-							"children": [
-								{
-									"type": "example", "number": 2,
-									"children": [
-										{
-											"type": "example", "number": 3
-										}
-									]
-								}
-							]
-						}
-					]
-				}
-			]
-		},
-		{
-			"type": "question", "number": 3,
-			"children": [
-				{
-					"type": "example", "number": 0,
-					"children": [
-						{
-							"type": "example", "number": 1,
-							"children": [
-								{
-									"type": "example", "number": 2,
-									"children": [
-										{
-											"type": "example", "number": 3
-										}
-									]
-								}
-							]
-						}
-					]
-				}
-			]
-		}
-	]
-}	
-;
-
-	return s;
-
-}
 function initExamplesStructure(data, structure, groupNumber) {
 	var e = structure;
 	if (!e.children) {
@@ -1248,9 +1140,8 @@ function initExamplesStructure(data, structure, groupNumber) {
 		initExamplesStructure(data, e.children[i], groupNumber);
 	}
 }
-function renderExamplesTab(data) {
+function renderExamplesTab(data, structure) {
 	// walk over the structure and set all helper properties
-	var structure = getExamplesStructure();
 	initExamplesStructure(data, structure);
 	renderTreeAndRows($("#examplesTab"), structure);
 }
@@ -1449,7 +1340,7 @@ function getNbsps(count) {
 	return pad;
 }
 function getImagesPath(key) {
-	if (isLocalhost()) {
+	if (false && isLocalhost()) { // images too hard to track locally
 		return "banyan-images/" + key;
 	} else {
 		return "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-images/" + key;
@@ -1700,14 +1591,25 @@ function loadBlankTree() {
 function loadExamplesTab() {
 	if (!examplesIndexLoaded) {
 		var url = getJsonUrl("json/e/examples-index.json");
-		$.getJSON(url, function(data) {
-			renderExamplesTab(data);
-			examplesIndexLoaded = true;
-			loadExamplesTab();
-		});
+		var callback = build_loadExamplesTab_callback1();
+		$.getJSON(url, callback);
 	} else {
 		showTab("examplesTab");
 	}		
+}
+function build_loadExamplesTab_callback1() {
+	return function(data) {
+		var url = getJsonUrl("json/e/examples-structure.json");
+		var callback = build_loadExamplesTab_callback2(data);
+		$.getJSON(url, callback);
+	}
+}
+function build_loadExamplesTab_callback2(data) {
+	return function(structure) {
+		renderExamplesTab(data, structure);
+		examplesIndexLoaded = true;
+		loadExamplesTab();
+	}
 }
 // should be from "t:details:id,crunchedId"
 function loadDetails(params) {
@@ -1928,7 +1830,6 @@ function build_loadJsonInner_callbackChain(id, parentCallback) {
 }
 function loadOneJsonDocument(jsonId, entries, callback) {
 	jsonId = (jsonId + "");
-	log("loadOneJsonDocument: " + jsonId, 1);
 	var url = getJsonUrl("json/");
 	var loadNeeded = true;
 	if (isFileName(jsonId)) {

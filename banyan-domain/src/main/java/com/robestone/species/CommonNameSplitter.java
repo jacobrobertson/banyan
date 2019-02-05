@@ -10,15 +10,18 @@ public class CommonNameSplitter {
 	/**
 	 * This length or shorter don't bother splitting.
 	 */
-	private static final int MAX_KEEP_LENGTH = 25;
+	public static final int MAX_KEEP_LENGTH = 25;
 	private static final int NORMALIZING_KEEP_LENGTH = 5;
 	private static final String[] STRIPS = {
 		"or ", "and "
 	};
 	
-	private int maxKeepLength = MAX_KEEP_LENGTH;
+	private static int maxKeepLength = MAX_KEEP_LENGTH;
 	
-	public void assignCommonNames(CompleteEntry entry) {
+	public static void assignCommonNames(CompleteEntry entry) {
+		assignCommonNames(entry, maxKeepLength);
+	}
+	public static void assignCommonNames(CompleteEntry entry, int maxKeepLength) {
 		List<String> split = splitCommonName(entry, maxKeepLength);
 		entry.setCommonNames(split);
 		if (split != null) {
@@ -32,11 +35,11 @@ public class CommonNameSplitter {
 			}
 		}
 	}
-	public void joinCommonName(CompleteEntry entry) {
+	public static void joinCommonName(CompleteEntry entry) {
 		String joined = joinCommonNames(entry.getCommonName(), entry.getCommonNames());
 		entry.setCommonName(joined);
 	}
-	public String joinCommonNames(String commonName, List<String> commonNames) {
+	public static String joinCommonNames(String commonName, List<String> commonNames) {
 		if (commonNames == null) {
 			return commonName;
 		}
@@ -50,18 +53,16 @@ public class CommonNameSplitter {
 		return buf.toString();
 	}
 	
-	/**
-	 * Used by test?
-	 */
-	List<String> splitCommonName(Entry entry) {
+	public static List<String> splitCommonName(Entry entry) {
 		return splitCommonName(entry, maxKeepLength);
 	}
 	/**
 	 * @return null if it can't be broken up
 	 */
-	public List<String> splitCommonName(Entry entry, int maxLength) {
+	public static List<String> splitCommonName(Entry entry, int maxLength) {
 		String commonName = entry.getCommonName();
-		if (commonName == null) {
+		if (commonName == null || 
+				commonName.indexOf(EntryUtilities.COMMON_NAME_FROM_DESCENDENTS_INDICATOR) >= 0) {
 			return null;
 		}
 		if (maxLength > 0 && maxLength >= commonName.length()) {
@@ -79,7 +80,7 @@ public class CommonNameSplitter {
 		}
 		return names;
 	}
-	private List<String> fixNames(List<String> names) {
+	private static List<String> fixNames(List<String> names) {
 		List<String> fixed = new ArrayList<String>();
 		for (String name: names) {
 			name = EntryUtilities.fixCommonName(name);
@@ -87,7 +88,7 @@ public class CommonNameSplitter {
 		}
 		return fixed;
 	}
-	private List<String> filterBoring(List<String> names, Entry entry) {
+	private static List<String> filterBoring(List<String> names, Entry entry) {
 		String latinNameClean = EntryUtilities.getClean(entry.getLatinName(), false);
 		List<String> filtered = new ArrayList<String>();
 		for (String name: names) {
@@ -99,8 +100,8 @@ public class CommonNameSplitter {
 		}
 		return filtered;
 	}
-	private List<String> splitCommonName(String name) {
-		String[] split = StringUtils.split(name, ",;/:");
+	private static List<String> splitCommonName(String name) {
+		String[] split = StringUtils.split(name, ",;/:·");
 		List<String> names = new ArrayList<String>();
 		for (String s: split) {
 			s = trimPart(s);
@@ -115,7 +116,7 @@ public class CommonNameSplitter {
 		}
 		return names;
 	}
-	private String[] splitByOr(String name) {
+	private static String[] splitByOr(String name) {
 		String[] moreSplit = StringUtils.splitByWholeSeparator(name, " or ");
 		if (moreSplit.length == 1) {
 			return moreSplit;
@@ -128,14 +129,11 @@ public class CommonNameSplitter {
 		}
 		return moreSplit;
 	}
-	private String trimPart(String part) {
+	public static String trimPart(String part) {
 		part = StringUtils.trim(part);
 		for (String trim: STRIPS) {
 			part = StringUtils.removeStart(part, trim);
 		}
 		return part;
-	}
-	public void setMaxKeepLength(int maxKeepLength) {
-		this.maxKeepLength = maxKeepLength;
 	}
 }

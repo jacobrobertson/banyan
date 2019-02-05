@@ -466,7 +466,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 			assertEquals(common, results.getCommonName());
 			assertEquals(image, results.getImageLink());
 			assertEquals(rank, results.getRank());
-			assertEquals(results.isExtinct(), extinct);
+			assertEquals("extinct", extinct, results.isExtinct());
 			assertEquals(depicted, results.getDepictedLatinName());
 		}
 		if (parent != null) {

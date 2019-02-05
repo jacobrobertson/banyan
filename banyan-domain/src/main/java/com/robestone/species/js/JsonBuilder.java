@@ -31,7 +31,7 @@ public class JsonBuilder extends AbstractWorker {
 		
 		JsonBuilder b = new JsonBuilder();
 		
-		b.rebuildAllJson();
+		b.copyAdditionalJsonResources();
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
 //		b.runExamples();
@@ -39,11 +39,12 @@ public class JsonBuilder extends AbstractWorker {
 	
 	private String imagesDir = "D:/banyan-images";
 	private String outputDir = "../banyan-js/src/main/webapp/json";
+	private String additionalResourcesDir = "../banyan-js/src/main/resources/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
 	
 	public void deleteJsonDir() throws Exception {
-		new File(outputDir).delete();
+		FileUtils.deleteDirectory(new File(outputDir));
 	}
 	
 	public void rebuildAllJson() throws Exception {
@@ -51,6 +52,13 @@ public class JsonBuilder extends AbstractWorker {
 		runExamples();
 		// this is the longest running
 		buildRandomFiles();
+		copyAdditionalJsonResources();
+	}
+	
+	public void copyAdditionalJsonResources() throws Exception {
+		FileUtils.copyDirectory(
+				new File(additionalResourcesDir), 
+				new File(outputDir));
 	}
 	
 	public void buildExampleIndexFile() throws Exception {
@@ -367,6 +375,8 @@ public class JsonBuilder extends AbstractWorker {
 			je.settWidth(e.getImage().getTinyWidth());
 			je.setpHeight(e.getImage().getPreviewHeight());
 			je.setpWidth(e.getImage().getPreviewWidth());
+			je.setdHeight(e.getImage().getDetailHeight());
+			je.setdWidth(e.getImage().getDetailWidth());
 			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
 			String localImageRelativePath = imagesDir + "/tiny/" + e.getImage().getImagePathPart();
 			String data = createImageDataString(localImageRelativePath);

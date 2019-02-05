@@ -430,6 +430,7 @@ public class LuceneSearcher implements EntrySearcher {
 		Document found = null;
 		
 		if (StringUtils.isNumeric(queryString)) {
+			// TODO - first split the query by comma, then add each ID
 			// allow ID search
 			Integer id = Integer.parseInt(queryString);
 			String qid = toQueryId(id);

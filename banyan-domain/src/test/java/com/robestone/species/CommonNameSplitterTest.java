@@ -6,17 +6,12 @@ import junit.framework.TestCase;
 
 public class CommonNameSplitterTest extends TestCase {
 
-	private CommonNameSplitter splitter = new CommonNameSplitter();
-	@Override
-	protected void setUp() throws Exception {
-		splitter.setMaxKeepLength(9);
-	}
+	private int setMaxKeepLength = 9;
 	public void testNormalizeShortSplit() {
-		CommonNameSplitter splitter = new CommonNameSplitter();
 		CompleteEntry e = new CompleteEntry();
 		e.setCommonName("funk; junk");
 		e.setLatinName("Any old name");
-		splitter.assignCommonNames(e);
+		CommonNameSplitter.assignCommonNames(e, setMaxKeepLength);
 		assertEquals("Funk, Junk", e.getCommonName());
 	}
 
@@ -29,6 +24,7 @@ public class CommonNameSplitterTest extends TestCase {
 		doTest("funk, or junk", "Funk", "Junk");
 		doTest("funk, and junk", "Funk", "Junk");
 		doTest("funk and junk");
+		doTest("funk · junk", "Funk", "Junk");
 		doTest("funk, junk; hunk / trunk man or sunk", "Funk", "Junk", "Hunk", "Trunk man", "Sunk");
 		doTest("Indian beet., Old maid's bonnets, and Sundial lupine", "Indian beet", "Old maid's bonnets", "Sundial lupine");
 	}
@@ -49,7 +45,7 @@ public class CommonNameSplitterTest extends TestCase {
 	}
 	
 	private void doTest(Entry entry, String... splits) {
-		List<String> list = splitter.splitCommonName(entry);
+		List<String> list = CommonNameSplitter.splitCommonName(entry, setMaxKeepLength);
 		if (splits.length == 0) {
 			assertNull(list);
 		} else {

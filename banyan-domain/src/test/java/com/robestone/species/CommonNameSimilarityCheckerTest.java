@@ -51,4 +51,31 @@ public class CommonNameSimilarityCheckerTest extends TestCase {
 		assertTrue(boring);
 	}
 	
+	public void testPlural() {
+		 doTestPlural("smoke", "test", false);
+		 doTestPlural("test", "test", false);
+		 doTestPlural("tests", "test", true);
+		 doTestPlural("testess", "test", false);
+		 doTestPlural("testies", "test", false);
+		 doTestPlural("testies", "testy", true);
+		 doTestPlural("testesses", "testess", true);
+	}
+	
+	private void doTestPlural(String first, String second, boolean expect) {
+		boolean found = CommonNameSimilarityChecker.isFirstPluralOfSecond(first, second);
+		assertTrue(first + "/" + second + "/" + expect, found == expect);
+	}
+	
+	public void testMorphaComprehension() {
+		doTestMorphaComprehension("lionesses", "lioness");
+		doTestMorphaComprehension("lionesser", "lionesser");
+		doTestMorphaComprehension("lion", "lion");
+		doTestMorphaComprehension("lions", "lion");
+		doTestMorphaComprehension("flies", "fly");
+	}
+	private void doTestMorphaComprehension(String pluralWord, String stemmed) {
+		String found = edu.washington.cs.knowitall.morpha.MorphaStemmer.stem(pluralWord);
+		assertEquals(stemmed, found);
+	}
+	
 }

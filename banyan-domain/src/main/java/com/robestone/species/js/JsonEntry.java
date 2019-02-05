@@ -14,6 +14,8 @@ public class JsonEntry {
 	private Integer tWidth;
 	private Integer pHeight;
 	private Integer pWidth;
+	private Integer dHeight;
+	private Integer dWidth;
 	private List<Integer> childrenIds;
 	private List<Integer> showMoreLeafIds;
 	private List<Integer> showMoreOtherIds;
@@ -84,6 +86,18 @@ public class JsonEntry {
 	}
 	public void setpWidth(Integer pWidth) {
 		this.pWidth = pWidth;
+	}
+	public Integer getdHeight() {
+		return dHeight;
+	}
+	public void setdHeight(Integer dHeight) {
+		this.dHeight = dHeight;
+	}
+	public Integer getdWidth() {
+		return dWidth;
+	}
+	public void setdWidth(Integer dWidth) {
+		this.dWidth = dWidth;
 	}
 	public List<Integer> getChildrenIds() {
 		return childrenIds;

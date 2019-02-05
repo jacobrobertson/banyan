@@ -86,14 +86,6 @@ public class JsonParser {
 		return node;
 	}
 	
-	/*
-	 * {"entries": [
-	 * {"id": 22, "cnames": ["Thorny-headed worms"], 
-	 * "lname": "Acanthocephala", "parentId": 13, 
-	 * "img": "4a/Acanthocephala.jpg", "tHeight": 15, "tWidth": 20, "pHeight": 188, "pWidth": 250, 
-	 * "childrenIds": [7326, 7327, 7328], "showMoreLeafIds": [225763, 225609, 94618, 225656, 225608, 7375, 7327], 
-	 * "showMoreOtherIds": [7328, 7373, 7326]}]}
-	 */
 	public List<JsonEntry> parseWithApi(String s) throws Exception {
 		List<JsonEntry> list = new ArrayList<>();
 		JsonReader rdr = Json.createReader(new ByteArrayInputStream(s.getBytes()));
@@ -117,6 +109,8 @@ public class JsonParser {
 				entry.settWidth(obj.getInt("tWidth"));
 				entry.setpHeight(obj.getInt("pHeight"));
 				entry.setpWidth(obj.getInt("pWidth"));
+				entry.setdHeight(obj.getInt("dHeight"));
+				entry.setdWidth(obj.getInt("dWidth"));
 				entry.setImgData(obj.getString("imgData"));
 			}
 
@@ -322,6 +316,8 @@ public class JsonParser {
 				append(buf, true, "tWidth", e.gettWidth());
 				append(buf, true, "pHeight", e.getpHeight());
 				append(buf, true, "pWidth", e.getpWidth());
+				append(buf, true, "dHeight", e.getdHeight());
+				append(buf, true, "dWidth", e.getdWidth());
 				append(buf, true, "iLink", e.getWikiSpeciesLink());
 				append(buf, true, "imgData", e.getImgData());
 			}

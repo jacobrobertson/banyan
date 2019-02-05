@@ -425,20 +425,17 @@ td {
 	padding-bottom: 15px;
 }
 .ExampleTitle {
-	font-size: 125%;
+	font-size: 100%;
 	font-weight: bold;
 	font-style: italic;
 	color: #547a29;
 }
 .ExampleInnerCaption {
 	padding-right: .25em;
-	padding-left: 1em;
+	padding-left: .3em;
 }
 .ExampleInnerCaptionFirstLine {
 	font-weight: bold;
-}
-.ExampleTitle {
-	margin-right: 2em;
 }
 .ExampleGotoIcon {
 	width: 20px;

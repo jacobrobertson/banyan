@@ -23,12 +23,12 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		
 		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = false;
-		boolean argIsParentTree = true;
+		boolean argIsParentTree = !true;
 		boolean downstreamOnly = false;
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Cynognathus"
+				"Arctocephalus galapagoensis"
 		};
 		crawlAllStoredLinks = false;
 		//*/

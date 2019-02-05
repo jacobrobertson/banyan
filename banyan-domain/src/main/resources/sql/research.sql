@@ -24,6 +24,8 @@ select
 from species.species where 
 parent_latin_name in ('Vertebrata');
 
+select * from species where latin_name in ('Virus');
+
 select * from species.species where parent_id in (417371);
 
 select id, latin_name, common_name, parent_latin_name, parent_id from species.species where 

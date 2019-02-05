@@ -9,6 +9,7 @@ import org.apache.log4j.Level;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
+import com.robestone.species.js.JsWorker;
 
 /**
  * This is the main class to run to get new entries into the database.
@@ -29,6 +30,7 @@ public class RecentChangesUpdater extends AbstractWorker {
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
+		boolean runJs = !true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
@@ -93,6 +95,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 			recent.runMaintenance();
 			recent.runReports();
 		}
+		if (runJs) {
+			new JsWorker().run();
+		}
 	}
 	
 	private int maxOldLinks = 1000;
@@ -140,6 +145,9 @@ public class RecentChangesUpdater extends AbstractWorker {
 		new InterestingSubspeciesWorker().run();
 		
 		new SiblingsWithSameCommonNamesAnalyzer().run();
+		
+		// we run this one after the boring work, because it will give a false positive
+		new CommonNameFromDescendentsWorker().run();
 		
 		new LinkedImagesWorker().run();
 		

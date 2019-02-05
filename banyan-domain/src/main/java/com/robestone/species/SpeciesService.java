@@ -39,7 +39,6 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 
 	private Cache cache;
 	private EntrySearcher searcher;
-	private CommonNameSplitter commonNameSplitter = new CommonNameSplitter();
 	
 	public String getBoringColumn() {
 		if (useInterestingAttributesForSearches) {
@@ -97,6 +96,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	public Tree findCompleteTreeFromPersistence() {
 		Collection<CompleteEntry> entries = template.query(
 				"select id, parent_id, common_name, latin_name, image_link from species", this);
+		return EntryUtilities.buildTree(entries);
+	}
+	public Tree findCompleteTreeFromPersistenceWithBoringFlag() {
+		Collection<CompleteEntry> entries = template.query(
+				"select id, parent_id, common_name, latin_name, image_link, boring from species", this);
 		return EntryUtilities.buildTree(entries);
 	}
 	public void updateCommonNamesSharedWithSiblingsFalse() {
@@ -583,7 +587,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	private void cleanEntryFromPersistence(CompleteEntry entry) {
 		makeInteresting(entry);
 		fixCommonName(entry);
-		commonNameSplitter.assignCommonNames(entry);
+		CommonNameSplitter.assignCommonNames(entry);
 	}
 	private void fixCommonName(CompleteEntry entry) {
 		String commonName = entry.getCommonName();

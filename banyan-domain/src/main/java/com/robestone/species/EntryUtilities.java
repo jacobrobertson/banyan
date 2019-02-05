@@ -19,6 +19,7 @@ public class EntryUtilities {
 
 	private static final EntryComparator COMP = new EntryComparator();
 	public static final IdCruncher CRUNCHER = IdCruncher.withSubtraction(IdCruncher.R62_CHARS);
+	public static final String COMMON_NAME_FROM_DESCENDENTS_INDICATOR = "...";
 
 	public static String getCrunchedIdsForClose(Entry root, Integer toClose) {
 		Collection<Integer> ids = EntryUtilities.getLeavesIdsForClose(root, toClose);
@@ -308,7 +309,9 @@ public class EntryUtilities {
 		name = urlDecode(name);
 		
 		// remove "." from the end - pretty common
-		name = StringUtils.removeEnd(name, ".");
+		if (name.indexOf(COMMON_NAME_FROM_DESCENDENTS_INDICATOR) < 0) {
+			name = StringUtils.removeEnd(name, ".");
+		}
 		
 		name = StringUtils.trimToNull(name);
 		
@@ -325,29 +328,6 @@ public class EntryUtilities {
 		} catch (Exception e) {
 			// fails if "UTF-8" is invalid encoding!
 			throw new RuntimeException(e);
-		}
-	}
-	/**
-	 * TODO implement - part of enhancements
-	 */
-	public static String getImpliedCommonName(Entry root) {
-		Set<String> tokens = new HashSet<String>();
-		addCommonNameTokens(root, tokens);
-		
-		return null;
-	}
-	private static void addCommonNameTokens(Entry entry, Set<String> tokens) {
-		String name = entry.getCommonName();
-		if (name != null) {
-			String[] split = name.split(" ");
-			for (String one: split) {
-				tokens.add(one);
-			}
-		}
-		if (entry.hasChildren()) {
-			for (Entry child: entry.getChildren()) {
-				addCommonNameTokens(child, tokens);
-			}
 		}
 	}
 	/**

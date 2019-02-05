@@ -28,6 +28,7 @@ public class CommonNameHint {
 			"USA", Locale,
 			"USDA", Locale,
 			
+			"allies", Disambiguation,
 			"amoeba", Disambiguation,
 			"animal", Disambiguation,
 			"antelope", Disambiguation,
@@ -89,5 +90,13 @@ public class CommonNameHint {
 	public String getText() {
 		return text;
 	}
-	
+
+	public static boolean isHint(String namePart) {
+		for (CommonNameHint hint: CommonNameHint.hints) {
+			if (hint.getText().equalsIgnoreCase(namePart)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

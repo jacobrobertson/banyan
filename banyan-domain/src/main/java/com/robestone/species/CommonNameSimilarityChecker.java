@@ -101,18 +101,43 @@ public class CommonNameSimilarityChecker {
 		}
 		return false;
 	}
-	private static boolean isFirstPluralOfSecond(String first, String second) {
+	public static boolean isFirstPluralOfSecond(String first, String second) {
+/*
 		// TODO need to see if we're worried about "flies > fly", or "lioness > lionesses"
 		// if so - add those the the parts along with null/S, and check them both
-		return (first + "S").equals(second);
+		boolean is = (second + "S").equals(first);
+		if (!is && second.endsWith("ESS")) {
+			is = (second + "ES").equals(first);
+		}
+		if (!is && second.endsWith("Y")) {
+			is = (second.substring(0, second.length() - 1) + "IES").equals(first);
+		}
+		return is;
+*/
+		// must convert to lowercase to get library to work
+		first = first.toLowerCase();
+		second = second.toLowerCase();
+		
+		if (first.equals(second)) {
+			return false;
+		}
+		
+		String found = edu.washington.cs.knowitall.morpha.MorphaStemmer.stem(first);
+		return found.equals(second);
 	}
 	
 	/**
 	 * Only call this if you don't have the clean names available.
 	 */
 	public static boolean isCommonNameBoring(Entry entry) {
-		String cnc = EntryUtilities.getClean(entry.getCommonName(), false);
-		String lnc = EntryUtilities.getClean(entry.getLatinName(), false);
+		return isCommonNameBoring(entry.getCommonName(), entry.getLatinName());
+	}
+	/**
+	 * Only call this if you don't have the clean names available.
+	 */
+	public static boolean isCommonNameBoring(String commonName, String latinName) {
+		String cnc = EntryUtilities.getClean(commonName, false);
+		String lnc = EntryUtilities.getClean(latinName, false);
 		boolean boring = isCommonNameCleanBoring(cnc, lnc);
 		return boring;
 	}

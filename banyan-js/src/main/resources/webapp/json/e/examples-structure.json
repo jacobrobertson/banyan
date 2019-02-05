@@ -1,0 +1,99 @@
+{
+	"type": "example", "root": true,
+	"image": "5e/Arbor vitae.jpg",
+	"caption": "Examples / From the Tree of Life", 
+	"children": [
+		{
+			"type": "question", "number": 0,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 1,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 2,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"type": "question", "number": 3,
+			"children": [
+				{
+					"type": "example", "number": 0,
+					"children": [
+						{
+							"type": "example", "number": 1,
+							"children": [
+								{
+									"type": "example", "number": 2,
+									"children": [
+										{
+											"type": "example", "number": 3
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}

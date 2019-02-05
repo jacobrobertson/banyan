@@ -18,8 +18,6 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 	public static void main(String[] args) {
 		new CommonNamesWithParenthesisAnalyzer().fix();
 	}
-	private CommonNameSplitter commonNameSplitter = new CommonNameSplitter();
-
 	public void fix() {
 		Collection<CompleteEntry> all = 
 			speciesService.findCompleteTreeFromPersistence().getEntries();
@@ -29,7 +27,7 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 	}
 	public void fix(CompleteEntry e) {
 		String originalName = e.getCommonName();
-		commonNameSplitter.assignCommonNames(e);
+		CommonNameSplitter.assignCommonNames(e);
 		List<String> names = e.getCommonNames();
 		if (names == null) {
 			names = new ArrayList<String>();
@@ -49,7 +47,7 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 		}
 		if (changed) {
 			e.setCommonNames(names);
-			commonNameSplitter.joinCommonName(e);
+			CommonNameSplitter.joinCommonName(e);
 			LogHelper.speciesLogger.info(e.getLatinName() + " / " + originalName + " >> " + e.getCommonName());
 			// TODO persist
 		}
@@ -60,7 +58,7 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 		Collection<CompleteEntry> all = 
 			speciesService.findCompleteTreeFromPersistence().getEntries();
 		for (CompleteEntry e: all) {
-			commonNameSplitter.assignCommonNames(e);
+			CommonNameSplitter.assignCommonNames(e);
 			Collection<String> names = e.getCommonNames();
 			if (names == null) {
 				names = new ArrayList<String>();
