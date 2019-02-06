@@ -13,7 +13,7 @@ public class JsWorker extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 
-		new JsWorker().miscTest();
+//		new JsWorker().miscTest();
 
 		System.setProperty("banyan.lucene.dir", LuceneSearcher.defaultLinuxPath);
 		new JsWorker().run();
@@ -26,9 +26,9 @@ public class JsWorker extends AbstractWorker {
 	}
 	
 	public void miscTest() throws Exception {
-		CompleteEntry c1 = speciesService.findEntryByLatinName("Tragulus");
+		CompleteEntry c1 = speciesService.findEntryByLatinName("Virus");
 		CompleteEntry c2 = speciesService.findEntry(c1.getId());
-		System.out.println(c1);
+		System.out.println(c1 + "/" + c1.getCommonName());
 		System.out.println(c2);
 	}
 	

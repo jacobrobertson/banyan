@@ -28,7 +28,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Arctocephalus galapagoensis"
+				"Virus"
 		};
 		crawlAllStoredLinks = false;
 		//*/

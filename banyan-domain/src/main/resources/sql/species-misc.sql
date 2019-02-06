@@ -1,7 +1,7 @@
 SELECT count(*) FROM species;
 SELECT count(*) FROM images;
 
-select * from species where latin_name in ('Amanipodagrion gilliesi');
+select * from species where latin_name in ('Virus');
 select * from species where id in (140665);
 
 select * from species where (rank = -1 or parent_latin_name is null) and (image_link is not null and common_name is not null);
@@ -28,7 +28,7 @@ select * from species where latin_name like 'Rattus%';
 select * from species where (latin_name like '%virus%' or latin_name like '%Virus%') and image_link is not null;
 select * from species where (latin_name like '%virus%' or latin_name like '%Virus%') and common_name is not null;
 select count(*) from species where (latin_name like '%virus%' or latin_name like '%Virus%');
-select * from species where common_name_clean like '%DRYMOTOX%';
+select * from species where common_name_clean like '%RELATIVE%';
 select * from species where parent_latin_name like 'Drymotoxeres pucheranii';
 select * from species where boring_final <> 0 limit 100;
 
@@ -41,7 +41,7 @@ SELECT count(*) FROM species where (common_name is not null or image_link is not
 
 select * from species where boring_final <> 0 and child_count > 3 limit 100;
 
-select * from species where id < 2;
+select * from species where id = 1165;
 select * from species where extinct is null or boring is null or boring_final is null or shares_sibling_name is null;
 select count(*) from species where rank = 680;
 
