@@ -214,8 +214,10 @@ function showContextMenu(e, img) {
 }
 function hidePreviewPanel() {
 	var previewE = $("#preview");
-	if (previewE) {
+	if (previewE) { // not sure why I have this check
 		previewE.hide();
+	 	$("#previewCaption").hide();
+ 		$("#previewImage").hide();
 	}
 }
 function showPreviewPanel(e) {
@@ -224,16 +226,24 @@ function showPreviewPanel(e) {
 	}
 	hidePreviewPanel();
 	var img = e.currentTarget;
-	var imageBorderWidth = 2; // represents the two borders, left/right
-	var width = getImageWidth(img) + imageBorderWidth;
+	var iwidth = getImageWidth(img);
+	var iheight = getImageHeight(img);
 	var src = getPreviewImageSrc(img); // this.href;
-	
+
 	var previewImage = $("#previewImage");
-	previewImage.attr("src", src);
+	var same = (src == previewImage.attr("src"));
+	
+	if (!same) {
+		previewImage.attr("src", "");
+		previewImage.css("width", iwidth + "px").css("height", iheight + "px"); 
+		previewImage.attr("src", src);
+	}
+	previewImage.show();
 
 	var previewCaption = $("#previewCaption");
 	var caption = getPreviewImageCaption(img);
 	previewCaption.html(caption);
+	previewCaption.show();
 	
 	var previewOuter = $("#preview");
 	var previewWidth = previewOuter.width();
