@@ -107,7 +107,7 @@ function getImageTinySrcPath(e) {
 function contextMenuClicked(aTag) {
 	var action = aTag.id;
 	var pos = aTag.href.indexOf('#');
-	var id = aTag.href.substring(pos + 1);
+	var id = aTag.href.substring(pos + 3);
 	hideContextMenu();
 	
 	if (action == "mClose") {
@@ -153,7 +153,7 @@ function showContextMenu(e, img) {
 		button = buttons[i];
 		var buttonId = button.id;
 		var buttonValue = e[buttonId];
-		var link = buttonId + "#" + imgId;
+		var link = buttonId + "#!/" + imgId;
 		if (buttonValue) {
 			$(button).show();
 			rowsShownCount++;
@@ -168,7 +168,7 @@ function showContextMenu(e, img) {
 			maxWidth = Math.max(maxWidth, maxWidthFocus);
 		} else if (buttonId == 'mDetail') {
 			maxWidth = Math.max(maxWidth, maxWidthDetail);
-			link = "#" + getEntryDetailsHash(e);
+			link = "#!/" + getEntryDetailsHash(e);
 		} else if (buttonId == 'mShowChildren') {
 			var showCaption = e.mShowChildrenCaption;
 			if (showCaption) {
@@ -320,7 +320,7 @@ function setUrlInner(afterHash) {
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
-	window.location.href = href + "#" + afterHash;
+	window.location.href = href + "#!/" + afterHash;
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
@@ -342,7 +342,7 @@ function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
 	}
 }
 function setTreeLinksToValue(value) {
-	$("#treeLink,#treeLinkDetails").attr("href", "#" + value);
+	$("#treeLink,#treeLinkDetails").attr("href", "#!/" + value);
 }
 function setUrlForDetail(detailParams) {
 	// does not change #tree links
@@ -1239,7 +1239,7 @@ function renderExampleNode(h, e, depth) {
 			getImagesPath("preview") + '/' + e.image + '" class="PinnedImage" />';
 		h.append(pimg);
 		
-		var exampleLink = $('<a href="#e:' + e.file + '"></a>').appendTo(h);
+		var exampleLink = $('<a href="#!/e:' + e.file + '"></a>').appendTo(h);
 		
 		var captionLines = e.caption.split("/");
 		for (var k = 0; k < captionLines.length; k++) {
@@ -1299,7 +1299,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var pad = getNbsps(depth);
 	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
-		span.append(pad + '<a title="Go to Details" href="#' + detailsHash + 
+		span.append(pad + '<a title="Go to Details" href="#!/' + detailsHash + 
 			'"><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
 	}
@@ -1330,7 +1330,7 @@ function renderNodeEntryLine(h, e, depth) {
 		}
 		span.append('<a title="Extinct" href="#"><span class="' + eClass + '">&dagger;</span></a>');
 	}
-	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#' + detailsHash + '">' 
+	span.append('<a class="' + imgClass + '"' + linkTitle + ' id="entry-' + e.id + '" href="#!/' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
 	// menu button style/image
@@ -1456,7 +1456,7 @@ function getRankOfChildren(e) {
 }
 function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
-	$("<a href='#" + href 
+	$("<a href='#!/" + href 
 		+ "'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
 	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
@@ -1474,7 +1474,7 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 		linkTitle = "";
 	}
 	var previewA = $("<a id='" + idPrefix + "-" + e.id + "'"
-			+ linkTitle + " class='" + previewClass + "' href='#" + href + "'>" + taxoName + "</a>").appendTo(td);
+			+ linkTitle + " class='" + previewClass + "' href='#!/" + href + "'>" + taxoName + "</a>").appendTo(td);
 	if (e.img) {
 		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
 			+ "' class='Thumb' src='" + getImageTinySrcPath(e) + "'></img>").appendTo(previewA);
@@ -1504,6 +1504,9 @@ function loadCommandFromURL() {
 	var hashValue = "";
 	if (index > 0) {
 		hashValue = url.substring(index + 1);
+		if (hashValue.charAt(0) == '!') {
+			hashValue = hashValue.substring(2);
+		}
 	} 
 	if (hashValue.length == 0) {
 		// we will never just load nothing
@@ -1661,7 +1664,7 @@ function setRandomLinkIndex() {
 	var href = link.attr("href");
 	// choose a random number, because that way pressing back, etc will keep that number random
 	var index = Math.floor(Math.random() * dbRandomFiles.length);
-	link.attr("href", "#t:random:" + index);
+	link.attr("href", "#!/t:random:" + index);
 }
 function loadRandomFileIndexFromJson() {
 	var url = getJsonUrl("json/r/random-index.json");
