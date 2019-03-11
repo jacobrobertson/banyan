@@ -116,6 +116,13 @@ function contextMenuClicked(aTag) {
 	var id = aTag.href.substring(pos + 3);
 	hideContextMenu();
 	
+	if (action == "mDetail") {
+		setUrlForDetail(aTag.href.substring(pos + 1));
+	} else {
+		performMenuAction(action, id);
+	}
+}
+function performMenuAction(action, id) {
 	if (action == "mClose") {
 		closeNode(id);
 	} else if (action == "mHide") {
@@ -126,13 +133,27 @@ function contextMenuClicked(aTag) {
 		loadAllShowMore(id);
 	} else if (action == "mFocus") {
 		focusOnNode(id);
-	} else if (action == "mDetail") {
-		setUrlForDetail(aTag.href.substring(pos + 1));
 	} else if (action == "mPin") {
 		pinNode(id, true);
 	} else if (action == "mUnpin") {
 		pinNode(id, false);
 	}
+	var jqueryElement = $("#" + id);
+	setMenuButtonLink(id, jqueryElement);
+}
+function renderCrawlCommand(id) {
+	var e = getMapEntry(id);
+	var action;
+	if (e.mFocus) {
+		action = "mFocus";
+	} else if (e.mShowChildren) {
+		action = "mShowChildren";
+	} else if (e.mShowMore) {
+		action = "mShowMore";
+	} else {
+		action = "mClose";
+	}
+	performMenuAction(action, id);
 }
 function closeNode(id) {
 	var parentId = getMapEntry(id).parentId;
@@ -328,10 +349,12 @@ function setUrlInner(afterHash) {
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	} else {
-		pos = href.indexOf("?");
-		if (pos > 0) {
-			href = href.substring(0, pos);
-		}
+		// we don't want to do this, because removing query params forces a reload.
+		// instead remove all cases where this would cause "ugly" urls
+//		pos = href.indexOf("?");
+//		if (pos > 0) {
+//			href = href.substring(0, pos);
+//		}
 	}
 	window.location.href = href + "#!/" + afterHash;
 }
@@ -1356,8 +1379,16 @@ function renderNodeEntryLine(h, e, depth) {
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	span.append('<a href="#menubutton' + e.id + '" id="' + e.id + '" class="menuopener">'
+	var menuButtonLink = $('<a href="?temp" id="' + e.id + '" class="menuopener">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
+	setMenuButtonLink(e.id, menuButtonLink);
+	span.append(menuButtonLink);
+}
+function setMenuButtonLink(id, jqueryElement) {
+	var href = window.location.href;
+	href = getHashFromUrl(href);
+	href = "m:" + id + ":" + href;
+	jqueryElement.attr("href", "?" + href);
 }
 function getNbsps(count) {
 	var pad = "";
@@ -1541,6 +1572,16 @@ function loadCommandFromURL() {
 		hashValue = defaultTree;
 	}
 	
+	// handle the "menu button" scenario first, as it simply wraps the other behavior
+	var isMenuButton = hashValue.startsWith("m:");
+	var menuButtonId = false;
+	if (isMenuButton) {
+		hashValue = hashValue.substring(2);
+		var colonIndex = hashValue.indexOf(":");
+		menuButtonId = hashValue.substring(0, colonIndex);
+		hashValue = hashValue.substring(colonIndex + 1);
+	}
+	
 	// split the command if needed
 	var colon = hashValue.charAt(1);
 	var command;
@@ -1558,7 +1599,7 @@ function loadCommandFromURL() {
 		command = "";
 		value = hashValue;
 	}
-
+	
 	if (command == "e" || command == "r") {
 		loadExampleFile(hashValue);
 	} else if (command == "t") {
@@ -1578,7 +1619,7 @@ function loadCommandFromURL() {
 		}
 	} else if (command == "i") {
 		var ids = value.split(",");
-		loadAndShowNewIds(ids, false);
+		loadAndShowNewIds(ids, false, false);
 	} else if (command == "c") {
 		var pinnedIds = false;
 		if (commandParam) {
@@ -1590,7 +1631,7 @@ function loadCommandFromURL() {
 			}
 		}
 		var ids = uncrunch(value);
-		loadAndShowNewIds(ids, pinnedIds);
+		loadAndShowNewIds(ids, pinnedIds, menuButtonId);
 	}
 }
 function submitSearchQuery(query) {
@@ -1748,7 +1789,7 @@ function loadAllShowMore(id) {
 	loadJsonThenMarkNewIdsVisible(newIds, function() {highlightNodes(newIds)});
 }
 
-function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
+function loadAndShowNewIds(fileNamesOrIds, pinnedIds, menuButtonId) {
 	var currentVisibleIds = getAllVisibleNodeIds();
 	var same = areArraysSame(currentVisibleIds, fileNamesOrIds);
 	if (same && pinnedIds) {
@@ -1758,7 +1799,14 @@ function loadAndShowNewIds(fileNamesOrIds, pinnedIds) {
 	
 	if (!same) {
 		hideAllNodes();
-		loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true);
+		var callback = false;
+		if (menuButtonId) {
+			callback = function() {
+				renderCrawlCommand(menuButtonId);
+			};
+		}
+		
+		loadJsonThenAddEntries(fileNamesOrIds, pinnedIds, true, callback);
 	} else {
 		showTreeTab();
 	}
