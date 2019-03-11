@@ -20,27 +20,28 @@
 		<form id="searchForm">
 		<input class="Box" id="textfield" type="text"></input><input 
 			class="Button" value="Search" id="search" type="submit"></input>
-		</form><span class="Spacer">|</span><a 
-			class="Link" href="#" id="treeLink">My Tree</a><span 
-			class="Spacer">|</span><a id="startOverLink"
-			class="Link" href="#!/t:startOver">Start Over</a><span 
-			class="Spacer">|</span><a id="blankTreeLink"
-			class="Link" href="#!/t:blankTree">Clear All</a><span 
-			class="Spacer">|</span><a 
-			class="Link" href="#!/t:examplesTab">Examples</a><span 
-			class="Spacer">|</span><a 
-			class="Link" id="RandomLink" href="#!/t:random:0">Random</a><span 
-			class="Spacer">|</span><a 
-			class="Link" href="#!/t:faqTab">FAQ</a><span 
-			class="Logo"><img alt="Banyan" src="icons/banyan-icon.png"></img></span>
+		</form><span class="Spacer">|</span>
+			<a class="Link navQueryLink" href="#" id="treeLink">My Tree</a>
+			<span class="Spacer">|</span>
+			<a id="startOverLink" class="Link navQueryLink" href="?t:startOver">Start Over</a>
+			<span class="Spacer">|</span>
+			<a id="blankTreeLink" class="Link navQueryLink" href="?t:blankTree">Clear All</a>
+			<span class="Spacer">|</span>
+			<a class="Link navQueryLink" href="?t:examplesTab">Examples</a>
+			<span class="Spacer">|</span>
+			<a class="Link navQueryLink" id="RandomLink" href="?t:random:0">Random</a>
+			<span class="Spacer">|</span>
+			<a class="Link navQueryLink" href="?t:faqTab">FAQ</a>
+			<span class="Logo"><img alt="Banyan" src="icons/banyan-icon.png"></img>
+		</span>
 	</div>
 </div>
 <div class="Quote">
 "The best site in the world to explore the tree of life"
 ... take a look at 
-<a class="QuoteLink" href="#!/e:marsupials">marsupials</a>, 
-<a class="QuoteLink" href="#!/e:insects">insects</a> or
-<a class="QuoteLink" href="#!/e:sharks">sharks</a> ...
+<a class="QuoteLink navQueryLink" href="?e:marsupials">marsupials</a>, 
+<a class="QuoteLink navQueryLink" href="?e:insects">insects</a> or
+<a class="QuoteLink navQueryLink" href="?e:sharks">sharks</a> ...
 </div>
 
 <div id="tabContent"></div>
@@ -245,7 +246,7 @@
 				<div class="DetailImageHolder">
 					<img id="DetailImage" class="PinnedImage" alt="Tree of Life" height="188" width="250" src="#FILL">
 				</div>
-				<div class="Return"><a id="treeLinkDetails" href="#NONE"><img src="icons/back.png" class="detail-button-back">Back to your #Tree</a></div>
+				<div class="Return"><a id="treeLinkDetails" href="#NONE" class="navQueryLink"><img src="icons/back.png" class="detail-button-back">Back to your #Tree</a></div>
 			</span>
 		</td>
 		<td id="SubSpeciesLine" class="b">&nbsp;</td>
