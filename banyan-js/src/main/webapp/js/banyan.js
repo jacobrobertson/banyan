@@ -1750,7 +1750,6 @@ function setRandomLinkIndex() {
 	var link = $("#RandomLink");
 	// choose a random number, because that way pressing back, etc will keep that number random
 	var index = Math.floor(Math.random() * dbRandomFileKeys.length);
-//	link.attr("href", "?t:random:" + index);
 	link.attr("href", "?r:" + dbRandomFileKeys[index]);
 }
 function loadRandomFileIndexFromJson(command) {
