@@ -1600,8 +1600,10 @@ function loadCommandFromURL() {
 		value = hashValue;
 	}
 	
-	if (command == "e" || command == "r") {
+	if (command == "e") {
 		loadExampleFile(hashValue);
+	} else if (command == "r") {
+		loadRandomFile(hashValue);
 	} else if (command == "t") {
 		if (value == "random") {
 			loadRandomFile(commandParam);
@@ -1720,26 +1722,34 @@ function showTab(id) {
 }
 function loadRandomFile(command) {
 	if (!dbRandomFiles) {
-		loadRandomFileIndexFromJson();
+		loadRandomFileIndexFromJson(command);
 	} else {
 		setRandomLinkIndex();
-		var index = parseInt(command);
-		var next = dbRandomFiles[index];
-		loadExampleFile("r:" + next);
+		var next = getRandomFileFromCommand(command);
+		loadExampleFile(next);
+	}
+}
+function getRandomFileFromCommand(command) {
+	var index = parseInt(command);
+	if (isNaN(index)) {
+		return command;
+	} else {
+		return "r:" + dbRandomFiles[index];
 	}
 }
 function setRandomLinkIndex() {
 	var link = $("#RandomLink");
 	// choose a random number, because that way pressing back, etc will keep that number random
 	var index = Math.floor(Math.random() * dbRandomFiles.length);
-	link.attr("href", "?t:random:" + index);
+//	link.attr("href", "?t:random:" + index);
+	link.attr("href", "?r:" + dbRandomFiles[index]);
 }
-function loadRandomFileIndexFromJson() {
+function loadRandomFileIndexFromJson(command) {
 	var url = getJsonUrl("json/r/random-index.json");
 	$.getJSON(url, function(data) {
 		dbRandomFiles = data.files;
 		shuffleArray(dbRandomFiles);
-		loadRandomFile(0);
+		loadRandomFile(command);
 	});
 }
 function shuffleArray(array) {
