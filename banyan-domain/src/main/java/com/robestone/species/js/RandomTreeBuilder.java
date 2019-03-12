@@ -486,7 +486,8 @@ public class RandomTreeBuilder extends AbstractWorker {
 		
 		for (int i = 0; i < query.length(); i++) {
 			char c = query.charAt(i);
-			if (!Character.isAlphabetic(c)) {
+			int pos = "abcdefghijklmnopqrstuvwxyz".indexOf(c);
+			if (pos < 0) {
 				buf.append("-");
 			} else {
 				buf.append(c);

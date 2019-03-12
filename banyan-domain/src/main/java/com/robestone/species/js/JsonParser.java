@@ -20,6 +20,7 @@ import javax.json.JsonString;
 import javax.json.JsonValue;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
@@ -32,11 +33,43 @@ public class JsonParser {
 
 	public static void main(String[] args) throws Exception {
 		JsonParser p = new JsonParser();
-		p.testPartition();
+		p.generateSiteMap();
 	}
 
-	private String jsonDir = System.getProperty("user.home") + "/Desktop/json-orig";;
+	private String jsonDir = "../banyan-js/src/main/webapp/json";
+	private String baseUrl = "http://jacobrobertson.com/banyan/";
 	
+	public void generateSiteMap() throws Exception {
+		StringBuilder buf = new StringBuilder();
+		buf.append(baseUrl + "\n");
+		
+		createExamples(buf);
+		createRandoms(buf);
+		
+		System.out.println(buf);
+	}
+
+	public void createExamples(StringBuilder buf) throws Exception {
+		buf.append(baseUrl + "?t:examplesTab\n");
+		File[] files = new File(jsonDir + "/e").listFiles();
+		for (File file : files) {
+			String name = FilenameUtils.removeExtension(file.getName());
+			if (!"examples-index".equals(name) && !"examples-structure".equals(name)) {
+				buf.append(baseUrl + "?e:" + name + "\n");
+			}
+		}
+	}
+	public void createRandoms(StringBuilder buf) throws Exception {
+		File[] files = new File(jsonDir + "/r").listFiles();
+		for (File file : files) {
+			String name = FilenameUtils.removeExtension(file.getName());
+			if (!"random-index".equals(name)) {
+				int pos = name.lastIndexOf('-');
+				name = name.substring(0,  pos);
+				buf.append(baseUrl + "?r:" + name + "\n");
+			}
+		}
+	}
 	public void testPartition() throws Exception {
 		Node root = parseRecursive(1);
 		new JsonPartitioner().partition(root);
