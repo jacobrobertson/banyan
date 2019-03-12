@@ -41,7 +41,8 @@ var dbMap = {};
 var dbPartitions;
 var dbChildIdsToParents = {};
 var dbFileIds = {};
-var dbRandomFiles = false;
+var dbRandomFileKeys = false;
+var dbRandomFileKeysToFileNames = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
 var defaultTree = "e:welcome-to-banyan";
 var examplesIndexLoaded = false;
@@ -1720,8 +1721,13 @@ function showTab(id) {
 	$(".tabCommand").hide();
 	$("#" + id).show();
 }
+function getRandomKeyFromFileName(name) {
+	// convert "name-name2-12321" to "name-name2"
+	var pos = name.lastIndexOf("-");
+	return name.substring(0, pos);
+}
 function loadRandomFile(command) {
-	if (!dbRandomFiles) {
+	if (!dbRandomFileKeys) {
 		loadRandomFileIndexFromJson(command);
 	} else {
 		setRandomLinkIndex();
@@ -1731,24 +1737,33 @@ function loadRandomFile(command) {
 }
 function getRandomFileFromCommand(command) {
 	var index = parseInt(command);
+	var key;
 	if (isNaN(index)) {
-		return command;
+		key = command.substring(2);
 	} else {
-		return "r:" + dbRandomFiles[index];
+		var key = dbRandomFileKeys[index];
 	}
+	var file = dbRandomFileKeysToFileNames[key];
+	return "r:" + file;
 }
 function setRandomLinkIndex() {
 	var link = $("#RandomLink");
 	// choose a random number, because that way pressing back, etc will keep that number random
-	var index = Math.floor(Math.random() * dbRandomFiles.length);
+	var index = Math.floor(Math.random() * dbRandomFileKeys.length);
 //	link.attr("href", "?t:random:" + index);
-	link.attr("href", "?r:" + dbRandomFiles[index]);
+	link.attr("href", "?r:" + dbRandomFileKeys[index]);
 }
 function loadRandomFileIndexFromJson(command) {
 	var url = getJsonUrl("json/r/random-index.json");
 	$.getJSON(url, function(data) {
-		dbRandomFiles = data.files;
-		shuffleArray(dbRandomFiles);
+		dbRandomFileKeys = [];
+		dbRandomFileKeysToFileNames = {};
+		data.files.forEach(e => {
+			var key = getRandomKeyFromFileName(e);
+			dbRandomFileKeys.push(key);
+			dbRandomFileKeysToFileNames[key] = e;
+		});
+		shuffleArray(dbRandomFileKeys);
 		loadRandomFile(command);
 	});
 }
