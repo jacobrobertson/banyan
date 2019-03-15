@@ -197,7 +197,7 @@ function showContextMenu(e, img) {
 			maxWidth = Math.max(maxWidth, maxWidthFocus);
 		} else if (buttonId == 'mDetail') {
 			maxWidth = Math.max(maxWidth, maxWidthDetail);
-			link = "?" + getEntryDetailsHash(e);
+			link = "?q=" + getEntryDetailsHash(e);
 		} else if (buttonId == 'mShowChildren') {
 			var showCaption = e.mShowChildrenCaption;
 			if (showCaption) {
@@ -379,7 +379,7 @@ function setUrlsToIdsArray(ids, pinnedIds, setWindowUrl, setLinkUrls) {
 	}
 }
 function setTreeLinksToValue(value) {
-	$("#treeLink,#treeLinkDetails").attr("href", "?" + value);
+	$("#treeLink,#treeLinkDetails").attr("href", "?q=" + value);
 }
 function setUrlForDetail(detailParams) {
 	// does not change #tree links
@@ -1279,7 +1279,7 @@ function renderExampleNode(h, e, depth) {
 		
 		var exampleLink;
 		if (!e.root) {
-			exampleLink = $('<a href="?e:' + e.file + '" class="exampleQueryLink"></a>').appendTo(h);
+			exampleLink = $('<a href="?q=e:' + e.file + '" class="exampleQueryLink"></a>').appendTo(h);
 		} else {
 			exampleLink = $('<div></div>').appendTo(h);
 		}
@@ -1340,7 +1340,7 @@ function renderNodeEntryLine(h, e, depth) {
 	var pad = getNbsps(depth);
 	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
-		span.append(pad + '<a title="Go to Details" href="?' + detailsHash + '" class="treeQueryLink"' +
+		span.append(pad + '<a title="Go to Details" href="?q=' + detailsHash + '" class="treeQueryLink"' +
 			'><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
 	}
@@ -1371,7 +1371,7 @@ function renderNodeEntryLine(h, e, depth) {
 		}
 		span.append('<a title="Extinct" href="#"><span class="' + eClass + '">&dagger;</span></a>');
 	}
-	span.append('<a class="' + imgClass + ' treeQueryLink"' + linkTitle + ' id="entry-' + e.id + '" href="?' + detailsHash + '">' 
+	span.append('<a class="' + imgClass + ' treeQueryLink"' + linkTitle + ' id="entry-' + e.id + '" href="?q=' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
 	// menu button style/image
@@ -1389,7 +1389,7 @@ function setMenuButtonLink(id, jqueryElement) {
 	var href = window.location.href;
 	href = getHashFromUrl(href);
 	href = "m:" + id + ":" + href;
-	jqueryElement.attr("href", "?" + href);
+	jqueryElement.attr("href", "?q=" + href);
 }
 function getNbsps(count) {
 	var pad = "";
@@ -1506,7 +1506,7 @@ function getRankOfChildren(e) {
 }
 function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
-	$("<a href='?" + href 
+	$("<a href='?q=" + href 
 		+ "' class='treeQueryLink'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
 	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
@@ -1524,7 +1524,7 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 		linkTitle = "";
 	}
 	var previewA = $("<a id='" + idPrefix + "-" + e.id + "'"
-			+ linkTitle + " class='" + previewClass + " treeQueryLink' href='?" + href + "'>" + taxoName + "</a>").appendTo(td);
+			+ linkTitle + " class='" + previewClass + " treeQueryLink' href='?q=" + href + "'>" + taxoName + "</a>").appendTo(td);
 	if (e.img) {
 		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
 			+ "' class='Thumb' src='" + getImageTinySrcPath(e) + "'></img>").appendTo(previewA);
@@ -1549,15 +1549,15 @@ function loadCommandFromQuery(url) {
 }
 function getHashFromUrl(url) {
 	var index = url.indexOf("#");
-	if (index < 0) {
-		index = url.indexOf("?");
-	}
 	var hashValue = "";
-	if (index > 0) {
+	if (index >= 0) {
 		hashValue = url.substring(index + 1);
 		if (hashValue.charAt(0) == '!') {
 			hashValue = hashValue.substring(2);
 		}
+	} else {
+		index = url.indexOf("?q=");
+		hashValue = url.substring(index + 3);
 	}
 	return hashValue;
 }
@@ -1750,7 +1750,7 @@ function setRandomLinkIndex() {
 	var link = $("#RandomLink");
 	// choose a random number, because that way pressing back, etc will keep that number random
 	var index = Math.floor(Math.random() * dbRandomFileKeys.length);
-	link.attr("href", "?r:" + dbRandomFileKeys[index]);
+	link.attr("href", "?q=r:" + dbRandomFileKeys[index]);
 }
 function loadRandomFileIndexFromJson(command) {
 	var url = getJsonUrl("json/r/random-index.json");
