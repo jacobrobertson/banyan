@@ -1557,7 +1557,11 @@ function getHashFromUrl(url) {
 		}
 	} else {
 		index = url.indexOf("?q=");
-		hashValue = url.substring(index + 3);
+		if (index >= 0) {
+			hashValue = url.substring(index + 3);
+		} else {
+			hashValue = "";
+		}
 	}
 	return hashValue;
 }
