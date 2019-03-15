@@ -1761,11 +1761,12 @@ function loadRandomFileIndexFromJson(command) {
 	$.getJSON(url, function(data) {
 		dbRandomFileKeys = [];
 		dbRandomFileKeysToFileNames = {};
-		data.files.forEach(e => {
+		for (var i = 0; i < data.files.length; i++) {
+			var e = data.files[i];
 			var key = getRandomKeyFromFileName(e);
 			dbRandomFileKeys.push(key);
 			dbRandomFileKeysToFileNames[key] = e;
-		});
+		}
 		shuffleArray(dbRandomFileKeys);
 		loadRandomFile(command);
 	});
