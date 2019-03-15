@@ -632,7 +632,6 @@ http://jacobrobertson.com/banyan/?q=r:vampire-squid
 http://jacobrobertson.com/banyan/?q=r:velella
 http://jacobrobertson.com/banyan/?q=r:vervet
 http://jacobrobertson.com/banyan/?q=r:victoria-crowned-pigeon
-http://jacobrobertson.com/banyan/?q=r:vicuña
 http://jacobrobertson.com/banyan/?q=r:viperfish
 http://jacobrobertson.com/banyan/?q=r:visayan-warty-pig
 http://jacobrobertson.com/banyan/?q=r:vole
