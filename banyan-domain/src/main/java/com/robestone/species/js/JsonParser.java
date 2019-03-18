@@ -50,12 +50,12 @@ public class JsonParser {
 	}
 
 	public void createExamples(StringBuilder buf) throws Exception {
-		buf.append(baseUrl + "?t:examplesTab\n");
+		buf.append(baseUrl + "q/t/examplesTab\n");
 		File[] files = new File(jsonDir + "/e").listFiles();
 		for (File file : files) {
 			String name = FilenameUtils.removeExtension(file.getName());
 			if (!"examples-index".equals(name) && !"examples-structure".equals(name)) {
-				buf.append(baseUrl + "?e:" + name + "\n");
+				buf.append(baseUrl + "q/e/" + name + "\n");
 			}
 		}
 	}
@@ -66,7 +66,7 @@ public class JsonParser {
 			if (!"random-index".equals(name)) {
 				int pos = name.lastIndexOf('-');
 				name = name.substring(0,  pos);
-				buf.append(baseUrl + "?r:" + name + "\n");
+				buf.append(baseUrl + "q/r/" + name + "\n");
 			}
 		}
 	}
