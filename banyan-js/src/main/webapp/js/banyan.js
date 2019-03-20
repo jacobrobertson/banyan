@@ -2,6 +2,7 @@ $(document).ready(function() {
 	$(window).on('hashchange', onHashChange);
 	initContextMenu();
 	$(document).ready(initData);
+	setCanonicalLinkOnReady();
 });
 function initData() {
 	loadPartitionIndex(function() {
@@ -350,9 +351,15 @@ function setUrlInner(afterHash) {
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
-	
 	window.location.href = href + "#!/" + afterHash;
-	
+	setCanonicalLink(afterHash);
+}
+// this should only get called
+function setCanonicalLinkOnReady() {
+	var afterHash = getHashFromUrl(window.location.href);
+	setCanonicalLink(afterHash);
+}
+function setCanonicalLink(afterHash) {
 	// now also change the canonical version of the page's url
 	var firstColon = afterHash.indexOf(':');
 	var param;
@@ -361,7 +368,7 @@ function setUrlInner(afterHash) {
 	} else {
 		param = afterHash;
 	}
-	$('link[rel="canonical"]').attr("href", "http://jacobrobertson.com/banyan/q/" + param);
+	$('link[rel="canonical"]').attr("href", "http://jacobrobertson.com/banyan/q/" + param);	
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
