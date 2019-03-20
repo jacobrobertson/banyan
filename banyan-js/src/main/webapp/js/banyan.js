@@ -349,15 +349,19 @@ function setUrlInner(afterHash) {
 	var pos = href.indexOf("#");
 	if (pos > 0) {
 		href = href.substring(0, pos);
-	} else {
-		// we don't want to do this, because removing query params forces a reload.
-		// instead remove all cases where this would cause "ugly" urls
-//		pos = href.indexOf("?");
-//		if (pos > 0) {
-//			href = href.substring(0, pos);
-//		}
 	}
+	
 	window.location.href = href + "#!/" + afterHash;
+	
+	// now also change the canonical version of the page's url
+	var firstColon = afterHash.indexOf(':');
+	var param;
+	if (firstColon > 0) {
+		param = afterHash.substring(0, firstColon) + "/" + afterHash.substring(firstColon + 1);
+	} else {
+		param = afterHash;
+	}
+	$('link[rel="canonical"]').attr("href", "http://jacobrobertson.com/banyan/q/" + param);
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
