@@ -351,6 +351,15 @@ function setUrlInner(afterHash) {
 	if (pos > 0) {
 		href = href.substring(0, pos);
 	}
+	// this will cause a page refresh, but it is necessary to fix issues with
+	// the wrong canonical link, etc.  We double check that it only happens "when needed"
+	pos = href.indexOf("?q=");
+	if (pos > 0) {
+		var query = href.substring(pos + 3);
+		if (query != afterHash) {
+			href = href.substring(0, pos);
+		}
+	}
 	window.location.href = href + "#!/" + afterHash;
 	setCanonicalLink(afterHash);
 }
