@@ -237,6 +237,7 @@ function showContextMenu(e, img) {
 		left = docViewRight - maxWidth;
 	}
 	
+	$(".mButton img").show();
 	$("#menu").show().css( {
 		"top" : top,
 		"left" : left

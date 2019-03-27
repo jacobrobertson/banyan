@@ -286,6 +286,7 @@ td {
 	margin: 0px;
 }
 .mButton img {
+	display: none;
 	margin: 0px;
 	vertical-align: middle;
 	width: 20px;
