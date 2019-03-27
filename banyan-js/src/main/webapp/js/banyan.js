@@ -60,6 +60,17 @@ var isMenuActive = false;
 var cancelerEvent = null;
 var areMenusAllowed = true;
 
+var menuData = [
+	{"id": "mShowChildren", "png": "open_children", 	"caption": "Show More Children"},
+	{"id": "mShowMore", 	"png": "show-interesting", 	"caption": "Show More Species"},
+	{"id": "mHide", 		"png": "close-children", 	"caption": "Hide Children"},
+	{"id": "mClose", 		"png": "close", 			"caption": "Close"},
+	{"id": "mFocus", 		"png": "focus", 			"caption": "Focus"},
+	{"id": "mPin", 			"png": "pin_image", 		"caption": "Pin Image"},
+	{"id": "mUnpin", 		"png": "unpin_image", 		"caption": "Unpin Image"},
+	{"id": "mDetail", 		"png": "goto-details", 		"caption": "Go to Details"}
+];
+
 // ------ GUI Events/Behavior/Menus
 function __EventsBehaviorMenus() {}
 function onHashChange() {
@@ -79,6 +90,7 @@ function checkContextMenuActive(e) {
 	}
 }
 function initContextMenu() {
+	renderContextMenu();
 	$("#menu").mouseenter(function(e) {
 		isMenuActive = true;
 	});
@@ -94,6 +106,23 @@ function initContextMenu() {
 		contextMenuClicked(this);
 		return false;
 	});
+}
+function renderContextMenu() {
+	var menuDiv = $('<div id="menu"></div>');
+	for (var i = 0; i < menuData.length; i++) {
+		var d = menuData[i];
+		var rowAnchor = $('<a class="mButton" id="' + d.id + '" href="TBD" style="display: inline;"></a>');
+		var rowDiv = $('<div class="MenuRow"></div>');
+		var rowImage = $('<img alt="' + d.caption + '" src="icons/' + d.png + '.png" style="display: none"></img>');
+		var rowCaption = $('<span id="' + d.id + 'Caption">' + d.caption + '</span>');
+		
+		menuDiv.append(rowAnchor);
+		rowAnchor.append(rowDiv);
+		rowDiv.append(rowImage);
+		rowDiv.append("&nbsp;");
+		rowDiv.append(rowCaption);
+	}
+	$(":root").append(menuDiv);
 }
 function initPageElements() {
 	// FAQ items that need to come from entries
