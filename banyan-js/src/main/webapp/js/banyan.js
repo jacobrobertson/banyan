@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	$(window).on('hashchange', onHashChange);
 	initContextMenu();
+	initLazyButtons();
 	$(document).ready(initData);
 	setCanonicalLinkOnReady();
 });
@@ -88,6 +89,13 @@ function checkContextMenuActive(e) {
 		e.preventDefault();
 		return false;
 	}
+}
+function initLazyButtons() {
+	$(".lazyButton").each(function () {
+		// <img class="faqButton" src="icons/focus.png"/>
+		var id = $(this).attr("id");
+		$(this).attr("src", "icons/" + id + ".png");
+	});
 }
 function initContextMenu() {
 	renderContextMenu();

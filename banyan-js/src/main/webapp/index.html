@@ -32,7 +32,7 @@
 			<a class="Link navQueryLink" id="RandomLink" href="?q=t:random:0">Random</a>
 			<span class="Spacer">|</span>
 			<a class="Link navQueryLink" href="?q=t:faqTab">FAQ</a>
-			<span class="Logo"><img alt="Banyan" src="icons/banyan-icon.png"></img>
+			<span class="Logo"><img alt="Banyan" id="banyan-icon" class="lazyButton"></img>
 		</span>
 	</div>
 </div>
@@ -55,7 +55,7 @@
 					<tr>
 						<td class="n" rowspan="2">
 							<div id="node-1" class="Node FaqNode">
-							<img alt="question" class="question" src="icons/question.png" />
+							<img alt="question" class="question lazyButton" id="question" />
 							<span class="FaqTitle">Frequently Asked Questions</span>
 							</div>
 						</td>
@@ -89,9 +89,9 @@
 											<tr>
 												<td class="n" rowspan="2"><div id="node-41"
 														class="Node FaqNode">
-	<img class="faqButton-detail_first" src="icons/menu_more.png"/> and <img class="faqButton-detail_first" src="icons/menu_less.png"/> - <b>Show the Menu</b>
+	<img class="faqButton-detail_first lazyButton" id="menu_more"/> and <img class="faqButton-detail_first lazyButton" id="menu_less"/> - <b>Show the Menu</b>
 	<br/>
-	<img class="faqButton" src="icons/goto-details.png"/> and <img class="faqButton-detail_first" src="icons/detail.png"/> - <b>Go to Details</b> - See a detailed view of the chosen species.
+	<img class="faqButton lazyButton" id="goto-details"/> and <img class="faqButton-detail_first lazyButton" id="detail"/> - <b>Go to Details</b> - See a detailed view of the chosen species.
 														</div></td>
 											</tr>
 											<tr></tr>
@@ -111,9 +111,9 @@
 											<tr>
 												<td class="n" rowspan="2"><div id="node-43"
 														class="Node FaqNode">
-	<img class="faqButton" src="icons/open_children.png"/> - <b>Show Children</b> - Will show all direct children of the chosen species.
+	<img class="faqButton lazyButton" id="open_children"/> - <b>Show Children</b> - Will show all direct children of the chosen species.
 	<br/>
-	<img class="faqButton" src="icons/show-interesting.png"/> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.
+	<img class="faqButton lazyButton" id="show-interesting"/> - <b>Show More Species</b> - Will show a sampling of species under the chosen species.
 														</div></td>
 											</tr>
 											<tr></tr>
@@ -132,9 +132,9 @@
 											<tr>
 												<td class="n" rowspan="2"><div id="node-43"
 														class="Node FaqNode">
-	<img class="faqButton" src="icons/close-children.png"/> - <b>Hide Children</b> - Closes all children of the chosen species.
+	<img class="faqButton lazyButton" id="close-children"/> - <b>Hide Children</b> - Closes all children of the chosen species.
 	<br/>
-	<img class="faqButton" src="icons/close.png"/> - <b>Close</b> - Closes the chosen species, and all its children.
+	<img class="faqButton lazyButton" id="close"/> - <b>Close</b> - Closes the chosen species, and all its children.
 														</div></td>
 											</tr>
 											<tr></tr>
@@ -153,9 +153,9 @@
 											<tr>
 												<td class="n" rowspan="2"><div id="node-43"
 														class="Node FaqNode">
-	<img class="faqButton" src="icons/focus.png"/> - <b>Focus</b> - Show the chosen species in a new tree with just its hierarchy showing.
+	<img class="faqButton lazyButton" id="focus"/> - <b>Focus</b> - Show the chosen species in a new tree with just its hierarchy showing.
 	<br/>
-	<img class="faqButton" src="icons/pin_image.png"/> and <img class="faqButton" src="icons/unpin_image.png"/> - <b>Pinning Images</b> - Makes that species' image show as part of the tree. 
+	<img class="faqButton lazyButton" id="pin_image"/> and <img class="faqButton lazyButton" id="unpin_image"/> - <b>Pinning Images</b> - Makes that species' image show as part of the tree. 
 														</div></td>
 											</tr>
 											<tr></tr>
@@ -177,7 +177,7 @@
 													<div id="node-42" class="Node FaqNode">
 	<span class="FaqExtinct">&dagger; </span> - Indicates that the given species is extinct.
 	<br/>
-	<a id="faqImage" href="#" class="preview"><img src="icons/question.png" class="Thumb" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
+	<a id="faqImage" href="#" class="preview"><img id="question" class="Thumb lazyButton" height="15" width="20"/></a> - <b>Thumbnails</b> - Hover over to see a larger pop-up image, or click to go to the details screen.
 													</div>
 												</td>
 											</tr>
@@ -247,9 +247,9 @@
 				<div class="DetailTitle DetailTitleName" id="DetailTitle">Common Names</div>
 				<div id="DetailLatinTitle">Latin Name</div>
 				<div class="DetailImageHolder">
-					<img id="DetailImage" class="PinnedImage" alt="Tree of Life" height="188" width="250" src="icons/question.png">
+					<img id="DetailImage" class="PinnedImage lazyButton" alt="Tree of Life" height="188" width="250" id="question">
 				</div>
-				<div class="Return"><a id="treeLinkDetails" href="#NONE" class="navQueryLink"><img src="icons/back.png" class="detail-button-back">Back to your #Tree</a></div>
+				<div class="Return"><a id="treeLinkDetails" href="#NONE" class="navQueryLink"><img id="back" class="detail-button-back lazyButton">Back to your #Tree</a></div>
 			</span>
 		</td>
 		<td id="SubSpeciesLine" class="b">&nbsp;</td>
