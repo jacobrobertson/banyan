@@ -408,7 +408,11 @@ function setCanonicalLink(afterHash) {
 	} else {
 		param = afterHash;
 	}
-	$('link[rel="canonical"]').attr("href", "http://jacobrobertson.com/banyan/q/" + param);	
+	var link = $('link[rel="canonical"]');
+	if (! link.length) {
+		link = $('<link rel="canonical" href="" />').appendTo($("head"));
+	}
+	link.attr("href", "http://jacobrobertson.com/banyan/q/" + param);	
 }
 function setUrlToAllVisibleIds() {
 	var ids = getAllVisibleNodeIds();
