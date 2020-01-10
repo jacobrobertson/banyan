@@ -755,13 +755,13 @@ function getRootFromId(id) {
 	}
 	return e;
 }
-function prepareNodesForRender(e) {
+function prepareNodesForRender(e, isDetails) {
 	buildShownNodes(e);
 	cleanNodes(e);
 	collapseNodesForChildrenToShow(e);
 	hideLongCollapsed(e);
 	collapseNodesForSiblingsToShow(e);
-	prepareEntryForContextMenu(e);
+	prepareEntryForContextMenu(e, isDetails);
 }
 function cleanNodes(e) {
 	// we may have more things to do later...
@@ -927,7 +927,7 @@ function getChildrenIdsShownCountingSiblings(e) {
 	}
 	return childrenIds;
 }
-function prepareEntryForContextMenu(e) {
+function prepareEntryForContextMenu(e, isDetails) {
 	var childrenShownIds = getChildrenIdsShownCountingSiblings(e);
 	var hiddenCount = e.childrenIds.length - childrenShownIds.length;
 	if (hiddenCount == 0) {
@@ -938,7 +938,8 @@ function prepareEntryForContextMenu(e) {
 		e.mShowChildrenCaption = getShowCaption(e.childrenToShow.length, hiddenCount, "Child", "Children");
 	}
 
-	e.mHide = (e.childrenToShow.length > 0);
+	e.mHide = (e.childrenToShow.length > 0) && !isDetails;
+	e.mClose = !isDetails;
 	
 	var visibleShowMoreIds = getVisibleIds(e.showMoreLeafIds);
 	var showMoreVisible = visibleShowMoreIds.length;
@@ -996,7 +997,7 @@ function isShowMoreAndShowChildrenSame(childrenShownIds, childrenIds, visibleSho
 function isFocusNeeded(e) {
 	var p = e.parent;
 	while (p) {
-		if (p.childrenToShow.length > 1) {
+		if (p.childrenToShow && p.childrenToShow.length > 1) {
 			return true;
 		}
 		p = p.parent;
@@ -1437,13 +1438,20 @@ function renderNodeEntryLine(h, e, depth) {
 	span.append('<a class="' + imgClass + ' treeQueryLink"' + linkTitle + ' id="entry-' + e.id + '" href="?q=' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
+	addMenuButtonToEntryLine(e, span, false);
+}
+function addMenuButtonToEntryLine(e, span, isDetails) {
 	// menu button style/image
 	var canShowMore = (e.mShowChildren || e.mShowMore);
 	var menuMore = "menu_more.png";
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	var menuButtonLink = $('<a href="?temp" id="' + e.id + '" class="menuopener">'
+	var styleClass = "menuopener";
+	if (isDetails) {
+		styleClass += " details";
+	}
+	var menuButtonLink = $('<a href="?temp" id="' + e.id + '" class="' + styleClass + '">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 	setMenuButtonLink(e.id, menuButtonLink);
 	span.append(menuButtonLink);
@@ -1507,11 +1515,25 @@ function renderDetails(id) {
 	taxoEntry.empty();
 	var table = $("<table></table>").appendTo(taxoEntry);
 	var ancestors = [];
+	var allEntries = [];
 	var p = e;
 	while (p) {
+		allEntries.push(p);
 		ancestors.push(p);
 		p = p.parent;
 	}
+	
+	// prepare all the menu buttons
+	var children = e.children; // we show all whether they were visible or not
+	if (children) {
+		for (i = 0; i < children.length; i++) {
+			allEntries.push(children[i]);
+		}
+	}
+	for (i = 0; i < allEntries.length; i++) {
+		prepareNodesForRender(allEntries[i], true);
+	}
+
 	var i;
 	for (i = ancestors.length - 1; i >= 0; i--) {
 		var a = ancestors[i];
@@ -1519,7 +1541,6 @@ function renderDetails(id) {
 		var td = $("<td></td>").appendTo(tr);
 		renderDetailsEntryPreviewPart(td, a, "taxo");
 	}
-	var children = e.children; // we show all whether they were visible or not
 	// if there are no children, we should hide that area
 	var subTableNode = $("#SubSpeciesTableNode");
 	if (!children || children.length == 0) {
@@ -1571,6 +1592,7 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
 	$("<a href='?q=" + href 
 		+ "' class='treeQueryLink'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
+	
 	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
 	var linkTitle;
@@ -1592,6 +1614,9 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 		$("<img height='" + e.tHeight + "' width='" + e.tWidth 
 			+ "' class='Thumb' src='" + getImageTinySrcPath(e) + "'></img>").appendTo(previewA);
 	}
+	
+	addMenuButtonToEntryLine(e, td, true);
+
 }
 
 // ------ JSON Functions
