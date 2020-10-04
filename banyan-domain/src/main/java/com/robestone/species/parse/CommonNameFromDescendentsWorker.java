@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.robestone.species.CommonNameHint;
 import com.robestone.species.CommonNameSimilarityChecker;
@@ -165,6 +167,7 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 		
 		// find names until I reach maxLength
 		StringBuilder buf = new StringBuilder();
+		List<String> selectedNames = new ArrayList<>();
 		for (Score score : scoreList) {
 			// we don't want to add common names that just repeat the child if we already have a name
 			// this didn't work, for example if there are 3 children with different names
@@ -183,23 +186,63 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 					buf.append(", ");
 				}
 				buf.append(score.name);
+				selectedNames.add(score.name);
 			}
 		}
 		
+		// TODO verify that we actually want to use this name
+		selectedNames = selectedNames.stream().map(n -> n.toUpperCase()).
+				collect(Collectors.toList());
+		float matchPercent = getPercentUsed(selectedNames, e);
+		float minPercent = .85f;
+		boolean useName = (matchPercent >= minPercent);
+		
 		// name should be good, just assign it
 		// we won't necessarily use this look and feel, but want a way to clearly show what this is
-		if (buf.length() > 0) {
+		if (useName && buf.length() > 0) {
 			String fname = EntryUtilities.fixCommonName(buf.toString());
 			e.setCommonName(fname);
 			CommonNameSplitter.assignCommonNames(e, -1);
 			e.setCommonName(e.getCommonName() + EntryUtilities.COMMON_NAME_FROM_DESCENDENTS_INDICATOR);
-		}
-		
-		if (e.getCommonName() != null) {
+			
 			StringBuilder toLog = new StringBuilder();
 			scoreList.forEach(score -> toLog.append(score.name).append(", "));
 			LogHelper.speciesLogger.info(e.getCommonName() + "/" + e.getLatinName() + " << " + toLog);
+		} else if (!useName && nameHasIndicator(e.getCommonName())) {
+			// need this to remove any that were created under different rules (i.e. prior to this version of code)
+			e.setCommonName(null);
 		}
+	}
+	
+	private float getPercentUsed(List<String> names, CompleteEntry e) {
+		Set<CompleteEntry> children = EntryUtilities.getEntries(e);
+		
+		float count = 0;
+		float found = 0;
+		
+		for (CompleteEntry c : children) {
+			String compare = c.getCommonNameClean();
+			if (compare != null) {
+				count++;
+				if (isUsed(names, compare)) {
+					found++;
+				}
+			}
+		}
+		
+		return found / count;
+	}
+	/**
+	 * @param names already uppercase
+	 * @param compare not null
+	 */
+	private boolean isUsed(List<String> names, String compare) {
+		for (String name : names) {
+			if (compare.indexOf(name) >= 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

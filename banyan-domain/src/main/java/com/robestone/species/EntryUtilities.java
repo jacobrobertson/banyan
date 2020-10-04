@@ -110,7 +110,7 @@ public class EntryUtilities {
 	}
 	public static Set<CompleteEntry> getEntries(CompleteEntry root) {
 		Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
-		addEntries(root, entries);
+		addEntries(root, entries, new HashSet<>());
 		return entries;
 	}
 	static Collection<Integer> getIds(Collection<? extends Entry> entries) {
@@ -120,14 +120,20 @@ public class EntryUtilities {
 		}
 		return ids;
 	}
-	private static void addEntries(CompleteEntry entry, Set<CompleteEntry> entries) {
+	/**
+	 * @param safeIds to prevent any recursive tree
+	 */
+	private static void addEntries(CompleteEntry entry, Set<CompleteEntry> entries, Set<Integer> safeIds) {
 		entries.add(entry);
+		safeIds.add(entry.getId());
 		if (entry.hasChildren()) {
 			for (CompleteEntry child: entry.getCompleteEntryChildren()) {
 				if (child == null) {
 					throw new IllegalArgumentException("Child is null for parent: " + entry.getId() + "/" + entry.getLatinName());
 				}
-				addEntries(child, entries);
+				if (!safeIds.contains(child.getId())) {
+					addEntries(child, entries, safeIds);
+				}
 			}
 		}
 	}

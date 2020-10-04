@@ -39,6 +39,7 @@ function queryLinkEvent(e) {
 
 //------ Global vars
 function __GlobalVars(){}
+var S3_BASE_URL = "https://d1w3fa9nlzlb3n.cloudfront.net";
 var dbMap = {};
 var dbPartitions;
 var dbChildIdsToParents = {};
@@ -69,7 +70,8 @@ var menuData = [
 	{"id": "mFocus", 		"png": "focus", 			"caption": "Focus"},
 	{"id": "mPin", 			"png": "pin_image", 		"caption": "Pin Image"},
 	{"id": "mUnpin", 		"png": "unpin_image", 		"caption": "Unpin Image"},
-	{"id": "mDetail", 		"png": "goto-details", 		"caption": "Go to Details"}
+	{"id": "mDetail", 		"png": "goto-details", 		"caption": "Go to Details"},
+	{"id": "mBack",			"png": "back", 				"caption": "Back to your #Tree"}
 ];
 
 // ------ GUI Events/Behavior/Menus
@@ -155,8 +157,10 @@ function contextMenuClicked(aTag) {
 	var id = aTag.href.substring(pos + 3);
 	hideContextMenu();
 	
-	if (action == "mDetail") {
+	if (action == "mDetail" || action == "mBack") {
 		setUrlForDetail(aTag.href.substring(pos + 1));
+//	} else if (action == "mBack") {
+		// we want to browse to that
 	} else {
 		performMenuAction(action, id);
 	}
@@ -167,7 +171,16 @@ function performMenuAction(action, id) {
 	} else if (action == "mHide") {
 		hideChildren(id);
 	} else if (action == "mShowChildren") {
-		loadAllChildren(id);
+		var e = getMapEntry(id);
+		if (e.mBack) {
+			// this is kind of a dumb way to determine if isDetail
+			// need to switch to tree view
+			
+			// NO - it's not the current tree, it's a different tree
+			renderTreeFromDetailsTab();
+		} else {
+			loadAllChildren(id);
+		}
 	} else if (action == "mShowMore") {
 		loadAllShowMore(id);
 	} else if (action == "mFocus") {
@@ -248,6 +261,8 @@ function showContextMenu(e, img) {
 				$("#mShowMoreCaption").text(showMoreCaption);
 				maxWidth = getVariableWidth(showMoreCaption, 19, maxWidthShowMore, maxWidth);
 			}
+		} else if (buttonId == 'mBack') {
+			link = $("#treeLink").attr("href");
 		}
 		button.href = link;		
 	}
@@ -940,6 +955,7 @@ function prepareEntryForContextMenu(e, isDetails) {
 
 	e.mHide = (e.childrenToShow.length > 0) && !isDetails;
 	e.mClose = !isDetails;
+	e.mBack = isDetails;
 	
 	var visibleShowMoreIds = getVisibleIds(e.showMoreLeafIds);
 	var showMoreVisible = visibleShowMoreIds.length;
@@ -1198,6 +1214,18 @@ function renderCurrentTree(skipUrl) {
 	}
 	hideContextMenu();
 }
+function renderTreeFromDetailsTab() {
+	// get the url
+
+	// parse the focussed id
+	// mark it as pinned
+	
+	// get the rest of the ids (should just be the parents and children)
+	
+	// mark them as shown
+	
+	// render the tree
+}
 function renderTree(id, keepOnlyNew) {
 	$("#treeTab").empty();
 	// for this test, we flag every entry as being rendered
@@ -1447,11 +1475,7 @@ function addMenuButtonToEntryLine(e, span, isDetails) {
 	if (!canShowMore) {
 		menuMore = "menu_less.png";
 	}
-	var styleClass = "menuopener";
-	if (isDetails) {
-		styleClass += " details";
-	}
-	var menuButtonLink = $('<a href="?temp" id="' + e.id + '" class="' + styleClass + '">'
+	var menuButtonLink = $('<a href="?temp" id="' + e.id + '" class="menuopener">'
 			+ '<img src="' + iconPath() + '/' + menuMore + '" alt="menu button"></a>');
 	setMenuButtonLink(e.id, menuButtonLink);
 	span.append(menuButtonLink);
@@ -1473,7 +1497,7 @@ function getImagesPath(key) {
 	if (false && isLocalhost()) { // images too hard to track locally
 		return "banyan-images/" + key;
 	} else {
-		return "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-images/" + key;
+		return S3_BASE_URL + "/banyan-images/" + key;
 	}
 }
 function iconPath() {
@@ -1592,7 +1616,6 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 	var href = getEntryDetailsHash(e);
 	$("<a href='?q=" + href 
 		+ "' class='treeQueryLink'><img src='icons/detail.png' class='detail-button'></a>").appendTo(td);
-	
 	var taxoName = getRenderDetailsTaxoDisplayName(e);
 	var previewClass = "preview";
 	var linkTitle;
@@ -1624,7 +1647,7 @@ function __JsonFunctions() {}
 function getJsonUrl(relativePath) {
 	var baseUrl = "";
 	if (!isLocalhost()) {
-		baseUrl = "http://banyan-files.s3-website.us-east-2.amazonaws.com/banyan-website/";
+		baseUrl = S3_BASE_URL + "/banyan-website/";
 	}
 	return (baseUrl + relativePath);
 }
@@ -1832,6 +1855,15 @@ function getRandomFileFromCommand(command) {
 	var key;
 	if (isNaN(index)) {
 		key = command.substring(2);
+		index = key.lastIndexOf("-");
+		if (index > 0) {
+			// could be "r:word-word-123"
+			var test = key.substring(index + 1);
+			test = parseInt(test);
+			if (!isNaN(test)) {
+				key = key.substring(0, index);
+			}
+		}
 	} else {
 		var key = dbRandomFileKeys[index];
 	}
