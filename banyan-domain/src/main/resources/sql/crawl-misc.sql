@@ -1,8 +1,12 @@
 select
-	(SELECT count(*) FROM species.crawl where (status <> 'DONE' or status is null)) as `NOT-DONE`,
-	(SELECT count(*) FROM species.crawl where status = 'DONE') as `DONE`,
-    (SELECT count(*) FROM species.crawl) as `ALL`
+	(SELECT count(*) FROM crawl where (status <> 'DONE' or status is null)) as `NOT-DONE`,
+	(SELECT count(*) FROM crawl where status = 'DONE') as `DONE`,
+    (SELECT count(*) FROM crawl) as `ALL`
 ;
+
+select * from species where (parent_id = 0 or parent_id is NULL) AND PARENT_LATIN_NAME IS NOT null;
+
+SELECT * FROM REDIRECT WHERE REDIRECT_FROM = 'Manta';
 
 select count(*) from species.crawl;
 select count(*) from species.crawl where status = 'DONE' and (type <> 'AUTH' or type is null);
@@ -63,3 +67,4 @@ delete from species.crawl where link in (
 delete from species.crawl where status_date in 
 (a
 );
+

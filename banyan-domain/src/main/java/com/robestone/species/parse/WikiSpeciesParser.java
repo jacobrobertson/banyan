@@ -15,12 +15,13 @@ public class WikiSpeciesParser {
 
 	public static final String OKINA = String.valueOf((char) 0x02BB);
 
-	// <a class="mw-selflink selflink">Catapsilothrix</a>
+	private static final String DAG = String.valueOf((char) 8224); // â€ 
 	
-	private Pattern rankPattern = Pattern.compile("(?:\\s+|<dd>|<p>|<li>)†?" +
+	private Pattern rankPattern = Pattern.compile(toDag("(?:\\s+|<dd>|<p>|<li>)@DAG?") +
 			getRanksPatternPart(false) +
-			"[\\s:†]*(?:<i>|<b>|\\?)*[\\s†]*(?:<span class=\"subfamily\">)?\"?(?:<i>)?(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)");
-	private static Pattern extinctPattern = Pattern.compile(":([\\s†]*)?(?:<i>|<b>)*([\\s†]*)(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)");
+			toDag("[\\s:@DAG]*(?:<i>|<b>|\\?)*[\\s@DAG]*(?:<span class=\"subfamily\">)?\"?(?:<i>)?(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)"));
+	private static Pattern extinctPattern = Pattern.compile(
+			toDag(":([\\s@DAG]*)?(?:<i>|<b>)*([\\s@DAG]*)(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)"));
 	
 	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?\\s*(.*?)\\s*(?:</div>|<br />)");
 	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");
@@ -52,6 +53,10 @@ public class WikiSpeciesParser {
 			"width=\"120\" height=\"90\"",
 			"Eristalis_tenax_auf_Tragopogon_pratensis", // I can include this because that image isn't used for that species
 	};
+	
+	private static String toDag(String s) {
+		return s.replace("@DAG", DAG);
+	}
 	
 	private static String ranksPatternPartCapture = doGetRanksPatternPart(false);
 	private static String ranksPatternPartNonCapture = doGetRanksPatternPart(true);
@@ -107,6 +112,7 @@ public class WikiSpeciesParser {
 		text = StringUtils.replace(text, "\n", " ");
 		text = StringUtils.replace(text, "\r", " ");
 		text = StringUtils.replace(text, "&#160;", " ");
+		text = StringUtils.replace(text, "&#8224;", DAG);
 		text = StringUtils.replace(text, "{{okina}}", OKINA);
 		
 		while (true) {
@@ -330,12 +336,18 @@ public class WikiSpeciesParser {
 		return null;
 		
 	}
-	private String[] getNamesNoParens(String name) {
+	public static String[] getNamesNoParens(String name) {
 		int pos = name.indexOf("(");
 		if (pos < 0) {
 			return null;
 		}
-		String left = name.substring(0, pos - 1).trim();
+		
+		String left;
+		if (pos == 0) {
+			left = "";
+		} else {
+			left = name.substring(0, pos - 1).trim();
+		}
 		String right = name.substring(pos + 1);
 		right = StringUtils.removeEnd(right, ")");
 		return new String[] {left, right};
@@ -344,7 +356,7 @@ public class WikiSpeciesParser {
 		String rank = getGroup(rankPattern, text, 1);
 		if (rank == null) {
 			String ename = getEscapedName(latinName);
-			Pattern rankPattern2 = Pattern.compile(getRanksPatternPart(false) + "[ :†]+(?:<i>)?(?:<b>)?" + ename);
+			Pattern rankPattern2 = Pattern.compile(getRanksPatternPart(false) + toDag("[ :@DAG]+(?:<i>)?(?:<b>)?") + ename);
 			rank = getGroup(rankPattern2, text, 1);
 		}
 		return rank;
@@ -546,26 +558,28 @@ public class WikiSpeciesParser {
 		}
 		childRank = getEscapedName(childRank);
 		childLatin = getEscapedName(childLatin);
-		Pattern parentPattern = Pattern.compile(
-				getRanksPatternPart(true) +
-				"[:\\s†]*" +
-				"[^:]*" +
+		String patternText = "";
+		patternText += getRanksPatternPart(true);
+		patternText += toDag("[:\\s@DAG]*");
+		patternText += "[^:]*";
 //				"(?:<i>|<span class=\"\\p{L}+\">)*\\s*" +
 //				"<a href=\""
-				preName + "(" + w + ")" + postName +
-				"[^:]*" +
+		patternText += (preName + "(" + w + ")" + postName);
+		patternText += "[^:]*";
 //				"title=\"(" + w + ")\"(?: class=\"mw-redirect\")?>" +
 //				"(?:<i>|<b>|\\s)*" +
 //				"(" + w + ")" +
 //				"(?:'|</i>|</a>|</b>|<br />|\\s|</p>|<dd>|</dd>|<dl>|</dl>|<p>|</span>)*" +
 //				"(?:(?:<i>)?(?:\\p{L}+:\\s*not divided\\s*)(?:<i>)?(?:<br ?/?>\\s*))*" +
-				"(?:" + getRanksPatternPart(true) + ":\\s*Unassigned<br\\s*/>\\s*)?" +
-				childRank + 
-				"(:|\\s)+" +
-				"[^:]*" +
-				//"(<.*?>)*\\s*('\\[\\?)*\\s*" +
-				childLatin
-				);
+		patternText += "(?:";
+		patternText += getRanksPatternPart(true);
+		patternText += ":\\s*Unassigned<br\\s*/>\\s*)?";
+		patternText += childRank;
+		patternText += "(:|\\s)+";
+		patternText += "[^:]*";
+		//"(<.*?>)*\\s*('\\[\\?)*\\s*" +
+		patternText += childLatin;
+		Pattern parentPattern = Pattern.compile(patternText);
 		return parentPattern;
 	}
 	public static String getGroup(String source, Pattern... patterns) {
@@ -603,6 +617,7 @@ public class WikiSpeciesParser {
 				continue;
 			}
 			String imageLink = matcher.group(1);
+			String imageUpper = imageLink.toUpperCase();
 			if (imageLink.indexOf("-logo.") > 0) {
 				continue;
 			} else if (imageLink.indexOf("Achtung.svg") > 0) {
@@ -629,15 +644,22 @@ public class WikiSpeciesParser {
 			} else if (imageLink.indexOf("-logo-") >= 0) {
 				continue;
 			} else if (
-					   imageLink.toUpperCase().endsWith(".OGV")
-					|| imageLink.toUpperCase().endsWith(".OGG")
+					imageUpper.endsWith(".OGV")
+					|| imageUpper.endsWith(".OGG")
 					) {
 				// video or sound
 				continue;
-			} else if (imageLink.toUpperCase().endsWith(".SVG")) {
+			} else if (imageUpper.endsWith(".SVG")) {
 				// not sure how many of these there are, and I see that 
 				// some wiki icons are sneaking in, with weird names,
 				// and this might be the only way to stop them.
+				continue;
+			} else if (imageUpper.endsWith(".SVG.PNG") && 
+					(imageUpper.contains("LOGO_") || imageUpper.contains("-ALT-"))
+				) {
+				// Closed_Access_logo_alternative.svg/11px-Closed_Access_logo_alternative.svg.png
+				// Lock-gray-alt-2.svg.png
+				// - this is a new one popping up, with a few alternatives
 				continue;
 //			} else if (imageLink.toUpperCase().endsWith(".GIF")) {
 //				// TODO might change this later - but there are thumbnail issues

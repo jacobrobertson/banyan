@@ -295,7 +295,7 @@ Orchid Mantis
 Scorpionfly
 Venezuelan Poodle Moth
 Bactrian Camel
-Baird’s Tapir
+Bairdï¿½s Tapir
 Lowland Streaked Tenrec
 Markhor
 Nutria
@@ -339,7 +339,7 @@ Zebra Duiker
 Yeti Crab
 Superb Bird of Paradise
 Blob Fish
-Cantor’s Giant Soft Shelled Turtle
+Cantorï¿½s Giant Soft Shelled Turtle
 Gobi Jerboa
 Japanese Spider Crab
 Red-lipped Batfish
@@ -755,7 +755,6 @@ Baikal Seal
 Pademelon
 Dibatag aka Clarke's Gazelle
 Giant Forest Hog
-Vicuña
 Brocket Deer
 Emperor Tamarin
 Bighorn Sheep
@@ -777,7 +776,7 @@ Rhebok
 Fishing Cat
 Markhor
 Kinkajou
-Père David's Deer aka Milu
+Pï¿½re David's Deer aka Milu
 Paca
 Caracal
 Bearded Seal
@@ -855,7 +854,7 @@ Thomson's Gazelle
 Magellanic Penguin
 Przewalski's Horse
 African Buffalo
-Galápagos Penguin
+Galï¿½pagos Penguin
 Brown Fur Seal
 Crab-eating Fox
 Eurasian Otter
@@ -878,7 +877,7 @@ Potto
 North American Raccoon
 Long-tailed Tit
 Jerboa
-Juan Fernández Fur Seal
+Juan Fernï¿½ndez Fur Seal
 Pine Marten aka American Marten
 Golden Lion Tamarin
 Chevrotain aka Mouse Deer

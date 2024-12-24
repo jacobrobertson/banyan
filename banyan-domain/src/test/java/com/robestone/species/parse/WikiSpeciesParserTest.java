@@ -18,7 +18,7 @@ public class WikiSpeciesParserTest extends TestCase {
 	public void testSanity() {
 		String s = "\\p{L}+";
 		Pattern p = Pattern.compile(s);
-		assertTrue(p.matcher("A�stopoda").matches());
+		assertTrue(p.matcher("Aïstopoda").matches());
 	}
 	public void testParentPattern() {
 		String w = "[\\p{L}\\(\\)_ ']+";
@@ -44,6 +44,13 @@ public class WikiSpeciesParserTest extends TestCase {
 	public void testPattern() {
 		Pattern p = Pattern.compile("A(\\p{L})B\\$1C");
 		assertTrue(p.matcher("AEB$1C").matches());
+	}
+	
+	public void testGetNamesNoParens() {
+		// [07:56:56,573]crawlOne.7648 < 309006.(Report,) Botanical Society and Exchange Club of the British Isles.FOUND.null
+		// [07:56:58,821]updateRedirect.(Report,) Botanical Society and Exchange Club of the British Isles > ISSN 0269-3550
+		String[] got = WikiSpeciesParser.getNamesNoParens("(Report,) Botanical Society and Exchange Club of the British Isles");
+		assertNotNull(got);
 	}
 	
 	// failing
@@ -194,7 +201,9 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Endopterygota", "Complete Metamorphosis Insects", "Eumetabola", "thumb/7/7c/BeetleBrazil_068.jpg/250px-BeetleBrazil_068.jpg", Rank.Cladus);
 	}
 	public void testLethiscidae() throws IOException {
-		doTest("Lethiscidae", null, "A�stopoda", null, Rank.Familia);
+		// Ordo: <a href="/wiki/A%C3%AFstopoda" title="Aïstopoda">Aïstopoda</a><br />
+		// (String latin, String common, String parent, String image, Rank rank, boolean extinct, Rank parentRank, String depicted
+		doTest("Lethiscidae", null, "Aïstopoda", null, Rank.Familia, false, null, null);
 	}
 	public void testArchaeognatha() throws IOException {
 		doTest("Archaeognatha", "Bristletails, jumping bristletails", "Basal Insecta", null, Rank.Ordo);
@@ -296,7 +305,8 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Perigrapha i-cinctum slovenica", null, "Perigrapha i-cinctum", null, Rank.Subspecies);
 	}
 	public void testAbantiadesalbofasciatus() throws IOException {
-		doTest("Abantiades albofasciatus", null, "Abantiades (Herrich-Sch�ffer)", null, Rank.Species);
+		// 
+		doTest("Abantiades albofasciatus", null, "Abantiades (Herrich-Schäffer)", null, Rank.Species);
 	}
 	public void testActinobalanusactinomorphus() throws IOException {
 		doTest("Actinobalanus actinomorphus", null, "Actinobalanus", null, Rank.Species);
@@ -387,6 +397,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testRetroviridae() throws IOException {
 		doTest("Retroviridae", "Retroviruses", "Group VI: ssRNA(RT)", "thumb/9/97/Phylogeny_of_Retroviruses.svg/350px-Phylogeny_of_Retroviruses.svg.png", Rank.Familia);
 	}
+	public void testLepospondyli() throws IOException {
+		doTest("Lepospondyli", null, "Amphibia", "thumb/e/e5/Diplocaulus_vale21DB.jpg/300px-Diplocaulus_vale21DB.jpg", Rank.Subclassis, true, null, null);
+	}
 	public void testFlaviviridae() throws IOException {
 		doTest("Flaviviridae", "Flavivirus group", "Group IV: ssRNA(+)", null, Rank.Familia);
 	}
@@ -425,6 +438,23 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	public void testMyliobatidae() throws IOException {
 		doTest("Myliobatidae", "Eagle rays", "Dasyatoidea", "thumb/6/6e/Manta_birostris-Thailand.jpg/300px-Manta_birostris-Thailand.jpg", Rank.Familia);
+	}
+	public void testRankPatterns() {
+		// (?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)"
+		String[] tests = {
+				"<p>Familia: <i><strong class=\"selflink\">Moeritherium</strong></i><br />",
+				"<p>Familia: <strong class=\"selflink\">Moeritherium</strong><br />",
+				"<p>Taxon: †<strong class=\"selflink\">Moeritherium</strong><br />",
+				"<p>Regnum: †<i><a class=\"mw-selflink selflink\">Moeritherium</a></i><br>",
+				"<p>Genus: †<i><b>Moeritherium</b></i><br />"
+		};
+		for (String test : tests) {
+			CompleteEntry results = parser.parse("Moeritherium", test);
+			assertNotNull(results);
+			assertNotNull(results.getLatinName());
+			assertNotNull(results.getRank());
+			assertEquals(test.split("[:>]")[1], results.getRank().toString());
+		}
 	}
 	
 	// ----------------------------------
@@ -576,7 +606,6 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	            "Group: <a href=\"/wiki/Group_VI:_ssRNA(RT)\" >VIRUSGROUP</a><br />");
 		doTestVirusGroupPreProcess("<a href=\"/wiki/Group_VII:_dsDNA(RT)\" title=\"Group_VII:_dsDNA(RT)\">Group_VII:_dsDNA(RT)</a><br />", 
 	            "Group: <a href=\"/wiki/Group_VII:_dsDNA(RT)\" >VIRUSGROUP</a><br />");
-
 		
 		doTestVirusGroupPreProcess("<other junk>...????</a><a href=\"/wiki/Group_V:_ssRNA(-)\" title=\"Group V: ssRNA(-)\">Group V: ssRNA(-)</a><br /><more?junk><br\n", 
 				"<other junk>...????</a>Group: <a href=\"/wiki/Group_V:_ssRNA(-)\" >VIRUSGROUP</a><br /><more?junk><br\n");

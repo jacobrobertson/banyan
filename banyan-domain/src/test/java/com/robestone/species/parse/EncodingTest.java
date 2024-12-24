@@ -6,6 +6,17 @@ import junit.framework.TestCase;
 
 public class EncodingTest extends TestCase {
 
+	public void testDagger() {
+		String s = "-ï¿½-";
+		char c = s.charAt(1);
+		assertEquals((int) c, 65533);		
+		
+		s = "-â€ -";
+		c = s.charAt(1);
+		assertEquals((int) c, 8224);		
+		
+	}
+	
 	public void testUpper() {
 		String s = "Kulczy?ski";
 		System.out.println(s.toUpperCase());
@@ -16,7 +27,7 @@ public class EncodingTest extends TestCase {
 		doTestChar(254);
 		doTestChar(255);
 		doTestChar(256);
-		doTestChar('ö');
+		doTestChar('ï¿½');
 		doTestChar(699);
 		doTestChar(8216);
 	}

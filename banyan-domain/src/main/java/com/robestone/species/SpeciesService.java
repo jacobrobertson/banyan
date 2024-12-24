@@ -316,7 +316,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				new EntityMapperRowMapper());
 		return found;
 	}
-	public Map<String, String> findAllRedirectFromsMap() {
+	private Map<String, String> findAllRedirectFromsMap() {
 		Map<String, String> map = new HashMap<String, String>();
 		List<RedirectPair> found = template.query(
 				"select redirect_to, redirect_from from redirect", 
@@ -542,6 +542,10 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			
 			// iterate over the new entries - haven't found their parents yet
 			for (CompleteEntry e: some) {
+				if (e.getParentId() == null) {
+					// something wrong here... need to fix this or understand why it's null sometimes right now
+					logger.info(">findTreeForNodes." + e.getId() + ".parentId=null");
+				}
 				// add each parent - if it's not already found
 				if (!foundIds.contains(e.getParentId())) {
 					ids.add(e.getParentId());
@@ -577,12 +581,17 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		return depictedEntry;
 	}
 	CompleteEntry findEntryFromPersistence(Integer id) {
-		CompleteEntry entry = template.queryForObject("select " +
-						getMinimalEntryColumns(false) + 
-						", interesting_crunched_ids, shares_sibling_name, linked_image_id " +
-						" from species where id = ?", this, id);
-		cleanEntryFromPersistence(entry);
-		return entry;
+		try {
+			CompleteEntry entry = template.queryForObject("select " +
+							getMinimalEntryColumns(false) + 
+							", interesting_crunched_ids, shares_sibling_name, linked_image_id " +
+							" from species where id = ?", this, id);
+			cleanEntryFromPersistence(entry);
+			return entry;
+		} catch (Exception e) {
+			logger.error("Could not find: " + id);
+			return null;
+		}
 	}
 	private void cleanEntryFromPersistence(CompleteEntry entry) {
 		makeInteresting(entry);

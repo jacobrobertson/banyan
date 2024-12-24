@@ -4,6 +4,9 @@ select * from species.images limit 10;
 
 select * from species.species where image_link like '%Herpestes_ichneumon%';
 
+select * from species where image_link like '%svg%';
+update species set image_link = null where image_link like '%Access_logo%';
+
 select latin_name from species.species where image_link like '%.ogv.jpg%';
 select latin_name from species.species where image_link like '%.ogg';
 

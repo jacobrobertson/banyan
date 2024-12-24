@@ -12,10 +12,20 @@ function initData() {
 			initPageElements();
 		});
 	});
+	loadRootSearchIndex();
 }
 $(document).ready(function() {
 	$("#textfield").focus(function() {
 		this.select();
+	});
+	$("#textfield").autocomplete({
+		source : function(request, callback) {
+			return findSearchSuggestions(request.term, callback);
+		},
+		select : function(event, ui) {
+			return submitSearchQuery(event, ui);
+		},
+		minLength : 3
 	});
 	$("#textfield").focus();
 	// TODO I don't actually remember what these are for
@@ -23,10 +33,6 @@ $(document).ready(function() {
 		$(this).addClass("ButtonOver");
 	}).bind('mouseout blur', function(event) {
 		$(this).removeClass("ButtonOver");
-	});
-	$("#searchForm").submit(function(event) {
-		event.preventDefault();
-		submitSearchQuery($("#textfield").val());
 	});
 	$("*").mousemove(function() {areMenusAllowed = true;});
 	$(".navQueryLink").click(queryLinkEvent);
@@ -44,6 +50,8 @@ var dbMap = {};
 var dbPartitions;
 var dbChildIdsToParents = {};
 var dbFileIds = {};
+var dbLocalSearchIndex = {};
+var dbRemoteSearchIndex = new Set(["@root"]);
 var dbRandomFileKeys = false;
 var dbRandomFileKeysToFileNames = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -1752,39 +1760,86 @@ function loadCommandFromURL() {
 		loadAndShowNewIds(ids, pinnedIds, menuButtonId);
 	}
 }
-function submitSearchQuery(query) {
-	if (query) {
-		query = query.trim();
-	} else {
-		return;
-	}
-	var cids;
-	var ids = getAllVisibleNodeIds();
-	if (!ids || ids.length == 0) {
-		cids = "+";
-	} else {
-		cids = crunch(ids);
-	}
-	var base;
-	if (isLocalhost()) {
-		// this is a hack to run both under spring-boot locally
-		base = "/search/";
-	} else {
-		base = "/banyan-search/search/";
-	}
-	var url = base + query + "/" + cids + "/";
-	// this get is not going to amazon, url will be relative
-	$.getJSON(url, submitSearchQuery_callback);
+
+/* ------------------- Search Methods */
+function loadRootSearchIndex() {
+	findRemoteIndexEntry("@root");
 }
-function submitSearchQuery_callback(data) {
-	var ids = uncrunch(data.cids);
-	var pinned = data.id;
+function submitSearchQuery(event, ui) {
+	// (ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
+	var id = ui.item.id;
+	var ids = [id];
 	loadJsonThenMarkNewIdsVisible(ids, function() {
-		if (getMapEntry(pinned).img) {
-			pinNode(pinned, true);
+		if (getMapEntry(id).img) {
+			pinNode(id, true);
 		}
 	});
 }
+
+// term - what jquery sends this method based on the algorithm
+function findSearchSuggestions(term, callback) {
+	term = cleanIndexKey(term);
+	doFindSearchSuggestions(term, callback);
+}
+function doFindSearchSuggestions(term, callback) {
+	var suggestions = findLocalIndexEntry(term);
+	if (suggestions) {
+		if (callback) {
+			callback(suggestions);
+		}
+	} else {
+		findRemoteIndexEntry(term, function() { doFindSearchSuggestions(term, callback) });
+	}
+}
+function findRemoteIndexEntry(key, callback) {
+	if (dbRemoteSearchIndex.has(key)) {
+		// TODO add path segments for the json files
+		var url = "json/s/" + key + ".json";
+		url = getJsonUrl(url);
+		$.getJSON(url, function (data) {
+			buildRemoteIndexEntry(data, callback);
+		});
+	} else {
+		if (key.length == 2) {
+			return null;
+		} else {
+			return findRemoteIndexEntry(key.substring(0, key.length - 1), callback);
+		}
+	}
+}
+function buildRemoteIndexEntry(data, callback) {
+	if (data.remote) {
+		data.remote.forEach( remoteKey => dbRemoteSearchIndex.add(remoteKey));
+	}
+	if (data.local) {
+		var map = new Map(Object.entries(data.local));
+		map.forEach((values, localKey) => {
+			values.forEach( value => value.label = value.name );
+			dbLocalSearchIndex[localKey] = values; 
+		});
+	}
+	if (callback) {
+		callback(data);
+	}
+}
+function cleanIndexKey(key) {
+	key = key.toLowerCase();
+	return key.replace(/[^a-z@]/g, "");
+}
+function findLocalIndexEntry(key) {
+	var index = dbLocalSearchIndex[key];
+	if (!index) {
+		if (key.length == 2) {
+			return null;
+		} else {
+			return findLocalIndexEntry(key.substring(0, key.length - 1));
+		}
+	} else {
+		return index;
+	}
+}
+
+/* ---------------------- */
 function loadBlankTree() {
 	hideChildren(getRootEntry().id, true, true);
 }

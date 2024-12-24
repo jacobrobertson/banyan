@@ -8,17 +8,24 @@ public class BoringPrunerWorker extends AbstractWorker {
 
 	public static void main(String[] args) {
 		boolean persist = false;
-		new BoringPrunerWorker().run(persist);
+		new BoringPrunerWorker().run(false, persist);
 	}
-	public void run(boolean persist) {
+	public void run(boolean fixCommonNames, boolean persist) {
+		if (fixCommonNames) {
+			speciesService.fixBoringCommonNames();
+		}
+		
 		Tree tree = speciesService.findCompleteTreeFromPersistence();
+		printTree(tree.getRoot(), 0);
+		System.out.println("----------------------------------------------------------------------");
+		
 		BoringPruner pruner = new BoringPruner();
 		
 //		pruner.logger.setLevel(Level.DEBUG);
 		
 		pruner.prune(tree);
 
-//		printTree(tree.getRoot(), 0);
+		printTree(tree.getRoot(), 0);
 		
 		if (persist) {
 			speciesService.updateFromBoringWork(pruner.getInteresting(), pruner.getBoring());

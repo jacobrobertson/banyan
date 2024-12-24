@@ -18,6 +18,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.CrunchedIds;
+import com.robestone.species.DerbyDataSource;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
@@ -29,12 +30,20 @@ public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		
+		DerbyDataSource.defaultWindowsPath = "D:\\banyan-db\\derby";
+		
 		JsonBuilder b = new JsonBuilder();
 		
-		b.copyAdditionalJsonResources();
+		// recreate json
+//		b.rebuildAllJson();
+		
+		// or ...
+		
+		// fine-tune what you want to d
+//		b.copyAdditionalJsonResources();
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
-//		b.runExamples();
+		b.runExamples();
 	}
 	
 	private String imagesDir = "D:/banyan-images";
@@ -86,7 +95,6 @@ public class JsonBuilder extends AbstractWorker {
 	
 	public void buildRandomFiles() throws Exception {
 		// load the index
-		@SuppressWarnings("unchecked")
 		List<String> lines = 
 				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
 		Set<String> terms = new HashSet<>();
@@ -104,11 +112,16 @@ public class JsonBuilder extends AbstractWorker {
 		query = query.trim();
 		CompleteEntry e = findEntryFromQuery(query);
 		if (e != null) {
-			Collection<CompleteEntry> entries = randomTreeBuilder.buildRandomTree(e.getId());
-			if (entries != null) {
-				List<JsonEntry> jentries = toJsonEntries(entries.toArray(new Entry[entries.size()]));
-				String fileName = randomTreeBuilder.toRandomFileName(query, e.getId());
-				saveByFolders("r", fileName, jentries);
+			try {
+				Collection<CompleteEntry> entries = randomTreeBuilder.buildRandomTree(e.getId());
+				if (entries != null) {
+					List<JsonEntry> jentries = toJsonEntries(entries.toArray(new Entry[entries.size()]));
+					String fileName = randomTreeBuilder.toRandomFileName(query, e.getId());
+					saveByFolders("r", fileName, jentries);
+				}
+			} catch (NullPointerException ex) {
+				// for now we just swallow this - we can't do much, but it's only when there are other issues
+				System.out.println("buildOneRandomFileFromQuery." + query + ".Failed");
 			}
 		}
 	}

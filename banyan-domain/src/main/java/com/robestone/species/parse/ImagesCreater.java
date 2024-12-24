@@ -27,6 +27,9 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String PREVIEW = "preview";
 	public static final String DETAIL = "detail";
 	
+	private static final int SLEEP_AFTER_REQUEST = 1000;
+	private static final int SLEEP_AFTER_429 = 10000;
+	
 	private static final int TINY_LENGTH = 40;
 	public static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
 
@@ -231,9 +234,18 @@ public class ImagesCreater extends AbstractWorker {
 				ImageIO.write(bi, type, out);
 				out.flush();
 				out.close();
+				// we have to do this or wikispecies will start returning 429
+				Thread.sleep(SLEEP_AFTER_REQUEST);
 				return true;
 			} catch (Exception ioe) {
 				LogHelper.speciesLogger.info(ioe.getMessage());
+				if (ioe.getMessage().contains("response code: 429")) {
+					try {
+						Thread.sleep(SLEEP_AFTER_429);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
 				fails++;
 			}
 		}

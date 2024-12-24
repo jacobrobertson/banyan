@@ -24,6 +24,10 @@ public class WikiSpeciesCache {
 	public static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
 	public static String DELETED_PAGE = "This page has been deleted.";
 
+	private static int SLEEP_AFTER_REQUEST = 2000;
+	private static int SLEEP_AFTER_429 = 10000;
+	public static int DEFAULT_MAX_RETRIES = 3;
+	
 	public boolean isFilePresent(String latinName, boolean forceDownload) throws Exception {
 		File file = getFile(latinName);
 		return file.exists();
@@ -33,7 +37,7 @@ public class WikiSpeciesCache {
 		String text = null;
 		
 		// check for expiration
-		if (!forceDownload && !isExired(latinName)) {
+		if (!forceDownload && !isExpired(latinName)) {
 			// check local cache
 			text = readLocalFile(latinName);
 		}
@@ -50,7 +54,7 @@ public class WikiSpeciesCache {
 		return text;
 	}
 	
-	public boolean isExired(String latinName) throws Exception {
+	public boolean isExpired(String latinName) throws Exception {
 		return false;
 	}
 	
@@ -93,9 +97,10 @@ public class WikiSpeciesCache {
 		return getPageForUrl(link);
 	}
 	public static String getPageForUrl(String link) {
-		return getPageForUrl(link, 3);
+		return getPageForUrl(link, DEFAULT_MAX_RETRIES);
 	}
 	public static String getPageForUrl(String link, int maxRetries) {
+		int sleepAfter429 = SLEEP_AFTER_429;
 		try {
 			URL url = new URL(link);
 			URLConnection con = url.openConnection();
@@ -118,7 +123,7 @@ public class WikiSpeciesCache {
 			String page = IOUtils.toString(in, "UTF-8");
 			// I do this to avoid spamming wikispecies too hard
 			// not sure how long a sleep I need
-			Thread.sleep(250);
+			Thread.sleep(SLEEP_AFTER_REQUEST);
 			return page;
 		} catch (IOException ioe) {
 			LogHelper.speciesLogger.info("getPageForUrl.IOException." + ioe.getMessage() +  "(" + maxRetries + ")." + link);
@@ -126,7 +131,13 @@ public class WikiSpeciesCache {
 				return null;
 			} else {
 				try {
-					Thread.sleep(500);
+					String reason = ioe.getMessage();
+					if (reason.contains("response code: 429")) {
+						Thread.sleep(sleepAfter429);
+						sleepAfter429 += sleepAfter429;
+					} else {
+						Thread.sleep(SLEEP_AFTER_REQUEST);
+					}
 				} catch (InterruptedException e) {
 				}
 				return getPageForUrl(link, maxRetries - 1);

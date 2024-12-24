@@ -85,8 +85,10 @@ public enum Rank {
 	
 	Stem(335),
 	
-	Superordo(340, "*Super-order", "Superorder", "Magnordo"), // magnordo - ??
-	Mirordo(345),
+	Magnordo(337),
+	Superordo(340, "*Super-order", "Superorder"),
+	Grandordo(345),
+	Mirordo(347),
 	Ordo(350, "+Order", "Ordines", "Ordine"),
 	Hyperordo(360, "Hyperorder", "Hypordo"),
 	Subordo(370, "*Sub-order", "Subordines", "Suborder", "Subordine"),
@@ -102,6 +104,7 @@ public enum Rank {
 			"Superfamlia" // pretty sure this is a misspelling, but it's pretty common
 			),
 	Suprafamilia(405),
+	Epifamilia(407),
 	Familia(410, "+Family", "Familiae", "Famila", "Familae"),
 	Parafamilia(415),
 	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamilae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),

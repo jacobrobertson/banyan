@@ -11,7 +11,7 @@ public class OldLinksCrawler {
 //		if (args != null && args.length == 1) {
 //			numberToCrawl = Integer.parseInt(args[0]);
 //		}
-		RecentChangesUpdater rcu = new RecentChangesUpdater();
+		MaintenanceWorker rcu = new MaintenanceWorker();
 		rcu.crawlOldLinks();
 	}
 	

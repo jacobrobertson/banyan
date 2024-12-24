@@ -4,114 +4,50 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>jQuery UI Selectmenu - Custom Rendering</title>
-<link rel="stylesheet"
-	href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+
+<link rel="stylesheet" type="text/css" href="style/jquery-ui-1.14.1.min.css" />
 <link rel="stylesheet" href="style/banyan.css">
-<script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-<script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+<script src="js/jquery-1.12.4.min.js"></script>
+<script src="js/jquery-ui-1.14.1.min.js"></script>
 <script>
 	$(function() {
-		$.widget("custom.iconselectmenu", $.ui.selectmenu, {
-			_renderItem : function(ul, item) {
-				var li = $("<li>"), wrapper = $("<div>", {
-					text : item.label
-				});
-
-				if (item.disabled) {
-					li.addClass("ui-state-disabled");
-				}
-
-				$("<span>", {
-					style : item.element.attr("data-style"),
-					"class" : "ui-icon " + item.element.attr("data-class")
-				}).appendTo(wrapper);
-
-				return li.append(wrapper).appendTo(ul);
-			}
-		});
-
-		$("#people").iconselectmenu().iconselectmenu("menuWidget").addClass(
-				"ui-menu-icons avatar");
-
-		$("#species").autocomplete({
-			source : function(event, ui) {
-				return searchForInput(ui, event);
+		$("#textfield").autocomplete({
+			source : function(request, callback) {
+				return searchForInput(request.term, callback);
+			},
+			select : function(event, ui) {
+				return displaySearchSelection(event, ui);
 			},
 			minLength : 2
 		});
 
 	});
-	function searchForInput(i1, i2) {
-		console.log(" got here 3[" + i1 + "," + i2 + "]");
-		return [ "Hello", "Kitty" ];
+	function displaySearchSelection(event, ui) {
+		$("#searchResults").text(ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
 	}
-	function handleSearchResponse(data) {
-		console.log(" got here 2");
+	function searchForInput(term, callback) {
+		var url = "json/s/" + term + ".json";
+		console.log("got here 0: " + term);
+		$.getJSON(url, function (data) {
+			console.log("got here 1: " + data);
+			createSearchList(data, callback);
+		});
 	}
+	function createSearchList(data, callback) {
+		console.log("got here 2: " + data + "//" + callback);
+		var newList = data.data; // [ "Hello", "Kitty" ];
+		callback(newList);
+	}
+	
 </script>
-<style>
-h2 {
-	margin: 30px 0 0 0;
-}
-
-fieldset {
-	border: 0;
-}
-
-label {
-	display: block;
-}
-
-/* select with custom icons */
-.ui-selectmenu-menu .ui-menu.customicons .ui-menu-item-wrapper {
-	padding: 0.5em 0 0.5em 3em;
-}
-
-.ui-selectmenu-menu .ui-menu.customicons .ui-menu-item .ui-icon {
-	height: 24px;
-	width: 24px;
-	top: 0.1em;
-}
-
-/* select with CSS avatar icons */
-option.avatar {
-	background-repeat: no-repeat !important;
-	padding-left: 20px;
-}
-
-.avatar .ui-icon {
-	background-position: left top;
-}
-</style>
 </head>
 
 <body>
 
 	<form action="#">
 		<h2>Autocomplete tests</h2>
-		<input id="species"></input>
-	</form>
-
-
-	<form action="#">
-		<h2>Autocomplete desired style</h2>
-		<fieldset>
-			<select name="people" id="people">
-				<option value="1" data-class="avatar"
-					data-style="background-image: url('https://www.gravatar.com/avatar/b3e04a46e85ad3e165d66f5d927eb609?d=monsterid&amp;r=g&amp;s=16');">John
-					Resig</option>
-				<option value="2" data-class="avatar"
-					data-style="background-image: url('https://www.gravatar.com/avatar/e42b1e5c7cfd2be0933e696e292a4d5f?d=monsterid&amp;r=g&amp;s=16');">Tauren
-					Mills</option>
-				<option value="3" data-class="avatar"
-					data-style="background-image: url('https://www.gravatar.com/avatar/bdeaec11dd663f26fa58ced0eb7facc8?d=monsterid&amp;r=g&amp;s=16');">Jane
-					Doe</option>
-
-				<option value="4" data-class="avatar"
-					data-style="background-image: url('data:image;base64,/9j/4AAQSkZJRgABAgAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAeACgDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDm7y90+HVLDTHe7MduhhVxGzyDPJihDE/NnADH9c1rx+HdM0S+nudYkuNQntpWItBao0MbngBz/wAtH6Hps3DuK7rS/DMHhbbDZMb/AFUbft10VBkZiMgLz8ikZIAHODkkmvOpoZdCvZIL+C5kuxcM9mRIdrIW3EMCAWPBJIwQTjAAOeanTjF2GoW1O5LszGSF1cYJGyZe+Qc++eMH+lIRFACqsVmBBwCVY8Djqc8mvMn0tliMiuwIYszKx5I5OMc+pz/+urthrWpacI5WuZrmDOPLuCG2k/3XPOcZ4JIGaR0rU9BuJLa3UolxLNIRgCMkJyckljgnHoAQDzmirvhLUjNaTassyNDyojOAU2gE7hjOTkAAcHBNFWoNmcqii7Go7zbraYWssDhCkkUaIWUH3DYIzj7pJOQcDHHlXjXxLejVZraOzvBotnI+ZBbyjzgwALMzDCkcgYwD7g17B5Usyh9y/Ruf6URSF3EW523EY3OcD264x+FdKST1OfU8M07XbG5mJjlXesY3lOGYHO35e/oRzjjPUVfuLeOMKJbVkQYb5yAoJz1OMD2Fet6ho2k6w27U9Lsrx8bR59sjED2bG4fhWLc+AvD7WctvDBd2SswQNbXkjbSfRZCyke2OfasZUU3dG0arSszhNA8Q2Vj4e1SWZpEgvryO0tQsbN55VT5gAAOch1GcYJYcdKK15/Asuk28aT30V3/Z8T3GmYiMIhzkszBWOXY4z6bVxgDFFbRVkYyd2f/Z');">Frank
-					Jones</option>
-			</select>
-		</fieldset>
+		<input id="textfield"></input>
+		<span id="searchResults"></span>
 	</form>
 
 </body>

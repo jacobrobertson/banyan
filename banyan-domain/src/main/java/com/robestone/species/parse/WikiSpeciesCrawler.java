@@ -25,25 +25,33 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = false;
 		boolean argIsParentTree = !true;
 		boolean downstreamOnly = false;
+		boolean crawlOne = true; // to just "crawl" one only
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Virus"
+				"Palaeognathae"
 		};
 		crawlAllStoredLinks = false;
 		//*/
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
-		if (argIsParentTree) {
-			crawler.pushTree(args[0], distance, downstreamOnly);
+		
+		if (crawlOne) {
+			ParseStatus ps = new ParseStatus();
+			ps.setUrl(args[0]);
+			crawler.crawlOne(ps, false);
 		} else {
-			crawler.pushOnlyTheseNames(new HashSet<String>(Arrays.asList(args)));
+			if (argIsParentTree) {
+				crawler.pushTree(args[0], distance, downstreamOnly);
+			} else {
+				crawler.pushOnlyTheseNames(new HashSet<String>(Arrays.asList(args)));
+			}
+			if (crawlAllStoredLinks) {
+				crawler.pushAllFoundLinks();
+			}
+			crawler.crawl();
 		}
-		if (crawlAllStoredLinks) {
-			crawler.pushAllFoundLinks();
-		}
-		crawler.crawl();
 	}
 	
 	private boolean forceNewDownloadForCache = false;
@@ -143,25 +151,31 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 	}
 	public void crawlOne(ParseStatus ps) throws Exception {
+		crawlOne(ps, true);
+	}
+	public CompleteEntry crawlOne(ParseStatus ps, boolean parseLinks) throws Exception {
 		// get the contents of the page
 		String page = WikiSpeciesCache.CACHE.readFile(ps.getLatinName(), forceNewDownloadForCache);
 		if (page == null) {
-			return;
+			return null;
 		}
 		// visit the link before getting more links
-		visitPage(ps, page);
-		// search for the right patterns, ie <a href="/wiki/Biciliata"
-		Set<String> links = parseLinks(page);
-		for (String link: links) {
-			ParseStatus status = new ParseStatus();
-			status.setUrl(link);
-			status.setStatus(ParseStatus.FOUND);
-			saveLink(status);
+		CompleteEntry results = visitPage(ps, page);
+		if (parseLinks) {
+			// search for the right patterns, ie <a href="/wiki/Biciliata"
+			Set<String> links = parseLinks(page);
+			for (String link: links) {
+				ParseStatus status = new ParseStatus();
+				status.setUrl(link);
+				status.setStatus(ParseStatus.FOUND);
+				saveLink(status);
+			}
 		}
 		// now that we've finished it, mark it as complete
 		ps.setDate(new Date());
 		ps.setStatus(ParseStatus.DONE);
 		parseStatusService.updateStatus(ps);
+		return results;
 	}
 
 	public static Set<String> parseLinks(String page) {
@@ -195,7 +209,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 	}
 	
-	public void visitPage(ParseStatus link, String page) {
+	public CompleteEntry visitPage(ParseStatus link, String page) {
 		// cannot tell a redirect page from auth page, so have to check for redirect first
 		String redirect = redirectPageParser.getRedirectTo(page);
 		if (redirect != null) {
@@ -206,17 +220,18 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			if (isAuth) {
 				LogHelper.speciesLogger.info("type." + link.getLatinName() + ".AUTH");
 				link.setType(ParseStatus.AUTHORITY);
-				return;
+				return null;
 			}
 		}
 		boolean isDeleted = isDeleted(page);
 		link.setDeleted(isDeleted);
 		if (isDeleted) {
 			LogHelper.speciesLogger.info("deleted." + link.getLatinName());
-			return;
+			return null;
 		}
 		// parse it
 		CompleteEntry results = parsePage(link, page);
+		CompleteEntry firstResults = results;
 		if (results == null) {
 //			visitUnparseablePage(link, page);
 			// Nothing to do here...
@@ -233,6 +248,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				udpateOrInsert(results, true);
 			}
 		}
+		return firstResults;
 	}
 	private CompleteEntry parsePage(ParseStatus link, String page) {
 		String name = link.getLatinName();

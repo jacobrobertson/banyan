@@ -1,0 +1,53 @@
+{
+	"folders": {},
+	"connections": {
+		"derby-193a7685479-117e8f0ef95fdd34": {
+			"provider": "generic",
+			"driver": "derby",
+			"name": "species",
+			"save-password": true,
+			"navigator-show-only-entities": true,
+			"navigator-hide-folders": true,
+			"navigator-hide-virtual": true,
+			"configuration": {
+				"database": "D:\\banyan-db\\derby\\species",
+				"url": "jdbc:derby:D:\\banyan-db\\derby\\species",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		},
+		"derby-193ad754be0-22750674176fe4e9": {
+			"provider": "generic",
+			"driver": "derby",
+			"name": "species-snapshot",
+			"save-password": true,
+			"configuration": {
+				"database": "D:\\banyan-db\\derby-snapshot\\species",
+				"url": "jdbc:derby:D:\\banyan-db\\derby-snapshot\\species",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"closeIdleConnection": true,
+				"auth-model": "native"
+			}
+		}
+	},
+	"virtual-models": {"derby-193a7685479-117e8f0ef95fdd34":{"APP":{":EXAMPLE":{"constraints":{"VIRTUAL_PK":{"type":"vpk","attributes":["EXAMPLE_INDEX"]}}}}}},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"smart-commit": false,
+			"smart-commit-recover": true,
+			"auto-close-transactions": true,
+			"close-transactions-period": 1800,
+			"auto-close-connections": true,
+			"close-connections-period": 14400
+		}
+	}
+}

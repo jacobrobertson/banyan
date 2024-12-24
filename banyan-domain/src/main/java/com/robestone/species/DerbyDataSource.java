@@ -32,7 +32,7 @@ public class DerbyDataSource {
 //	public static String dbPath = "D:\\banyan-db\\derby-bak-1";
 	public static String dbPath = null;
 	
-	private static String defaultWindowsPath = "D:\\banyan-db\\derby";
+	public static String defaultWindowsPath = "D:\\banyan-db\\derby";
 	private static String defaultLinuxPath = "/home/public/banyan/banyan-db";
 	
 	private static void create() throws Exception {
@@ -46,7 +46,7 @@ public class DerbyDataSource {
 	
 	private static void runScript(String file, Connection connection) throws Exception {
 		byte[] sql = IOUtils.toByteArray(new FileInputStream(
-				"D:\\eclipse-workspaces\\git\\banyan\\banyan-domain\\src\\main\\resources\\sql\\" + file
+				"C:\\Users\\jacob\\git\\banyan\\banyan-domain\\src\\main\\resources\\sql\\" + file
 				));
 		
 		InputStream input = new ByteArrayInputStream(sql);

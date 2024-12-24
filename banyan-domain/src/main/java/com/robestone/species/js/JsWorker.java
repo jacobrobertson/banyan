@@ -15,13 +15,13 @@ public class JsWorker extends AbstractWorker {
 
 //		new JsWorker().miscTest();
 
-		System.setProperty("banyan.lucene.dir", LuceneSearcher.defaultLinuxPath);
-		new JsWorker().run();
+//		System.setProperty("banyan.lucene.dir", LuceneSearcher.defaultLinuxPath);
+//		new JsWorker().run();
 		
 //		new JsWorker().rebuildLuceneIndex();
-//		JsonBuilder b = new JsonBuilder();
-//		b.deleteJsonDir();
-//		b.rebuildAllJson();
+		JsonBuilder b = new JsonBuilder();
+		b.deleteJsonDir();
+		b.rebuildAllJson();
 		
 	}
 	

@@ -90,6 +90,8 @@ public class EntityMapper {
 						String number = text.substring(i + 2, pos);
 						int integer = getNumber(number);
 						entity = getEntityForNumber(integer, def);
+					} else if (percent == ' ') {
+						buf.append(c);
 					} else {
 						String name = text.substring(i + 1, pos);
 						entity = getEntityForName(name);
@@ -253,7 +255,7 @@ public class EntityMapper {
 		addEntity("frac34", 190, "¾", "?");         // 00BE
 		addEntity("iquest", 191, "¿", "?");         // 00BF
 		addEntity("Agrave", 192, "À", "A");         // 00C0
-		addEntity("Aacute", 193, "�?", "A");         // 00C1
+		addEntity("Aacute", 193, "�?", "A");         // 00C1
 		addEntity("Acirc", 194, "Â", "A");          // 00C2
 		addEntity("Atilde", 195, "Ã", "A");         // 00C3
 		addEntity("Auml", 196, "Ä", "A");           // 00C4
@@ -265,10 +267,10 @@ public class EntityMapper {
 		addEntity("Ecirc", 202, "Ê", "E");          // 00CA
 		addEntity("Euml", 203, "Ë", "E");           // 00CB
 		addEntity("Igrave", 204, "Ì", "I");         // 00CC
-		addEntity("Iacute", 205, "�?", "I");         // 00CD
+		addEntity("Iacute", 205, "�?", "I");         // 00CD
 		addEntity("Icirc", 206, "Î", "I");          // 00CE
-		addEntity("Iuml", 207, "�?", "I");           // 00CF
-		addEntity("ETH", 208, "�?", "D");            // 00D0
+		addEntity("Iuml", 207, "�?", "I");           // 00CF
+		addEntity("ETH", 208, "�?", "D");            // 00D0
 		addEntity("Ntilde", 209, "Ñ", "N");         // 00D1
 		addEntity("Ograve", 210, "Ò", "O");         // 00D2
 		addEntity("Oacute", 211, "Ó", "O");         // 00D3
@@ -281,7 +283,7 @@ public class EntityMapper {
 		addEntity("Uacute", 218, "Ú", "U");         // 00DA
 		addEntity("Ucirc", 219, "Û", "U");          // 00DB
 		addEntity("Uuml", 220, "Ü", "U");           // 00DC
-		addEntity("Yacute", 221, "�?", "Y");         // 00DD
+		addEntity("Yacute", 221, "�?", "Y");         // 00DD
 		addEntity("THORN", 222, "Þ", "?");          // 00DE
 		addEntity("szlig", 223, "ß", "B");          // 00DF
 		addEntity("agrave", 224, "à", "a");         // 00E0
@@ -566,7 +568,7 @@ public class EntityMapper {
 		addEntity("rsquo", 8217, "’", "?");         // 2019
 		addEntity("sbquo", 8218, "‚", "?");         // 201A
 		addEntity("ldquo", 8220, "“", "?");         // 201C
-		addEntity("rdquo", 8221, "�?", "?");         // 201D
+		addEntity("rdquo", 8221, "�?", "?");         // 201D
 		addEntity("bdquo", 8222, "„", "?");         // 201E
 		addEntity("dagger", 8224, "†", "?");        // 2020
 		addEntity("Dagger", 8225, "‡", "?");        // 2021

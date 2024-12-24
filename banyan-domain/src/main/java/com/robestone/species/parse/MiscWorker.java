@@ -25,17 +25,16 @@ public class MiscWorker extends AbstractWorker {
 	public static void main(String[] args) throws Exception {
 		DerbyDataSource.dbPath = "D:\\banyan-db\\derby";
 		new MiscWorker().
-		crawlEntriesWithCommonNameAndNoImage();
+//		crawlEntriesWithCommonNameAndNoImage();
 //		research();
 //		runM
-//		run
+		run();
 //		testGigantopithecus
 //		run2
 	}
 	
 	
 	public void run() throws Exception {
-//		speciesService.assignParentIdsForNullOrMissingId();
 		speciesService.fixParents();
 //		speciesService.recreateCleanNames();
 //		new RecentChangesUpdater().crawlParseStatus();
@@ -43,7 +42,7 @@ public class MiscWorker extends AbstractWorker {
 //		new WikiSpeciesTreeFixer(speciesService).run();
 	}
 	public void runM() throws Exception {
-		RecentChangesUpdater rcu = new RecentChangesUpdater();
+		MaintenanceWorker rcu = new MaintenanceWorker();
 		rcu.setDownloadImages(false);
 		rcu.setRecreateCleanNames(false);
 		rcu.runMaintenance();
