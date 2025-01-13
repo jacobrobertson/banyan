@@ -1502,8 +1502,8 @@ function getNbsps(count) {
 	return pad;
 }
 function getImagesPath(key) {
-	if (false && isLocalhost()) { // images too hard to track locally
-		return "banyan-images/" + key;
+	if (isLocalhost()) { // images too hard to track locally
+		return "/banyan-images/" + key;
 	} else {
 		return S3_BASE_URL + "/banyan-images/" + key;
 	}
@@ -1794,7 +1794,7 @@ function doFindSearchSuggestions(term, callback) {
 function findRemoteIndexEntry(key, callback) {
 	if (dbRemoteSearchIndex.has(key)) {
 		// TODO add path segments for the json files
-		var url = "json/s/" + key + ".json";
+		var url = buildRemoteIndexUrl(key);
 		url = getJsonUrl(url);
 		$.getJSON(url, function (data) {
 			buildRemoteIndexEntry(data, callback);
@@ -1806,6 +1806,27 @@ function findRemoteIndexEntry(key, callback) {
 			return findRemoteIndexEntry(key.substring(0, key.length - 1), callback);
 		}
 	}
+}
+/** 
+ * only use aa/aaa and then flat after that
+*/
+
+function buildRemoteIndexUrl(key) {
+	// apple -> ap/app/apple.json
+	// app   -> ap/app.json
+	var left;
+	if (key == "@root") {
+		left = "";
+	} else {
+		left = key.substring(0, 2);
+		if (key.length > 2) {
+			left = left + "/" + key.substring(0, 3);
+		}
+		left = left + "/";
+	}
+
+	var url = "json/s/" + left + key + ".json";
+	return url;
 }
 function buildRemoteIndexEntry(data, callback) {
 	if (data.remote) {

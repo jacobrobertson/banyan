@@ -655,10 +655,11 @@ public class WikiSpeciesParser {
 				// and this might be the only way to stop them.
 				continue;
 			} else if (imageUpper.endsWith(".SVG.PNG") && 
-					(imageUpper.contains("LOGO_") || imageUpper.contains("-ALT-"))
+					(imageUpper.contains("LOGO_") || imageUpper.contains("-ALT-") || imageUpper.contains("LOCK-"))
 				) {
 				// Closed_Access_logo_alternative.svg/11px-Closed_Access_logo_alternative.svg.png
 				// Lock-gray-alt-2.svg.png
+				// Lock-red-broken.svg.png
 				// - this is a new one popping up, with a few alternatives
 				continue;
 //			} else if (imageLink.toUpperCase().endsWith(".GIF")) {

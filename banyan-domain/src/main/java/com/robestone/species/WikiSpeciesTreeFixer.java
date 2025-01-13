@@ -1,8 +1,12 @@
 package com.robestone.species;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import com.robestone.species.parse.WikiSpeciesCrawler;
 
 /**
  * Wiki Species has many problems with tree inconsistencies.  Many of these I'm just
@@ -19,10 +23,11 @@ public class WikiSpeciesTreeFixer {
 
 	/**
 	 * Reassigns all parent latin names.
+	 * As of 1/11/2025 looks like these are fixed on the wiki?
 	 */
 	private Map<String, String> replacedParentLatinNames = new HashMap<String, String>(); {
 //		replacedParentLatinNames.put("Eutheria", "Placentalia");
-		replacedParentLatinNames.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
+//		replacedParentLatinNames.put("Parazoa", "Porifera"); // will probably make it a self-reference, which gets weeded out
 	}
 	
 	/**
@@ -43,9 +48,12 @@ public class WikiSpeciesTreeFixer {
 
 		// these I set to null to remove them from the tree because they have a "better" alternative, 
 		//	and these aren't needed, they're just clutter
-		assignParent.put("Unikonta", null);
 		assignParent.put("Protista", null);
 		assignParent.put("Radiata", null);
+		
+		// as of 2025 looks like they're using this as the right way - leaving this here to fix the db (sometimes?)
+		assignParent.put("Unikonta", "Eukaryota"); 
+
 	}
 	
 	private SpeciesService speciesService;
@@ -54,13 +62,36 @@ public class WikiSpeciesTreeFixer {
 		this.speciesService = speciesService;
 	}
 
-	public void run() {
+	public void run() throws Exception {
 		// have to assign parent first, at least for Placentalia
+		recrawlCommonProblems();
 		fixAssignParent();
 		fixReplaceAllParentLatinNames();
 		fixExtinct();
 	}
 	
+	public void recrawlCommonProblems() throws Exception {
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(true);
+		Set<String> names = new HashSet<String>();
+		
+		addCommonProblems(names, replacedParentLatinNames);
+		addCommonProblems(names, assignParent);
+		
+		crawler.pushOnlyTheseNames(names);
+		crawler.crawl(false);
+		
+	}
+
+	private void addCommonProblems(Set<String> to, Map<String, String> from) throws Exception {
+		from.forEach((k, v) -> { 
+			to.add(k);
+			if (v != null) {
+				to.add(v);
+			}
+		});
+	}
+
 	public void fixExtinct() {
 		speciesService.assignExtinctToSpecies();
 	}

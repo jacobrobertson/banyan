@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -28,7 +29,9 @@ public class ImagesCreater extends AbstractWorker {
 	public static final String DETAIL = "detail";
 	
 	private static final int SLEEP_AFTER_REQUEST = 1000;
+	private static float sleepAfterRequest = SLEEP_AFTER_REQUEST;
 	private static final int SLEEP_AFTER_429 = 10000;
+	private static float sleepAfter429 = SLEEP_AFTER_429;
 	
 	private static final int TINY_LENGTH = 40;
 	public static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
@@ -106,7 +109,7 @@ public class ImagesCreater extends AbstractWorker {
 		boolean downloaded = false;
 		if (download) {
 			String hashPath = getImagePathHashed(latinName);
-			System.out.print(latinName + "(" + hashPath + ") " + link + " > ");
+			LogHelper.speciesLogger.info("make thumbs (" + size + "/" + count + ") " + latinName + "(" + hashPath + ") " + link);
 			// create the thumbs
 			try {
 				downloaded = downloadThumbs(entry, latinName, fileExtension, link, onlyTiny);
@@ -114,7 +117,6 @@ public class ImagesCreater extends AbstractWorker {
 				// fails on some images - haven't figured out why yet
 				e.printStackTrace();
 			}
-			LogHelper.speciesLogger.info("made thumbs > " + count + "/" + size);
 		}
 		// this worker also inserts/updates new and existing entries
 		if (downloaded || forceMeasuring) {
@@ -218,7 +220,8 @@ public class ImagesCreater extends AbstractWorker {
 			URL url = null;
 			URLConnection con = null;
 			try {
-				url = new URL(link);
+				
+				url = new URI(link).toURL();
 				con = url.openConnection();
 				con.setConnectTimeout(15000); // not sure what a good number is here?
 				InputStream in = con.getInputStream();
@@ -235,13 +238,15 @@ public class ImagesCreater extends AbstractWorker {
 				out.flush();
 				out.close();
 				// we have to do this or wikispecies will start returning 429
-				Thread.sleep(SLEEP_AFTER_REQUEST);
+				Thread.sleep((int) sleepAfterRequest);
 				return true;
 			} catch (Exception ioe) {
 				LogHelper.speciesLogger.info(ioe.getMessage());
 				if (ioe.getMessage().contains("response code: 429")) {
 					try {
-						Thread.sleep(SLEEP_AFTER_429);
+						Thread.sleep((int) sleepAfter429);
+						sleepAfterRequest *= 1.01;
+						sleepAfter429 *= 1.05;
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

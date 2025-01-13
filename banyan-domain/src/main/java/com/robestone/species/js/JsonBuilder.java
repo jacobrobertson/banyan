@@ -3,6 +3,7 @@ package com.robestone.species.js;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
@@ -35,7 +36,7 @@ public class JsonBuilder extends AbstractWorker {
 		JsonBuilder b = new JsonBuilder();
 		
 		// recreate json
-//		b.rebuildAllJson();
+		b.rebuildAllJson();
 		
 		// or ...
 		
@@ -43,7 +44,7 @@ public class JsonBuilder extends AbstractWorker {
 //		b.copyAdditionalJsonResources();
 //		b.partitionFromDB();
 //		b.buildRandomFiles();
-		b.runExamples();
+//		b.runExamples();
 	}
 	
 	private String imagesDir = "D:/banyan-images";
@@ -90,13 +91,13 @@ public class JsonBuilder extends AbstractWorker {
 		
 		String s = parser.toJsonString(groups);
 		File file = new File(outputDir + "/e/examples-index.json");
-		FileUtils.writeStringToFile(file, s);
+		FileUtils.writeStringToFile(file, s, Charset.defaultCharset());
 	}
 	
 	public void buildRandomFiles() throws Exception {
 		// load the index
 		List<String> lines = 
-				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"));
+				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"), Charset.defaultCharset());
 		Set<String> terms = new HashSet<>();
 		for (String line : lines) {
 			terms.add(line.toLowerCase().trim());
@@ -192,7 +193,7 @@ public class JsonBuilder extends AbstractWorker {
 		String index = partitioner.getPartitionIndexFile(pMap);
 		String folder = outputDir + "/p/index.json";
 		File file = new File(folder);
-		FileUtils.writeStringToFile(file, index);
+		FileUtils.writeStringToFile(file, index, Charset.defaultCharset());
 	}
 	
 	public void outputPartitions(Node node) throws Exception {
@@ -352,7 +353,7 @@ public class JsonBuilder extends AbstractWorker {
 		String folder = outputDir + "\\" + fileName;
 		
 		File file = new File(folder);
-		FileUtils.writeStringToFile(file, json);
+		FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
 	}
 	
 	//"6691": { "cname": "Complete Metamorphosis Insects", "parentId": "6692", "alt": "Endopterygota", 
@@ -453,7 +454,7 @@ public class JsonBuilder extends AbstractWorker {
 		}
 		buf.append("]}");
 		
-		FileUtils.writeStringToFile(new File(outputDir + subDirAndFileName), buf.toString());
+		FileUtils.writeStringToFile(new File(outputDir + subDirAndFileName), buf.toString(), Charset.defaultCharset());
 	}
 	
 	// (504, 504, 5, 'example-searches', 'Caption...', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', '')

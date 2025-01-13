@@ -93,7 +93,7 @@ public class MiscWorker extends AbstractWorker {
 		
 	}
 	
-	public void run2() {
+	public void run2() throws Exception {
 		
 		new WikiSpeciesTreeFixer(speciesService).run();
 		

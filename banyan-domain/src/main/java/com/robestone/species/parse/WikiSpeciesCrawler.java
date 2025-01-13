@@ -29,7 +29,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Palaeognathae"
+				"Duplodnaviria"
 		};
 		crawlAllStoredLinks = false;
 		//*/
@@ -132,6 +132,9 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public void crawl() throws Exception {
+		crawl(true);
+	}
+	public void crawl(boolean recurseStack) throws Exception {
 		markAllDoneLinks();
 		while (!currentStack.empty()) {
 			// loop for all found links
@@ -144,10 +147,14 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 				LogHelper.speciesLogger.info(
 						"crawlOne." + currentStack.size() + " < " + found.size() + 
 						"." + status.getLatinName() + "." + status.getStatus() + "." + status.getType());
-				crawlOne(status);
+				crawlOne(status, recurseStack);
 			}
-			currentStack = nextStack;
-			nextStack = new Stack<ParseStatus>();
+			if (recurseStack) {
+				currentStack = nextStack;
+				nextStack = new Stack<ParseStatus>();
+			} else {
+				break;
+			}
 		}
 	}
 	public void crawlOne(ParseStatus ps) throws Exception {
