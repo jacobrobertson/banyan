@@ -33,7 +33,7 @@ public class JsWorker extends AbstractWorker {
 	}
 	
 	public void run() throws Exception {
-		rebuildLuceneIndex();
+//		rebuildLuceneIndex();
 		
 		JsonBuilder b = new JsonBuilder();
 		b.deleteJsonDir();

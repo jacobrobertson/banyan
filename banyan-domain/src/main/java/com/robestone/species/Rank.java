@@ -172,6 +172,9 @@ public enum Rank {
 	Ichnogenus(820),
 	Ichnospecies(840),
 	
+	// virus only?
+	Realm(900),
+	
 	Error(-1, false), // used to represent rank not found
 	Empty(0, false); // i.e. no real class in this position for this species - not sure I need this at all?
 	

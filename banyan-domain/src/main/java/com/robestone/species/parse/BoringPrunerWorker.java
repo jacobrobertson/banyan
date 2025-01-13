@@ -35,7 +35,8 @@ public class BoringPrunerWorker extends AbstractWorker {
 	
 	public static void printTree(Entry root, int depth) {
 		
-		System.out.print("                                                                    ".substring(0, depth));
+		System.out.print("                                                                                                                                        "
+				.substring(0, depth));
 		System.out.println(root.getId() + "." + root.getLatinName() + " / " + root.getCommonName());
 		
 		if (root.getChildren() == null) {

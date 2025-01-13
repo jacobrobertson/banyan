@@ -30,15 +30,15 @@ public class MaintenanceWorker extends AbstractWorker {
 		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
-		boolean crawlOldLinks = !true;
+		boolean crawlOldLinks = true;
 		boolean runMaintenance = true;
-		boolean downloadImages = !true;
+		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
-		boolean runJs = !true;
+		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
-		boolean crawlParseStatus = true;
+		boolean crawlParseStatus = !true;
 		
 		if (args != null && args.length > 0) {
 			recent.maxOldLinks = 0;
@@ -79,28 +79,36 @@ public class MaintenanceWorker extends AbstractWorker {
 		
 		LogHelper.speciesLogger.info("RecentChangesUpdater.main.argsParsed");
 		
-		if (!runMaintenanceOnly || doEverything) {
-			if (crawlParseStatus || doEverything) {
-				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
-				recent.crawlParseStatus();
-				recent.crawlTreeReport();
+		boolean justDoThis = !true;
+		if (justDoThis) {
+//			new ImagesCreater().downloadAll(true, false);
+//			recent.crawlTreeReport();
+//			new BoringPrunerWorker().run(false, false);
+			
+		} else {
+			if (!runMaintenanceOnly || doEverything) {
+				if (crawlParseStatus || doEverything) {
+					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
+					recent.crawlParseStatus();
+					recent.crawlTreeReport();
+				}
+				if (crawlNewLinks || doEverything) {
+					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
+					recent.crawlNewLinks();
+				}
+				if (crawlOldLinks || doEverything) {
+					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
+					recent.crawlOldLinks();
+				}
 			}
-			if (crawlNewLinks || doEverything) {
-				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
-				recent.crawlNewLinks();
+			if (runMaintenance || runMaintenanceOnly || doEverything) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
+				recent.runMaintenance();
+				recent.runReports();
 			}
-			if (crawlOldLinks || doEverything) {
-				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
-				recent.crawlOldLinks();
+			if (runJs || doEverything) {
+				new JsWorker().run();
 			}
-		}
-		if (runMaintenance || runMaintenanceOnly || doEverything) {
-			LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
-			recent.runMaintenance();
-			recent.runReports();
-		}
-		if (runJs || doEverything) {
-			new JsWorker().run();
 		}
 	}
 	
@@ -169,11 +177,26 @@ public class MaintenanceWorker extends AbstractWorker {
 		new TreeReporter().runTreeReport();
 	}
 	public void crawlTreeReport() throws Exception {
-		Set<String> names = new TreeReporter().getLinksToCrawl();
+		crawlTreeReport(false);
+	}
+	public void crawlTreeReport(boolean repeat) throws Exception {
+		TreeReporter reporter = new TreeReporter();
+		Set<String> names = reporter.getLinksToCrawl();
+		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(false);
-		crawler.pushOnlyTheseNames(names);
-		crawler.crawl();
+		
+		while (!names.isEmpty()) {
+			crawler.pushOnlyTheseNames(names);
+			crawler.crawl(false);
+			if (repeat) {
+				runMaintenance();  // not sure if this is mandatory
+				names = reporter.getLinksToCrawl();
+			} else {
+				names.clear();
+			}
+		}
+		
 	}
 	public void crawlParseStatus() throws Exception {
 		// prior to running new links, also reset all broken links - the list should be getting pretty short
@@ -185,6 +208,14 @@ public class MaintenanceWorker extends AbstractWorker {
 		crawler.pushAllFoundLinks();
 		crawler.crawl();
 	}
+	/**
+	 * THe intention is to take whatever tree we have in the DB, and focus on improving that.
+	 */
+	public void crawlAndMaintainTreeReport() throws Exception {
+		
+	}
+	
+	
 	public void crawlNewLinks() throws Exception {
 		Set<String> allLinks = new HashSet<String>();
 
