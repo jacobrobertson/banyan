@@ -148,7 +148,6 @@ public class LuceneSearcher implements EntrySearcher {
 		return types;
 	}
 	
-	private CommonNameSplitter commonNameSplitter = new CommonNameSplitter();
 	private List<SearchType> searchTypes = createSearchTypes();
 	private PluralMaker pluralMaker = new PluralMaker();
 	private Analyzer analyzer = new StandardAnalyzer();
@@ -500,7 +499,7 @@ public class LuceneSearcher implements EntrySearcher {
 		if (entry.getCommonName() == null) {
 			return null;
 		} else {
-			List<String> list = commonNameSplitter.splitCommonName(entry, -1);
+			List<String> list = CommonNameSplitter.splitCommonName(entry, -1);
 			if (list == null) {
 				list = new ArrayList<String>();
 				list.add(entry.getCommonName());

@@ -24,7 +24,7 @@ public class MaintenanceWorker extends AbstractWorker {
 		MaintenanceWorker recent = new MaintenanceWorker();
 
 		recent.maxRecentChangesLinks = 300;
-		recent.maxOldLinks = 100;
+		recent.maxOldLinks = 10000;
 		
 		boolean doEverything = !true; // when true - overrides all below
 		

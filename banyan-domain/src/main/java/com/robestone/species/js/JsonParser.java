@@ -83,7 +83,7 @@ public class JsonParser {
 		return parseFile(file);
 	}
 	public Node parseFile(File file) throws Exception {
-		String s = FileUtils.readFileToString(file);
+		String s = FileUtils.readFileToString(file, Charset.defaultCharset());
 		Map<Integer, Node> nodes = parseString(s);
 		Node root = null;
 		for (Integer id : nodes.keySet()) {
