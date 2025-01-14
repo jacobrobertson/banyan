@@ -26,7 +26,7 @@ public class SearchIndexBuilderTest extends TestCase {
 		toCandidateEntry("No MorePrizeMunny", candidates, b);
 		toCandidateEntry("The United States of America", candidates, b);
 		
-		b.iterateOverKeys(candidates, SearchIndexBuilder.SIMPLE_VISITOR);
+		b.iterateOverKeys(candidates);
 	}
 
 	private void toCandidateEntry(String name, List<CandidateEntry> candidates, SearchIndexBuilder b) {
