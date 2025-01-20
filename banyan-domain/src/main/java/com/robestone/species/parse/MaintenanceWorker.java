@@ -159,7 +159,8 @@ public class MaintenanceWorker extends AbstractWorker {
 		new SiblingsWithSameCommonNamesAnalyzer().run();
 		
 		// we run this one after the boring work, because it will give a false positive
-		new CommonNameFromDescendentsWorker().run();
+		// TODO I'm skipping this for now, because it's not giving me good results
+//		new CommonNameFromDescendentsWorker().run();
 		
 		new LinkedImagesWorker().run();
 		

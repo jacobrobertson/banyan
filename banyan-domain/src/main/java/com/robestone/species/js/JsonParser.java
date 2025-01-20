@@ -36,7 +36,7 @@ public class JsonParser {
 		p.generateSiteMap();
 	}
 
-	private String jsonDir = "../banyan-js/src/main/webapp/json";
+	public static String jsonDir = "../banyan-js/src/main/webapp/json";
 	private String baseUrl = "http://jacobrobertson.com/banyan/";
 	
 	public void generateSiteMap() throws Exception {
@@ -257,7 +257,7 @@ public class JsonParser {
 			buf.append('"');
 		}
 	}
-	private String escape(Object val) {
+	public static String escape(Object val) {
 		String v = val.toString();
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < v.length(); i++) {

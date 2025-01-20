@@ -10,8 +10,8 @@
 			"navigator-hide-folders": true,
 			"navigator-hide-virtual": true,
 			"configuration": {
-				"database": "D:\\banyan-db\\derby\\species",
-				"url": "jdbc:derby:D:\\banyan-db\\derby\\species",
+				"database": "D:\\banyan\\banyan-db\\derby\\species",
+				"url": "jdbc:derby:D:\\banyan\\banyan-db\\derby\\species",
 				"configurationType": "MANUAL",
 				"type": "dev",
 				"closeIdleConnection": true,

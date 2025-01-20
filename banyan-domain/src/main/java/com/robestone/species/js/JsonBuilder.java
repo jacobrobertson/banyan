@@ -19,7 +19,6 @@ import org.apache.commons.io.IOUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.CrunchedIds;
-import com.robestone.species.DerbyDataSource;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
@@ -30,9 +29,6 @@ import com.robestone.species.parse.ImagesCreater;
 public class JsonBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		
-		DerbyDataSource.defaultWindowsPath = "D:\\banyan-db\\derby";
-		
 		JsonBuilder b = new JsonBuilder();
 		
 		// recreate json
@@ -47,8 +43,8 @@ public class JsonBuilder extends AbstractWorker {
 //		b.runExamples();
 	}
 	
-	private String imagesDir = "D:/banyan-images";
-	private String outputDir = "../banyan-js/src/main/webapp/json";
+	public static final String imagesDir = "D:/banyan/banyan-images";
+	public static final String outputDir = "D:/banyan/banyan-json/json";
 	private String additionalResourcesDir = "../banyan-js/src/main/resources/webapp/json";
 	private JsonParser parser = new JsonParser();
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();

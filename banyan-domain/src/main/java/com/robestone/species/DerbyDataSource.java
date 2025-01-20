@@ -32,7 +32,7 @@ public class DerbyDataSource {
 //	public static String dbPath = "D:\\banyan-db\\derby-bak-1";
 	public static String dbPath = null;
 	
-	public static String defaultWindowsPath = "D:\\banyan-db\\derby";
+	public static String defaultWindowsPath = "D:\\banyan\\banyan-db\\derby";
 	private static String defaultLinuxPath = "/home/public/banyan/banyan-db";
 	
 	private static void create() throws Exception {

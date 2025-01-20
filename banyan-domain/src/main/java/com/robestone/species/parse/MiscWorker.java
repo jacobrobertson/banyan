@@ -7,7 +7,6 @@ import java.util.Set;
 
 import com.robestone.species.BoringPruner;
 import com.robestone.species.CompleteEntry;
-import com.robestone.species.DerbyDataSource;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Tree;
@@ -23,7 +22,6 @@ import com.robestone.species.WikiSpeciesTreeFixer;
 public class MiscWorker extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		DerbyDataSource.dbPath = "D:\\banyan-db\\derby";
 		new MiscWorker().
 //		crawlEntriesWithCommonNameAndNoImage();
 //		research();

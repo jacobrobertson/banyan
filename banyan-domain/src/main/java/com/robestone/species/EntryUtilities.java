@@ -22,11 +22,19 @@ public class EntryUtilities {
 	public static final String COMMON_NAME_FROM_DESCENDENTS_INDICATOR = "...";
 
 	public static String getCrunchedIdsForClose(Entry root, Integer toClose) {
-		Collection<Integer> ids = EntryUtilities.getLeavesIdsForClose(root, toClose);
+		Collection<Integer> ids = getLeavesIdsForClose(root, toClose);
 		return getCrunchedIds(ids);
 	}
 	public static String getCrunchedIdsForHideChildren(Entry root, Integer toClose) {
-		Collection<Integer> ids = EntryUtilities.getLeavesIdsForHideChildren(root, toClose);
+		Collection<Integer> ids = getLeavesIdsForHideChildren(root, toClose);
+		return getCrunchedIds(ids);
+	}
+	public static String getCrunchedIdsForAncestors(Entry current) {
+		Collection<Integer> ids = new HashSet<Integer>();
+		while (current != null) {
+			ids.add(current.getId());
+			current = current.getParent();
+		}
 		return getCrunchedIds(ids);
 	}
 	

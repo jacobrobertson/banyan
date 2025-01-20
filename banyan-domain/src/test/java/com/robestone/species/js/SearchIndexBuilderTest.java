@@ -10,8 +10,8 @@ import junit.framework.TestCase;
 
 public class SearchIndexBuilderTest extends TestCase {
 
-	public void testSimplest() {
-		SearchIndexBuilder b = new SearchIndexBuilder(5, 3, 6);
+	public void testSimplest() throws Exception {
+		SearchIndexBuilder b = new SearchIndexBuilder(5, 3, 6, false);
 		
 		List<CandidateEntry> candidates = new ArrayList<>();
 		toCandidateEntry("Prince of Peec", candidates, b);

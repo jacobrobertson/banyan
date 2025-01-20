@@ -66,6 +66,8 @@ var maxWidthShowChildren = 163;
 var maxWidthShowMore = 159;
 var digitWidth = 9;
 
+var maxSearchKeyLength = 6;
+
 var isMenuActive = false;
 var cancelerEvent = null;
 var areMenusAllowed = true;
@@ -1768,7 +1770,7 @@ function loadRootSearchIndex() {
 function submitSearchQuery(event, ui) {
 	// (ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
 	var id = ui.item.id;
-	var ids = [id];
+	var ids = uncrunch(ui.item.ids);
 	loadJsonThenMarkNewIdsVisible(ids, function() {
 		if (getMapEntry(id).img) {
 			pinNode(id, true);
@@ -1800,32 +1802,34 @@ function findRemoteIndexEntry(key, callback) {
 			buildRemoteIndexEntry(data, callback);
 		});
 	} else {
-		if (key.length == 2) {
+		if (key.length == 0) {
 			return null;
 		} else {
 			return findRemoteIndexEntry(key.substring(0, key.length - 1), callback);
 		}
 	}
 }
-/** 
- * only use aa/aaa and then flat after that
-*/
-
 function buildRemoteIndexUrl(key) {
 	// apple -> ap/app/apple.json
 	// app   -> ap/app.json
-	var left;
-	if (key == "@root") {
-		left = "";
+	
+	
+	var path = "";
+	var fileName;
+	if (key.length == 0 || key == "@root") {
+		fileName = "/@root.json";
 	} else {
-		left = key.substring(0, 2);
-		if (key.length > 2) {
-			left = left + "/" + key.substring(0, 3);
+		// from ABCDEF to A/AB/ABC/ABCDE/ABCDEF
+		var pos = 1;
+		while (pos <= maxSearchKeyLength && pos < key.length) {
+			var left = key.substring(0, pos);
+			path += ("/" + left);
+			pos++;
 		}
-		left = left + "/";
+		fileName = "/" + key + ".json";
 	}
 
-	var url = "json/s/" + left + key + ".json";
+	var url = "json/s" + path + fileName;
 	return url;
 }
 function buildRemoteIndexEntry(data, callback) {
@@ -1836,7 +1840,10 @@ function buildRemoteIndexEntry(data, callback) {
 		var map = new Map(Object.entries(data.local));
 		map.forEach((values, localKey) => {
 			values.forEach( value => value.label = value.name );
-			dbLocalSearchIndex[localKey] = values; 
+			if (values && values.length > 0) {
+				// only add locals if the array has values
+				dbLocalSearchIndex[localKey] = values;
+			} 
 		});
 	}
 	if (callback) {
