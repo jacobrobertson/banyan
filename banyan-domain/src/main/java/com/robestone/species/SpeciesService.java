@@ -542,7 +542,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			
 			// iterate over the new entries - haven't found their parents yet
 			for (CompleteEntry e: some) {
-				if (e.getParentId() == null) {
+				if (e.getParentId() == null && e.getId().intValue() != SpeciesService.TREE_OF_LIFE_ID) {
 					// something wrong here... need to fix this or understand why it's null sometimes right now
 					logger.info(">findTreeForNodes." + e.getId() + ".parentId=null");
 				}

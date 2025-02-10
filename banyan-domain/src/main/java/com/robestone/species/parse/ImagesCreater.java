@@ -34,7 +34,7 @@ public class ImagesCreater extends AbstractWorker {
 	private static float sleepAfter429 = SLEEP_AFTER_429;
 	
 	private static final int TINY_LENGTH = 40;
-	public static String LOCAL_STORAGE_DIR = "D:/banyan-images/";
+	public static String LOCAL_STORAGE_DIR = "D:/banyan/banyan-images/";
 
 	public static void main(String[] args) throws IOException {
 		

@@ -29,7 +29,8 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Duplodnaviria"
+				"Lausannevirus"
+				//"Adnaviria", "Duplodnaviria", "Monodnaviria", "Riboviria", "Ribozyviria", "Varidnaviria"
 		};
 		crawlAllStoredLinks = false;
 		//*/
@@ -38,9 +39,11 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
 		
 		if (crawlOne) {
-			ParseStatus ps = new ParseStatus();
-			ps.setUrl(args[0]);
-			crawler.crawlOne(ps, false);
+			for (String url : args) {
+				ParseStatus ps = new ParseStatus();
+				ps.setUrl(url);
+				crawler.crawlOne(ps, false);
+			}
 		} else {
 			if (argIsParentTree) {
 				crawler.pushTree(args[0], distance, downstreamOnly);

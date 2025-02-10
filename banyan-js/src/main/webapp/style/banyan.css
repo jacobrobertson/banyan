@@ -50,11 +50,37 @@ body {height:90%;background: #e8f3db;}
 	border:2px solid #f8fbf4;
 	border-radius: 25px 60px 5px 50px;
 }
+.searchSuggestion {
+	width: 100%;
+	padding-top: 2px;
+	font-size: 95%;
+	color: #466522;
+	background: #f8fbf4;
+}
+/* Style from autocomplete jquery */
+.ui-menu-item-wrapper {
+	width: 100%;
+}
+.searchLatin {
+	font-style: italic;
+	white-space: nowrap;
+	padding-right: 5px;
+	text-align: right;
+}
+/*
+.searchCommon {
+	width: 100%;
+	padding-left: 5px;
+	white-space: nowrap;
+	padding-right: 5px;
+	text-align: left;
+}
+*/
 .NodeButtons { width: 12px; }
 .NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
 .NodeButtons img { margin: 0px; padding: 0px; border: 0px;}
 
-.NodeWords {float:left;}
+.NodeWords { float:left;}
 .NodeButtonsCell { width: 1%; height: 100%;}
 .NodeButtonsRow { height: 100%;}
 
@@ -103,10 +129,6 @@ body {height:90%;background: #e8f3db;}
 }
 * {
     outline-color: #628e2f;
-}
-.ButtonOverzzzz {
-	background: #c82;
-	border-color: #ea4;
 }
 #searchForm {
 	float: left;

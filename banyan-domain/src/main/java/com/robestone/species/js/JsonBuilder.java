@@ -43,7 +43,6 @@ public class JsonBuilder extends AbstractWorker {
 //		b.runExamples();
 	}
 	
-	public static final String imagesDir = "D:/banyan/banyan-images";
 	public static final String outputDir = "D:/banyan/banyan-json/json";
 	private String additionalResourcesDir = "../banyan-js/src/main/resources/webapp/json";
 	private JsonParser parser = new JsonParser();
@@ -109,6 +108,7 @@ public class JsonBuilder extends AbstractWorker {
 		query = query.trim();
 		CompleteEntry e = findEntryFromQuery(query);
 		if (e != null) {
+			System.out.println("buildOneRandomFileFromQuery." + query + "." + e.getId() + "/" + e.getLatinName());
 			try {
 				Collection<CompleteEntry> entries = randomTreeBuilder.buildRandomTree(e.getId());
 				if (entries != null) {
@@ -388,7 +388,7 @@ public class JsonBuilder extends AbstractWorker {
 			je.setdHeight(e.getImage().getDetailHeight());
 			je.setdWidth(e.getImage().getDetailWidth());
 			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
-			String localImageRelativePath = imagesDir + "/tiny/" + e.getImage().getImagePathPart();
+			String localImageRelativePath = ImagesCreater.LOCAL_STORAGE_DIR + "/tiny/" + e.getImage().getImagePathPart();
 			String data = createImageDataString(localImageRelativePath);
 			je.setImgData(data);
 		}

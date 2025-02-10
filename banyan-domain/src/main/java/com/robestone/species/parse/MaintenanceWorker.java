@@ -10,6 +10,7 @@ import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
 import com.robestone.species.js.JsWorker;
+import com.robestone.species.js.SearchIndexBuilder;
 
 /**
  * This is the main class to run to get new entries into the database.
@@ -26,7 +27,7 @@ public class MaintenanceWorker extends AbstractWorker {
 		recent.maxRecentChangesLinks = 300;
 		recent.maxOldLinks = 10000;
 		
-		boolean doEverything = !true; // when true - overrides all below
+		boolean doEverything = true; // when true - overrides all below
 		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
@@ -108,6 +109,7 @@ public class MaintenanceWorker extends AbstractWorker {
 			}
 			if (runJs || doEverything) {
 				new JsWorker().run();
+				new SearchIndexBuilder().run();
 			}
 		}
 	}

@@ -26,12 +26,15 @@ public class SearchIndexBuilderTest extends TestCase {
 		toCandidateEntry("No MorePrizeMunny", candidates, b);
 		toCandidateEntry("The United States of America", candidates, b);
 		
-		b.iterateOverKeys(candidates);
+		b.setCandidates(candidates);
+		b.iterateOverKeys();
 	}
 
 	private void toCandidateEntry(String name, List<CandidateEntry> candidates, SearchIndexBuilder b) {
 		CompleteEntry entry = new CompleteEntry();
 		entry.setLatinName(name);
+		entry.setId(Integer.valueOf(10));
+		
 		CandidateEntry candidate = b.toCandidate(entry);
 		candidates.add(candidate);
 	}

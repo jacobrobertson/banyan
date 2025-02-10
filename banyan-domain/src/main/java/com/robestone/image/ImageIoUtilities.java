@@ -17,7 +17,7 @@ import javax.imageio.stream.FileImageOutputStream;
 public class ImageIoUtilities {
 
 	public static void main(String[] args) throws Exception {
-		ImageIoUtilities.compressImage("D:\\banyan-images\\banyan-images\\detail\\2f\\Papaver bracteatum.jpg");
+		ImageIoUtilities.compressImage("D:\\banyan\\banyan-images\\detail\\2f\\Papaver bracteatum.jpg");
 	}
 	
 	public static BufferedImage getImage(String imageFileAndPath) {

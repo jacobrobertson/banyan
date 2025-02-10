@@ -25,11 +25,22 @@ $(document).ready(function() {
 		select : function(event, ui) {
 			return submitSearchQuery(event, ui);
 		},
-		minLength : 3
-	});
+		/* these affect the list item, not the text box
+		focus : function(event, ui) {console.log("focus")},
+		change : function(event, ui) {console.log("change")},
+		*/
+		minLength : 3,
+		autoFocus: true
+	})
+	.autocomplete("instance")._renderItem = function( ul, item ) {
+		// $(ul).addClass("Node");
+      	return $( "<li class='searchSuggestion'>" )
+        	.append( createSuggestionHtml(item) )
+        	.appendTo( ul );
+    };
 	$("#textfield").focus();
 	// TODO I don't actually remember what these are for
-	$(".Button").bind('mouseover focus', function(event) {
+	$(".Button").bind("mouseover focus", function(event) {
 		$(this).addClass("ButtonOver");
 	}).bind('mouseout blur', function(event) {
 		$(this).removeClass("ButtonOver");
@@ -50,8 +61,6 @@ var dbMap = {};
 var dbPartitions;
 var dbChildIdsToParents = {};
 var dbFileIds = {};
-var dbLocalSearchIndex = {};
-var dbRemoteSearchIndex = new Set(["@root"]);
 var dbRandomFileKeys = false;
 var dbRandomFileKeysToFileNames = false;
 var partitionSymbols = "0123456789abcdefghijklmnopqrstuvwxyz";
@@ -67,6 +76,9 @@ var maxWidthShowMore = 159;
 var digitWidth = 9;
 
 var maxSearchKeyLength = 6;
+var dbLocalSearchIndex = {};
+var dbRemoteSearchIndex = new Set(["@root"]);
+var defaultNoSuggestions = { label: "No results found" };
 
 var isMenuActive = false;
 var cancelerEvent = null;
@@ -1658,6 +1670,8 @@ function getJsonUrl(relativePath) {
 	var baseUrl = "";
 	if (!isLocalhost()) {
 		baseUrl = S3_BASE_URL + "/banyan-website/";
+	} else {
+		baseUrl = "/banyan-json/";
 	}
 	return (baseUrl + relativePath);
 }
@@ -1765,7 +1779,7 @@ function loadCommandFromURL() {
 
 /* ------------------- Search Methods */
 function loadRootSearchIndex() {
-	findRemoteIndexEntry("@root");
+	loadRemoteIndexEntry("@root");
 }
 function submitSearchQuery(event, ui) {
 	// (ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
@@ -1777,43 +1791,43 @@ function submitSearchQuery(event, ui) {
 		}
 	});
 }
-
-// term - what jquery sends this method based on the algorithm
 function findSearchSuggestions(term, callback) {
 	term = cleanIndexKey(term);
 	doFindSearchSuggestions(term, callback);
 }
 function doFindSearchSuggestions(term, callback) {
-	var suggestions = findLocalIndexEntry(term);
+	// look in local and if it's there, done
+	var suggestions = dbLocalSearchIndex[term];
 	if (suggestions) {
-		if (callback) {
-			callback(suggestions);
-		}
-	} else {
-		findRemoteIndexEntry(term, function() { doFindSearchSuggestions(term, callback) });
+		callback(suggestions);
+		return;
 	}
+
+	// find the closest remote that exists (i.e. for "abcde" maybe "abcd" exists)
+	var next = term;
+	while (next.length > 0) {
+		if (dbRemoteSearchIndex.has(next)) {
+			break;
+		}
+		next = next.substring(0, next.length - 1);
+	}
+	
+	// load that closest remote, and callback to this method again
+	var innerCallback = function() {
+		doFindSearchSuggestions(term, callback);
+	};
+	loadRemoteIndexEntry(next, innerCallback);
 }
-function findRemoteIndexEntry(key, callback) {
-	if (dbRemoteSearchIndex.has(key)) {
-		// TODO add path segments for the json files
-		var url = buildRemoteIndexUrl(key);
-		url = getJsonUrl(url);
-		$.getJSON(url, function (data) {
-			buildRemoteIndexEntry(data, callback);
-		});
-	} else {
-		if (key.length == 0) {
-			return null;
-		} else {
-			return findRemoteIndexEntry(key.substring(0, key.length - 1), callback);
-		}
-	}
+function loadRemoteIndexEntry(key, callback) {
+	var url = buildRemoteIndexUrl(key);
+	url = getJsonUrl(url);
+	$.getJSON(url, function (data) {
+		buildRemoteIndexEntry(data, callback);
+	});
 }
 function buildRemoteIndexUrl(key) {
 	// apple -> ap/app/apple.json
 	// app   -> ap/app.json
-	
-	
 	var path = "";
 	var fileName;
 	if (key.length == 0 || key == "@root") {
@@ -1828,7 +1842,6 @@ function buildRemoteIndexUrl(key) {
 		}
 		fileName = "/" + key + ".json";
 	}
-
 	var url = "json/s" + path + fileName;
 	return url;
 }
@@ -1839,9 +1852,9 @@ function buildRemoteIndexEntry(data, callback) {
 	if (data.local) {
 		var map = new Map(Object.entries(data.local));
 		map.forEach((values, localKey) => {
-			values.forEach( value => value.label = value.name );
 			if (values && values.length > 0) {
 				// only add locals if the array has values
+				values.forEach(value => { value.label = value.name; });
 				dbLocalSearchIndex[localKey] = values;
 			} 
 		});
@@ -1850,21 +1863,32 @@ function buildRemoteIndexEntry(data, callback) {
 		callback(data);
 	}
 }
+function createSuggestionHtml(entry) {
+	var html = "<span>";
+	if (entry.common.length > 0) {
+		html = html + entry.common + "&nbsp;";
+	}
+	var latinNameCaption = "<i class='searchLatin'>(" + entry.latin + ")</i>";
+	var html = html + latinNameCaption + "</span>";
+	return html;
+}
+function getPreviewImageCaption(img) {
+	var e = getImageEntry(img);
+	var latinNameCaption = "<span id='previewLatin'>(" + e.lname + ")</span>";
+	var names = e.cnames || [];
+	var commonNamesCaption = "";
+	for (var i = 0; i < names.length; i++) {
+		var name = getCaptionNameWithIndicator(names[i]);
+		commonNamesCaption = commonNamesCaption + "<b>" + name + "</b><br/>";
+	}
+	return "<div id='previewCaptions'>" + 
+		commonNamesCaption + latinNameCaption + "</span><br/>";
+}
+
 function cleanIndexKey(key) {
+	key = key.substring(0, maxSearchKeyLength);
 	key = key.toLowerCase();
 	return key.replace(/[^a-z@]/g, "");
-}
-function findLocalIndexEntry(key) {
-	var index = dbLocalSearchIndex[key];
-	if (!index) {
-		if (key.length == 2) {
-			return null;
-		} else {
-			return findLocalIndexEntry(key.substring(0, key.length - 1));
-		}
-	} else {
-		return index;
-	}
 }
 
 /* ---------------------- */

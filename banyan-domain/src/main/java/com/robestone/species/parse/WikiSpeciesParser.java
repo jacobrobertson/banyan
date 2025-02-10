@@ -691,7 +691,7 @@ public class WikiSpeciesParser {
 	 * --- but I can ignore the <i> because that's already been cleaned
 	 */
 	private String removeEmptyRanksPattern = getRanksPatternPart(false) + 
-			"\\s*:\\s*(\\-|none|not divided|unassigned|Unidentata[a-zA-Z ]*)?\\s*(?:<br\\s*/>|</p>)";
+			"\\s*:\\s*(\\-|none|not divided|[Uu]nassigned|Unidentata[a-zA-Z ]*)?\\s*(?:<br\\s*/>|</p>)";
 	private String preProcessEmptyRanks(String p) {
 		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;

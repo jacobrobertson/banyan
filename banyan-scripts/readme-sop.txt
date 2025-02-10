@@ -12,3 +12,18 @@ Release checklist for banyan-js (complete re-build and redeploy for new species 
 
 Other info
 - if the rsync asks for the keystore passphrase, just hit return
+
+
+MORE NOTES
+How to get Banyan up and running locally “from scratch”?
+Create these folders under a D drive - map it if you have to
+D:\banyan-db\derby
+D:\banyan-images
+D:\wikispecies-cache
+Create the DB
+Create the folder "D:\banyan-db\derby”
+Run DerbyDataSource main to create the db
+Run the crawler
+Start out crawling something specific to test that it’s working
+Browse the DB to see the data being saved
+Derby can only have one connection at a time I think, so wait until the crawler isn’t running

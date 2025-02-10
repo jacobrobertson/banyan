@@ -31,6 +31,7 @@ public enum Rank {
 	
 	// similar... usually means "no good parent"
 	Alliance(15),
+	Unranked(30, "(Unranked)"), // Virus only
 	
 	Regio(100),
 	Imperium(110),

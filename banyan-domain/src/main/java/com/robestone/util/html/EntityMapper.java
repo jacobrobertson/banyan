@@ -114,7 +114,7 @@ public class EntityMapper {
 			} else {
 				int number = c;
 				if (convertUnparseable) {
-					entity = getEntityForNumber(number, new Integer(number));
+					entity = getEntityForNumber(number, Integer.valueOf(number));
 				} else {
 					entity = getEntityForNumber(number, null);
 				}
@@ -132,7 +132,7 @@ public class EntityMapper {
 	private static Object getEntityForBracketContents(String contents, Object def, boolean convertUnparseable) {
 		int integer = getNumber(contents);
 		if (convertUnparseable) {
-			def = new Integer(integer);
+			def = Integer.valueOf(integer);
 		}
 		if (integer >= 0) {
 			return getEntityForNumber(integer, def);
@@ -151,10 +151,10 @@ public class EntityMapper {
 		return c <= HIGHEST_VALID_CHAR;
 	}
 	public static Object getEntityForNumber(int number, Object def) {
-		return getForKey(new Integer(number), numberMap, def);
+		return getForKey(Integer.valueOf(number), numberMap, def);
 	}
 	public static Object getEntityForNumber(int number) {
-		return getForKey(new Integer(number), numberMap, null);
+		return getForKey(Integer.valueOf(number), numberMap, null);
 	}
 	public static Entity getEntityForName(String name) {
 		return (Entity) getForKey(name, nameMap, null);
@@ -170,7 +170,7 @@ public class EntityMapper {
 			if (isAppendableCharacter(c)) {
 				buf.append(c);
 			} else {
-				Object o = numberMap.get(new Integer((int) c));
+				Object o = numberMap.get(Integer.valueOf((int) c));
 				if (o == null) {
 					buf.append(replaceWithChar);
 				} else {
@@ -277,7 +277,7 @@ public class EntityMapper {
 		addEntity("Ocirc", 212, "Ô", "O");          // 00D4
 		addEntity("Otilde", 213, "Õ", "O");         // 00D5
 		addEntity("Ouml", 214, "Ö", "O");           // 00D6
-		addEntity("times", 215, "×", "?");          // 00D7
+		addEntity("times", 215, "×", "x");          // 00D7
 		addEntity("Oslash", 216, "Ø", "O");         // 00D8
 		addEntity("Ugrave", 217, "Ù", "U");         // 00D9
 		addEntity("Uacute", 218, "Ú", "U");         // 00DA
@@ -429,6 +429,7 @@ public class EntityMapper {
 		addEntity("irevC", 390, "?", "C");          // 0186
 		addEntity("schwa", 399, "?", "e");          // 018F
 		addEntity("fnof", 402, "ƒ", "f");           // 0192
+		addEntity("multiplication", 430, "×", "x"); // 
 		addEntity("Icaron", 463, "?", "I");         // 01CF
 		addEntity("icaron", 464, "?", "i");         // 01D0
 		addEntity("Ocaron", 465, "?", "O");         // 01D1
@@ -674,7 +675,7 @@ public class EntityMapper {
 		
 		// validate it does't already exist
 		if (number != -1) {
-			Entity f = (Entity) numberMap.get(new Integer(number));
+			Entity f = (Entity) numberMap.get(Integer.valueOf(number));
 			if (f != null) {
 				String m = "Can't register new Entity with same number: (" + entity + ") already exists as (" + f + ")";
 				System.out.println(m);
@@ -683,7 +684,7 @@ public class EntityMapper {
 		}
 		
 		nameMap.put(name, entity);
-		numberMap.put(new Integer(number), entity);
+		numberMap.put(Integer.valueOf(number), entity);
 		List<Object> list = searchTextMap.get(searchText);
 		if (list == null) {
 			list = new ArrayList<Object>();

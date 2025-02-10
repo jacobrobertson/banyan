@@ -14,8 +14,9 @@ import org.apache.commons.lang3.StringUtils;
 public class EntityMapperHelperMethods {
 
     public static void main(String[] args) throws Exception {
+    	System.out.println('×' + (int) '×');
 //        dumpAllSymbols();
-    	outputEntityHtmlHelperPage(new OutputStreamWriter(new FileOutputStream("C:\\Development\\Projects\\Roots\\files\\HtmlWork\\entities.html")));
+//    	outputEntityHtmlHelperPage(new OutputStreamWriter(new FileOutputStream("C:\\Development\\Projects\\Roots\\files\\HtmlWork\\entities.html")));
     }
 	public static void outputEntityHtmlHelperPage(Writer out) throws Exception {
 		out.write("<html><body><table border='1'>");

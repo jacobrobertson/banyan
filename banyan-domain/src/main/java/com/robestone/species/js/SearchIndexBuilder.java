@@ -5,20 +5,25 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Tree;
 import com.robestone.species.parse.AbstractWorker;
+import com.robestone.util.html.EntityMapper;
 
 public class SearchIndexBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		new SearchIndexBuilder(10, 3, 6, true).iterateOverKeys();
+		new SearchIndexBuilder(10, 3, 6, true).run();
+
 	}
 
 	private int topMatchesMax;
@@ -27,13 +32,27 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private int maxKeyLen;
 	private boolean saveFile;
 	private int minKeysPerFile = 200;
-	private int testListSize = 1_000;
+	private int testListSize = 0; //1_000;
 	
+	private List<CandidateEntry> candidates;
+	private Map<String, Set<CandidateEntry>> subKeyBuckets = new HashMap<String, Set<CandidateEntry>>();
+	
+	public SearchIndexBuilder() {
+		this(15, 3, 8, true);
+	}
 	public SearchIndexBuilder(int topMatchesMax, int minKeyLen, int maxKeyLen, boolean saveFile) {
+		this(topMatchesMax, minKeyLen, maxKeyLen, saveFile, null);
+	}
+	public SearchIndexBuilder(int topMatchesMax, int minKeyLen, int maxKeyLen, boolean saveFile, List<CandidateEntry> candidates) {
 		this.topMatchesMax = topMatchesMax;
 		this.minKeyLen = minKeyLen;
 		this.maxKeyLen = maxKeyLen;
 		this.saveFile = saveFile;
+		this.candidates = candidates;
+	}
+	public void run() throws Exception {
+		createCandidates();
+		iterateOverKeys();
 	}
 	private static class KeyEntry {
 		String key;
@@ -43,9 +62,15 @@ public class SearchIndexBuilder extends AbstractWorker {
 		List<CandidateEntry> topMatches = new ArrayList<CandidateEntry>();
 		List<KeyEntry> children = new ArrayList<KeyEntry>();
 	}
+	public static class CandidateName {
+		String searchName;
+		String prettyName;
+		boolean image;
+		boolean isLatin;
+	}
 	public static class CandidateEntry implements Comparable<CandidateEntry> {
 		CompleteEntry entry;
-		Map<String, String> names = new HashMap<>();
+		List<CandidateName> names = new ArrayList<CandidateName>();
 		int score;
 		int matchNameScorePart;
 		String matchedName;
@@ -53,6 +78,15 @@ public class SearchIndexBuilder extends AbstractWorker {
 		@Override
 		public int compareTo(CandidateEntry c) {
 			return (int) (c.score - score);
+		}
+		
+		public void addName(String searchName, String prettyName, boolean isLatin, boolean image) {
+			CandidateName n = new CandidateName();
+			n.searchName = searchName;
+			n.prettyName = prettyName;
+			n.isLatin = isLatin;
+			n.image = image;
+			names.add(n);
 		}
 		
 		public CandidateEntry copy(int score, String matchedName) {
@@ -67,10 +101,13 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 	}
 
-	public void iterateOverKeys() throws Exception {
+	public void setCandidates(List<CandidateEntry> candidates) {
+		this.candidates = candidates;
+	}
+	void createCandidates() throws Exception {
 		final Tree tree = speciesService.findInterestingTreeFromPersistence();
 		List<CompleteEntry> entries = tree.getEntries();
-		List<CandidateEntry> entryNames = getCandidates(entries);
+		List<CandidateEntry> entryNames = toCandidates(entries);
 		
 		System.out.println("iterateOverKeys.found0." + entryNames.size());
 		if (testListSize > 0) {
@@ -82,9 +119,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			entryNames = new ArrayList<>(ids.values());
 		}
 		System.out.println("iterateOverKeys.found." + entryNames.size());
-		
-
-		iterateOverKeys(entryNames);
+		this.candidates = entryNames;
 	}
 	void addParents(CandidateEntry c, Tree tree, Map<Integer, CandidateEntry> ids) {
 		Integer pid = c.entry.getParentId();
@@ -96,13 +131,44 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		
 	}
-	public void iterateOverKeys(List<CandidateEntry> candidates) throws Exception {
-		KeyEntry root = new KeyEntry();
-		root.key = "";
-		iterateOverKeys(root, candidates);
+	
+	private void createBuckets() {
+		System.out.println("createBuckets>");
+		createBuckets("");
+		System.out.println("createBuckets<");
+	}
+	private void createBuckets(String current) {
+		for (int i = 0; i < letters.length(); i++) {
+			char c = letters.charAt(i);
+			String next = current + c;
+			if (next.length() < minKeyLen) {
+				createBuckets(next);
+			} else if (next.length() < maxKeyLen) {
+				Set<CandidateEntry> bucket = subKeyBuckets.get(next);
+				if (bucket == null) {
+					bucket = new HashSet<CandidateEntry>();
+					subKeyBuckets.put(next, bucket);
+				}
+				for (CandidateEntry candidate : candidates) {
+					for (CandidateName name : candidate.names) {
+						if (name.searchName.indexOf(next) >= 0) {
+							bucket.add(candidate);
+							break;
+						}
+					}
+				}
+			}
+		}
 	}
 	
-	private int iterateOverKeys(KeyEntry key, List<CandidateEntry> candidates) throws Exception {
+	public void iterateOverKeys() throws Exception {
+		createBuckets();
+		KeyEntry root = new KeyEntry();
+		root.key = "";
+		iterateOverKeys(root);
+	}
+	
+	private int iterateOverKeys(KeyEntry key) throws Exception {
 		if (key.key.length() > maxKeyLen) {
 			return 0;
 		}
@@ -113,13 +179,13 @@ public class SearchIndexBuilder extends AbstractWorker {
 			// check the min length - no point to visit 1 letter?
 			boolean foundMatches = true;
 			if (nextKey.key.length() >= minKeyLen) {
-				foundMatches = buildKey(nextKey, candidates);
+				foundMatches = buildKey(nextKey);
 			}
 
 			// iterate if a match, or if it's a short key
 			if (foundMatches) {
 				// we only go deeper if we found a match, otherwise there's no point
-				int nextFound = iterateOverKeys(nextKey, candidates);
+				int nextFound = iterateOverKeys(nextKey);
 				found += nextFound;
 				
 				if (nextFound > 0) {
@@ -127,6 +193,12 @@ public class SearchIndexBuilder extends AbstractWorker {
 				}
 			}
 		}
+		
+		// TODO - I think this is where I should remove duplicate children (same entry, but with longer local keys mapped)
+		//			that way it happens before the counting takes place
+		// 			and because we do it every time, we only need to look at the children
+		removeDuplicateChildren(key);
+		
 		// visit only on terminal nodes, or when returning from one
 		if (
 				(!key.topMatches.isEmpty() || !key.children.isEmpty())
@@ -140,14 +212,39 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return found;
 	}
 	
-	private boolean buildKey(KeyEntry key, List<CandidateEntry> candidates) {
-//		System.out.println("visitKey." + key.key);
+	/**
+	 * Example - we should remove the second one, it's redundant.
+	 * "alasiasandb" : [
+			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
+		], 
+		"alasiasandbo" : [
+			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
+		], 
+	 */
+	private void removeDuplicateChildren(KeyEntry key) throws Exception {
+		if (key.topMatches.size() != 1) {
+			return;
+		}
+		CandidateEntry entry = key.topMatches.get(0);
+		for (KeyEntry child : key.children) {
+			if (child.topMatches.size() == 1 && child.topMatches.get(0).entry == entry.entry) {
+				child.topMatches.clear();
+			}
+		}
+	}
+	
+	private boolean buildKey(KeyEntry key) {
 		
-		for (CandidateEntry candidate : candidates) {
-			for (String name : candidate.names.keySet()) {
+		
+//		System.out.println("buildKey > " + key.key);
+		
+		Set<CandidateEntry> intersection = createIntersection(key);
+		
+		for (CandidateEntry candidate : intersection) {
+			for (CandidateName name : candidate.names) {
 				int score = score(name, key.key);
 				if (score > 0 && (score >= key.topScore || key.topMatches.size() <= topMatchesMax)) {
-					CandidateEntry copy = candidate.copy(score, candidate.names.get(name));
+					CandidateEntry copy = candidate.copy(score, name.prettyName);
 					key.topScore = score;
 					key.topMatches.add(copy);
 					
@@ -167,24 +264,58 @@ public class SearchIndexBuilder extends AbstractWorker {
 		if (found) {
 //			System.out.println("visitKey." + key.key + "." + key.topMatches.size());
 		}
+//		System.out.println("buildKey < " + key.key + "." + key.allLocalsCount);
 		
 		return found;
 	}
+	Set<String> getSubKeys(String key) {
+		Set<String> subkeys = new HashSet<String>();
+		if (key.length() < minKeyLen) {
+			return subkeys;
+		}
+		int maxPos = key.length() - minKeyLen + 1;
+		for (int i = 0; i < maxPos; i++) {
+			String subKey = key.substring(i, i + minKeyLen);
+			subkeys.add(subKey);
+		}
+		return subkeys;
+	}
+	private Set<CandidateEntry> createIntersection(KeyEntry key) {
+		Set<String> subkeys = getSubKeys(key.key);
+		Set<CandidateEntry> intersection = null;
+		for (String subkey : subkeys) {
+			Set<CandidateEntry> bucket = subKeyBuckets.get(subkey);
+			if (intersection == null) {
+				intersection = new HashSet<CandidateEntry>(bucket);
+			} else {
+				intersection.retainAll(bucket);
+			}
+		}
+		return intersection;
+	}
 	
-	private int score(String name, String key) {
+	private int score(CandidateName name, String key) {
 		int score = 0;
 		// TODO make more interesting later
 		if (name.equals(key)) {
 			score = 10000;
 		} else {
-			if (name.startsWith(key)) {
+			if (name.searchName.startsWith(key)) {
 				score = 5000;
-			} else if (name.contains(key)) {
+			} else if (name.searchName.contains(key)) {
 				score = 1000;
 			}
 			if (score > 0) {
-				score += ((float) key.length() / (float) name.length()) * 100;
+				score += ((float) key.length() / (float) name.searchName.length()) * 100;
 			}
+		}
+		
+		if (!name.isLatin) {
+			// strongly prefer non-latin
+			score += 500;
+		}
+		if (name.image) {
+			score += 100;
 		}
 		
 		return score;
@@ -193,22 +324,35 @@ public class SearchIndexBuilder extends AbstractWorker {
 	public CandidateEntry toCandidate(CompleteEntry entry) {
 		CandidateEntry candidate = new CandidateEntry();
 		candidate.entry = entry;
-		// TODO do I really need to check both of these?
-		if (entry.getLatinNameCleanest() != null) {
-			candidate.names.put(entry.getLatinNameCleanest(), entry.getLatinName());
-		} else if (entry.getLatinName() != null) {
-			candidate.names.put(entry.getLatinName().toUpperCase(), entry.getLatinName());
+		
+		String latin = cleanSearchName(entry.getLatinName());
+		if (latin != null) {
+			candidate.addName(latin, entry.getLatinName(), true, entry.getImageLink() != null);
 		}
 		
-		if (entry.getCommonNameCleanest() != null) {
-			candidate.names.put(entry.getCommonNameCleanest(), entry.getCommonName());
-		} else if (entry.getCommonName() != null) {
-			candidate.names.put(entry.getCommonName().toUpperCase(), entry.getCommonName());
+		String common = cleanSearchName(entry.getCommonName());
+		if (common != null) {
+			candidate.addName(common, entry.getCommonName(), true, entry.getImageLink() != null);
 		}
-
+		
 		return candidate;
 	}
-	public List<CandidateEntry> getCandidates(List<CompleteEntry> entries) {
+	private String cleanSearchName(String name) {
+		if (name == null) {
+			return null;
+		}
+		name = EntityMapper.replaceUnparseableCharacters(name, ' ');
+		try {
+			name = EntityMapper.convertToSearchText(name);
+		} catch (Exception e) {
+			// means there's something bad going on maybe?
+			e.printStackTrace();
+		}
+		name = name.toUpperCase();
+		name = StringUtils.removePattern(name, "[^A-Z]");
+		return name;
+	}
+	private List<CandidateEntry> toCandidates(List<CompleteEntry> entries) {
 		List<CandidateEntry> candidates = new ArrayList<CandidateEntry>();
 		
 		// convert each one
@@ -243,8 +387,14 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private String toString(KeyEntry key, List<String> remoteKeys, Map<String, List<CandidateEntry>> localKeys) {
 		StringBuilder buf = new StringBuilder("{\n");
 		
-		Collections.sort(remoteKeys);
-		List<String> localKeyList = new ArrayList<String>(localKeys.keySet());
+		// remove any without matches
+		List<String> localKeyList = new ArrayList<String>();
+		for (String localKey : localKeys.keySet()) {
+			List<CandidateEntry> keysLocals = localKeys.get(localKey);
+			if (!keysLocals.isEmpty()) {
+				localKeyList.add(localKey);
+			}
+		}
 		Collections.sort(localKeyList);
 		
 		// local can be empty - can optimize this later if needed, but won't be a big problem with the grouping
@@ -261,6 +411,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		buf.append("\t},\n");
 		
+		Collections.sort(remoteKeys);
 		buf.append("\t\"remote\" : [");
 		count = 1;
 		for (String remoteKey : remoteKeys) {
@@ -327,23 +478,36 @@ public class SearchIndexBuilder extends AbstractWorker {
 		buf.append(ids); // crunched ids all the way up
 		buf.append("\", \"name\" : \"");
 		buf.append(JsonParser.escape(c.matchedName));
+		buf.append("\", \"latin\" : \"");
+		buf.append(JsonParser.escape(c.entry.getLatinName()));
+		buf.append("\", \"common\" : \"");
+		if (c.entry.getCommonName() != null) {
+			buf.append(JsonParser.escape(c.entry.getCommonName()));
+		}
 		buf.append("\" }");
 	}
 	
 	private void saveKeyFile(KeyEntry key) throws Exception {
 
-		if (key.key.toLowerCase().equals("nul")) {
-			// TODO just force this into a fully remote file - it probably will be anyways once I start that.
-			// I could also do some special case, like @nul or something, but would have to handle that in javascript too
-			return;
-		}
+//		if (key.key.toLowerCase().equals("nul")) {
+//			// TODO just force this into a fully remote file - it probably will be anyways once I start that.
+//			// I could also do some special case, like @nul or something, but would have to handle that in javascript too
+//			return;
+//		}
 
 		// we are visiting this key to see if it should be saved
 		countLocals(key);
+		
+		// these cannot be saved to drive, so skip and they will get combined elsewhere
+		boolean isNul = key.key.toLowerCase().startsWith("nul");
+		if (isNul) {
+			return;
+		}
 		boolean isRoot = (key.key.length() == 0);
 		if (!isRoot && key.allLocalsCount < minKeysPerFile) {
 			return;
 		}
+		System.out.println("saveKeyFile." + key.key + "." + key.allLocalsCount);
 		
 		List<String> remoteKeys = new ArrayList<>();
 		Map<String, List<CandidateEntry>> localKeys = new HashMap<String, List<CandidateEntry>>();
