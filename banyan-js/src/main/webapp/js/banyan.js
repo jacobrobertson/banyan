@@ -1799,6 +1799,9 @@ function doFindSearchSuggestions(term, callback) {
 	// look in local and if it's there, done
 	var suggestions = dbLocalSearchIndex[term];
 	if (suggestions) {
+		
+		// TODO filter out any that don't actually match the term - the term could be longer than the max key length
+		
 		callback(suggestions);
 		return;
 	}
@@ -1865,7 +1868,7 @@ function buildRemoteIndexEntry(data, callback) {
 }
 function createSuggestionHtml(entry) {
 	var html = "<span>";
-	if (entry.common.length > 0) {
+	if (entry.common && entry.common.length > 0) {
 		html = html + entry.common + "&nbsp;";
 	}
 	var latinNameCaption = "<i class='searchLatin'>(" + entry.latin + ")</i>";

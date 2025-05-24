@@ -27,15 +27,15 @@ public class MaintenanceWorker extends AbstractWorker {
 		recent.maxRecentChangesLinks = 300;
 		recent.maxOldLinks = 10000;
 		
-		boolean doEverything = true; // when true - overrides all below
+		boolean doEverything = !true; // when true - overrides all below
 		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
 		boolean crawlOldLinks = true;
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
-		boolean runMaintenanceOnly = !true;
-		boolean runJs = true;
+		boolean runMaintenanceOnly = true;
+		boolean runJs = !true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB

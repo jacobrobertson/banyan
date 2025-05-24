@@ -59,8 +59,16 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 		}
 		logger.info("assignInterestingSubspecies < " + tree.size());
 	}
+	private Set<Integer> getEntryChildrenIds(Entry entry) {
+		Set<Integer> ids = new HashSet<Integer>();
+		if (entry.getChildren() != null) {
+			entry.getChildren().forEach(c -> ids.add(c.getId()));
+		}
+		return ids;
+	}
 	public void assignInterestingSubspecies(Entry entry) {
 		logger.debug("assignInterestingSubspecies." + entry.getLatinName());
+		Set<Integer> childredIds = getEntryChildrenIds(entry);
 		List<Entry> entries = new ArrayList<Entry>();
 		Set<Integer> interesting = new HashSet<Integer>();
 		entries.add(entry);
@@ -89,8 +97,7 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 		boolean assignIds = true;
 		// make sure it's not just exactly the children
 		if (!interesting.isEmpty() && interesting.size() == entry.getLoadedChildrenSize()) {
-			// TODO this is a bug - need the list of all ids
-			if (interesting.containsAll(entry.getChildren())) {
+			if (interesting.containsAll(childredIds)) {
 				assignIds = false;
 			}
 		}

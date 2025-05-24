@@ -1,6 +1,8 @@
 package com.robestone.species;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +48,15 @@ public class BoringPruner {
 		this.tree = tree;
 		this.entries = EntryUtilities.getEntries(tree.getRoot());
 		
+		// some analysis if needed
+		List<CompleteEntry> list = new ArrayList<CompleteEntry>(entries);
+		Collections.sort(list, new EntryComparator());
+		for (CompleteEntry e : list) {
+			logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+			if (e.getLatinNameClean().startsWith("TESTUDO")) {		
+				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+			}
+		}
 		prepareEntries();
 		prune();
 		setAttributes();
@@ -165,8 +176,10 @@ public class BoringPruner {
 		logger.debug("pruneBoringLeaves > " + leaves.size());
 		for (CompleteEntry e: leaves) {
 			boolean boring = isLeafBoring(e);
-			if (boring) {
+//			if (e.getLatinNameClean().startsWith("TESTUDO")) {
 //				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+//			}
+			if (boring) {
 				detach(e);
 				changed++;
 			}

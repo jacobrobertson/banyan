@@ -29,7 +29,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Lausannevirus"
+				"Testudo kleinmanni"
 				//"Adnaviria", "Duplodnaviria", "Monodnaviria", "Riboviria", "Ribozyviria", "Varidnaviria"
 		};
 		crawlAllStoredLinks = false;

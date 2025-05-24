@@ -22,7 +22,7 @@ import com.robestone.util.html.EntityMapper;
 public class SearchIndexBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		new SearchIndexBuilder(10, 3, 6, true).run();
+		new SearchIndexBuilder(5, 3, 6, true).run();
 
 	}
 
@@ -296,8 +296,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	
 	private int score(CandidateName name, String key) {
 		int score = 0;
-		// TODO make more interesting later
-		if (name.equals(key)) {
+		if (name.searchName.equals(key)) {
 			score = 10000;
 		} else {
 			if (name.searchName.startsWith(key)) {
@@ -480,11 +479,13 @@ public class SearchIndexBuilder extends AbstractWorker {
 		buf.append(JsonParser.escape(c.matchedName));
 		buf.append("\", \"latin\" : \"");
 		buf.append(JsonParser.escape(c.entry.getLatinName()));
-		buf.append("\", \"common\" : \"");
+		buf.append("\"");
 		if (c.entry.getCommonName() != null) {
+			buf.append(", \"common\" : \"");
 			buf.append(JsonParser.escape(c.entry.getCommonName()));
+			buf.append("\"");
 		}
-		buf.append("\" }");
+		buf.append(" }");
 	}
 	
 	private void saveKeyFile(KeyEntry key) throws Exception {

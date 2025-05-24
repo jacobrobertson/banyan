@@ -1,5 +1,6 @@
 CREATE TABLE crawl (
-  crawl_id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+--  crawl_id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+  crawl_id int NOT NULL,
   status_date timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   link char(254) DEFAULT NULL,
   status char(50) DEFAULT NULL,
@@ -46,7 +47,8 @@ CREATE TABLE redirect (
 CREATE INDEX idx_redirect_redirect_to on redirect (redirect_to);
 
 CREATE TABLE species (
-  id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+--  id int NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1),
+  id int NOT NULL,
   latin_name char(254) DEFAULT NULL,
   latin_name_clean char(254) DEFAULT NULL,
   latin_name_cleanest char(254) DEFAULT NULL,
