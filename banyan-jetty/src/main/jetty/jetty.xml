@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<Configure id="Server" class="org.eclipse.jetty.server.Server">
+
+
+ <Call name="setHandler">
+        <Arg>
+            <New class="org.eclipse.jetty.server.handler.ContextHandlerCollection">
+                <Call name="addHandler">
+                    <Arg>
+                        <New class="org.eclipse.jetty.server.handler.ContextHandler">
+                            <Set name="contextPath">/banyan-js</Set>
+                            <Set name="handler">
+                                <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                                    <Set name="welcomeFiles">
+                                        <Array type="String">
+                                            <Item>index.html</Item>
+                                        </Array>
+                                    </Set>
+                                    <Set name="resourceBase">C:/Users/jacob/git/banyan/banyan-js/src/main/webapp</Set>
+                                </New>
+                            </Set>
+                        </New>
+                    </Arg>
+                </Call>
+                <Call name="addHandler">
+                    <Arg>
+                        <New class="org.eclipse.jetty.server.handler.ContextHandler">
+                            <Set name="contextPath">/banyan-images</Set>
+                            <Set name="handler">
+                                <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                                    <Set name="welcomeFiles">
+                                        <Array type="String">
+                                            <Item>index.html</Item>
+                                        </Array>
+                                    </Set>
+                                    <Set name="resourceBase">D:/banyan/banyan-images</Set>
+                                </New>
+                            </Set>
+                        </New>
+                    </Arg>
+                </Call>
+                <Call name="addHandler">
+                    <Arg>
+                        <New class="org.eclipse.jetty.server.handler.ContextHandler">
+                            <Set name="contextPath">/banyan-json</Set>
+                            <Set name="handler">
+                                <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                                    <Set name="welcomeFiles">
+                                        <Array type="String">
+                                            <Item>index.html</Item>
+                                        </Array>
+                                    </Set>
+                                    <Set name="resourceBase">D:/banyan/banyan-json</Set>
+                                </New>
+                            </Set>
+                        </New>
+                    </Arg>
+                </Call>
+            </New>
+        </Arg>
+    </Call>
+
+    <!-- HTTP Connector -->
+    <!--
+    <Call name="addConnector">
+        <Arg>
+            <New class="org.eclipse.jetty.server.ServerConnector">
+                <Arg name="server">
+                    <Ref id="Server"/>
+                </Arg>
+                <Set name="port">8080</Set>
+            </New>
+        </Arg>
+    </Call>
+    -->
+
+    <!-- Default Servlet for serving static content -->
+    <!--
+    <Call name="addBean">
+        <Arg>
+            <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                <Set name="resourceBase">D:/banyan/banyan-images</Set>
+            </New>
+        </Arg>
+    </Call>
+
+    <Call name="addBean">
+        <Arg>
+            <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+               <Set name="resourceBase">D:/banyan/banyan-json</Set>
+            </New>
+        </Arg>
+    </Call>
+-->
+
+    <!-- Context Handler -->
+                <!-- 
+    <Call name="setHandler">
+        <Arg>
+            <New class="org.eclipse.jetty.server.handler.HandlerCollection">
+                <Call name="addHandler">
+                    <Arg>
+                        <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                            <Set name="resourceBase">D:/banyan/banyan-images</Set>
+                        </New>
+                    </Arg>
+                </Call>
+                <Call name="addHandler">
+                    <Arg>
+                        <New class="org.eclipse.jetty.server.handler.ResourceHandler">
+                            <Set name="resourceBase">/path/to/static/content2</Set>
+                        </New>
+                    </Arg>
+                </Call>
+            </New>
+        </Arg>
+    </Call>
+	-->
+
+
+</Configure>
