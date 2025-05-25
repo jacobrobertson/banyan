@@ -50,6 +50,12 @@ body {height:90%;background: #e8f3db;}
 	border:2px solid #f8fbf4;
 	border-radius: 25px 60px 5px 50px;
 }
+#textfield {
+	background-image: url("../icons/search.png");
+    background-size: contain;
+    background-position: right;
+    background-repeat: no-repeat;
+}
 .searchSuggestion {
 	width: 100%;
 	padding-top: 2px;
@@ -58,14 +64,22 @@ body {height:90%;background: #e8f3db;}
 	background: #f8fbf4;
 }
 /* Style from autocomplete jquery */
-.ui-menu-item-wrapper {
+.ui-menu-item {
 	width: 100%;
+	box-sizing: border-box;
+	white-space: nowrap;
+}
+.ui-menu-item-wrapper {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	white-space: nowrap;
 }
 .searchLatin {
+	box-sizing: border-box;
+	width: 100%;
 	font-style: italic;
 	white-space: nowrap;
-	padding-right: 5px;
-	text-align: right;
 }
 /*
 .searchCommon {

@@ -34,8 +34,8 @@ public class MaintenanceWorker extends AbstractWorker {
 		boolean crawlOldLinks = true;
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
-		boolean runMaintenanceOnly = true;
-		boolean runJs = !true;
+		boolean runMaintenanceOnly = !true;
+		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB

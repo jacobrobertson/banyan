@@ -1,7 +1,9 @@
 package com.robestone.species.parse;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.robestone.species.CompleteEntry;
@@ -13,7 +15,10 @@ import com.robestone.species.LogHelper;
 public class ChildToParentCrawler extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		new ChildToParentCrawler().showChildAncestry("Animalia");
+		new ChildToParentCrawler().
+		crawlAllParents();
+//		removeBrokenLinksToParentId();
+		//showChildAncestry("Animalia");
 	}
 	
 	public void showChildAncestry(String child) {
@@ -35,6 +40,21 @@ public class ChildToParentCrawler extends AbstractWorker {
 		}
 	}
 	
+	public void removeBrokenLinksToParentId() throws Exception {
+		Collection<CompleteEntry> all = speciesService.findEntriesForTreeReport();
+		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
+		all.forEach(e -> map.put(e.getId(), e));
+		all.forEach(e -> {
+			if (e.getParentId() != null) {
+				CompleteEntry p = map.get(e.getParentId());
+				if (p == null) {
+					LogHelper.speciesLogger.info("removeBrokenLinksToParentId." + e.getLatinName() + " > " + e.getParentLatinName());
+					speciesService.updateParentIdToNull(e);
+				}
+			}
+		});
+	}
+	
 	/**
 	 * Find all children with no parent Id and try and crawl all those.
 	 * @throws Exception 
@@ -52,7 +72,7 @@ public class ChildToParentCrawler extends AbstractWorker {
 		for (CompleteEntry name : names) {
 			count++;
 			if (name.getLatinName().toLowerCase().contains("vir")) {
-				continue;
+//				continue;
 			}
 			ParseStatus ps = new ParseStatus();
 			ps.setUrl(name.getLatinName());

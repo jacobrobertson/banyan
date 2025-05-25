@@ -638,6 +638,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				entry.getId()
 				);
 	}
+	public void updateParentIdToNull(CompleteEntry entry) {
+		template.update(
+				"update species set " +
+						" parent_id = null" +  
+						" where id = ?", 
+				entry.getId()
+				);
+	}
 	public UpdateType insertEntryMaybe(CompleteEntry entry) {
 		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
 		if (found != null) {

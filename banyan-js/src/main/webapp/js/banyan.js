@@ -29,7 +29,7 @@ $(document).ready(function() {
 		focus : function(event, ui) {console.log("focus")},
 		change : function(event, ui) {console.log("change")},
 		*/
-		minLength : 3,
+		minLength : minSearchKeyLength,
 		autoFocus: true
 	})
 	.autocomplete("instance")._renderItem = function( ul, item ) {
@@ -75,6 +75,7 @@ var maxWidthShowChildren = 163;
 var maxWidthShowMore = 159;
 var digitWidth = 9;
 
+var minSearchKeyLength = 3;
 var maxSearchKeyLength = 6;
 var dbLocalSearchIndex = {};
 var dbRemoteSearchIndex = new Set(["@root"]);
@@ -244,6 +245,7 @@ function showContextMenu(e, img) {
 	if (!areMenusAllowed) {
 		return false;
 	}
+	var isDetails = $("#detailsTab").is(':visible');
 	var imgId = img.id;
 	// create the right menu links
 	var e = getMapEntry(imgId);
@@ -254,9 +256,9 @@ function showContextMenu(e, img) {
 		button = buttons[i];
 		var buttonId = button.id;
 		var buttonValue = e[buttonId];
-		// TODO this is where I could create the new paradigm
 		var link = buttonId + "#!/" + imgId;
-		if (buttonValue) {
+		var isDetailsButton = (buttonId == 'mBack' || buttonId == 'mDetail');
+		if (buttonValue && (isDetailsButton || !isDetails)) {
 			$(button).show();
 			rowsShownCount++;
 		} else {
@@ -1438,10 +1440,12 @@ function renderNodeEntryLine(h, e, depth) {
 	var span = $('<span class="' + spanClass + '"></span>').appendTo(h);
 	// detail button
 	var detailIcon = "detail.png";
+	var isExpandIcon = false;
 	var detailClass = "tree-detail_first";
 	if (e.collapsedPinned) {
 		detailIcon = "open_children.png";
 		detailClass = "tree-open_children";
+		isExpandIcon = true;
 	} else if (depth > 0) {
 		detailIcon = "detail.png";
 		detailClass = "tree-detail_indented";
@@ -1454,9 +1458,25 @@ function renderNodeEntryLine(h, e, depth) {
 	var pad = getNbsps(depth);
 	var detailsHash = getEntryDetailsHash(e);
 	if (!e.pinned) {
-		span.append(pad + '<a title="Go to Details" href="?q=' + detailsHash + '" class="treeQueryLink"' +
+		var iconLink;
+		var iconTitle;
+		if (isExpandIcon) {
+			// http://localhost:8080/banyan-js/mShowChildren#!/37805
+			iconTitle = "Expand / Show Children";
+			iconLink = 'mShowChildren#!/' + e.id;
+		} else {
+			iconTitle = "Go to Details";
+			iconLink = '?q=' + detailsHash;
+		}
+		span.append(pad + '<a title="' + iconTitle + '" href="' + iconLink + '" class="treeQueryLink"' +
 			'><img src="' + iconPath() + '/' + detailIcon + '" class="' +
 			detailClass + '" alt="search.detail" /></a>');
+		if (isExpandIcon) {
+			span.bind("click", function() {
+				performMenuAction('mShowChildren', e.id);
+				return false;
+			});
+		}
 	}
 	// image and link
 	var name = getEntryDisplayName(e);
@@ -1783,6 +1803,9 @@ function loadRootSearchIndex() {
 }
 function submitSearchQuery(event, ui) {
 	// (ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
+	if (ui.item.notFound) {
+		return;
+	}
 	var id = ui.item.id;
 	var ids = uncrunch(ui.item.ids);
 	loadJsonThenMarkNewIdsVisible(ids, function() {
@@ -1793,33 +1816,37 @@ function submitSearchQuery(event, ui) {
 }
 function findSearchSuggestions(term, callback) {
 	term = cleanIndexKey(term);
-	doFindSearchSuggestions(term, callback);
+	doFindSearchSuggestions(term, 1, callback);
 }
-function doFindSearchSuggestions(term, callback) {
-	// look in local and if it's there, done
+function doFindSearchSuggestions(term, subTermLength, callback) {
+	// if the root term is loaded, we are done
 	var suggestions = dbLocalSearchIndex[term];
 	if (suggestions) {
-		
 		// TODO filter out any that don't actually match the term - the term could be longer than the max key length
-		
 		callback(suggestions);
-		return;
-	}
-
-	// find the closest remote that exists (i.e. for "abcde" maybe "abcd" exists)
-	var next = term;
-	while (next.length > 0) {
-		if (dbRemoteSearchIndex.has(next)) {
-			break;
-		}
-		next = next.substring(0, next.length - 1);
+		return true;
 	}
 	
-	// load that closest remote, and callback to this method again
-	var innerCallback = function() {
-		doFindSearchSuggestions(term, callback);
-	};
-	loadRemoteIndexEntry(next, innerCallback);
+	var subTerm = term.substring(0, subTermLength);
+	//console.log("doFindSearchSuggestions >>> " + term + "." + subTerm);
+	if (dbRemoteSearchIndex.has(subTerm)) {
+		// load that remote, and callback to this method again
+		var innerCallback = function() {
+			doFindSearchSuggestions(term, subTermLength + 1, callback);
+		};
+		loadRemoteIndexEntry(subTerm, innerCallback);
+	} else if (subTermLength < term.length) {
+		doFindSearchSuggestions(term, subTermLength + 1, callback);
+	} else {
+		// we can't find it
+		//console.log("doFindSearchSuggestions.notFound." + term + "." + subTerm);
+		var suggestion = {
+			notFound: true,
+			common: "No results found for - " + term,
+			value: term
+		};
+		callback([suggestion]);
+	}
 }
 function loadRemoteIndexEntry(key, callback) {
 	var url = buildRemoteIndexUrl(key);
@@ -1871,8 +1898,13 @@ function createSuggestionHtml(entry) {
 	if (entry.common && entry.common.length > 0) {
 		html = html + entry.common + "&nbsp;";
 	}
-	var latinNameCaption = "<i class='searchLatin'>(" + entry.latin + ")</i>";
-	var html = html + latinNameCaption + "</span>";
+	var latinPart;
+	if (entry.latin) {
+		var latinPart = "<i class='searchLatin'>(" + entry.latin + ")</i>";
+	} else {
+		latinPart = "";
+	}
+	var html = html + latinPart + "</span>";
 	return html;
 }
 function getPreviewImageCaption(img) {
