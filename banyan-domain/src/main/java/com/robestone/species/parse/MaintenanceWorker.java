@@ -9,7 +9,7 @@ import org.apache.log4j.Level;
 import com.robestone.species.CompleteEntry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
-import com.robestone.species.js.JsWorker;
+import com.robestone.species.js.JsonBuilder;
 import com.robestone.species.js.SearchIndexBuilder;
 
 /**
@@ -35,82 +35,42 @@ public class MaintenanceWorker extends AbstractWorker {
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
+		boolean runPeriodicMaintenance = false;
 		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
 		boolean crawlParseStatus = !true;
 		
-		if (args != null && args.length > 0) {
-			recent.maxOldLinks = 0;
-			recent.maxRecentChangesLinks = 0;
-			recent.maxDays = 0;
-			runMaintenance = false;
-			crawlParseStatus = false;
-			LogHelper.speciesLogger.info("RecentChangesUpdater.args");
-			// maxOldLinks=10 maxChanges=2 maxDays=1 runMaintenance=false
-			for (int i = 0; i < args.length; i++) {
-				LogHelper.speciesLogger.info("RecentChangesUpdater.args." + i + "." + args[i]);
-				String[] p = args[i].split("=");
-				if (p[0].equals("maxOldLinks")) {
-					recent.maxOldLinks = Integer.parseInt(p[1]);
-				}
-				if (p[0].equals("maxChanges")) {
-					recent.maxRecentChangesLinks = Integer.parseInt(p[1]);
-				}
-				if (p[0].equals("maxDays")) {
-					recent.maxDays = Integer.parseInt(p[1]);
-				}
-				if (p[0].equals("runMaintenance")) {
-					runMaintenance = Boolean.parseBoolean(p[1]);
-				}
-				if (p[0].equals("crawlParseStatus")) {
-					crawlParseStatus = Boolean.parseBoolean(p[1]);
-				}
-				if (p[0].equals("recreateCleanNames")) {
-					recreateCleanNames = Boolean.parseBoolean(p[1]);
-				}
-			}
-			crawlNewLinks = recent.maxRecentChangesLinks > 0;
-			crawlOldLinks = recent.maxOldLinks > 0;
-		}
-		
 		recent.downloadImages = downloadImages || doEverything;
 		recent.recreateCleanNames = recreateCleanNames || doEverything;
 		
-		LogHelper.speciesLogger.info("RecentChangesUpdater.main.argsParsed");
-		
-		boolean justDoThis = !true;
-		if (justDoThis) {
-//			new ImagesCreater().downloadAll(true, false);
-//			recent.crawlTreeReport();
-//			new BoringPrunerWorker().run(false, false);
-			
-		} else {
-			if (!runMaintenanceOnly || doEverything) {
-				if (crawlParseStatus || doEverything) {
-					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
-					recent.crawlParseStatus();
-					recent.crawlTreeReport();
-				}
-				if (crawlNewLinks || doEverything) {
-					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
-					recent.crawlNewLinks();
-				}
-				if (crawlOldLinks || doEverything) {
-					LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
-					recent.crawlOldLinks();
-				}
+		if (!runMaintenanceOnly || doEverything) {
+			if (crawlParseStatus || doEverything) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlParseStatus");
+				recent.crawlParseStatus();
+				recent.crawlTreeReport();
 			}
-			if (runMaintenance || runMaintenanceOnly || doEverything) {
-				LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
-				recent.runMaintenance();
-				recent.runReports();
+			if (crawlNewLinks || doEverything) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlNewLinks");
+				recent.crawlNewLinks();
 			}
-			if (runJs || doEverything) {
-				new JsWorker().run();
-				new SearchIndexBuilder().run();
+			if (crawlOldLinks || doEverything) {
+				LogHelper.speciesLogger.info("RecentChangesUpdater.main.crawlOldLinks");
+				recent.crawlOldLinks();
 			}
+		}
+		if (runMaintenance || runMaintenanceOnly || doEverything) {
+			LogHelper.speciesLogger.info("RecentChangesUpdater.main.runMaintenance");
+			recent.runMaintenance();
+			recent.runReports();
+		}
+		if (runPeriodicMaintenance) {
+			new RedirectWorker().recrawlRedirects();
+		}
+		if (runJs || doEverything) {
+			new JsonBuilder().runMaintenance();
+			new SearchIndexBuilder().run();
 		}
 	}
 	
@@ -151,6 +111,8 @@ public class MaintenanceWorker extends AbstractWorker {
 			speciesService.recreateCleanNames();
 		}
 
+		new ImagesCreater().removeBlackListedImages();
+		
 		// run full boring suite
 		new BoringPrunerWorker().run(true, true);
 		
@@ -196,7 +158,7 @@ public class MaintenanceWorker extends AbstractWorker {
 				runMaintenance();  // not sure if this is mandatory
 				names = reporter.getLinksToCrawl();
 			} else {
-				names.clear();
+				break;
 			}
 		}
 		

@@ -51,12 +51,12 @@ public class BoringPruner {
 		// some analysis if needed
 		List<CompleteEntry> list = new ArrayList<CompleteEntry>(entries);
 		Collections.sort(list, new EntryComparator());
-		for (CompleteEntry e : list) {
-			logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
-			if (e.getLatinNameClean().startsWith("TESTUDO")) {		
-				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
-			}
-		}
+//		for (CompleteEntry e : list) {
+//			logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+//			if (e.getLatinNameClean().startsWith("TESTUDO")) {		
+//				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
+//			}
+//		}
 		prepareEntries();
 		prune();
 		setAttributes();

@@ -29,6 +29,7 @@ public class VirusWorker extends AbstractWorker {
 		}
 	}
 	private void findChildren(Integer id, Set<Integer> ids, List<CompleteEntry> entries) {
+		LogHelper.speciesLogger.info("makeVirusesInteresting.findChildren." + id);
 		List<CompleteEntry> children = speciesService.findChildren(id);
 		for (CompleteEntry e: children) {
 			boolean added = ids.add(e.getId());

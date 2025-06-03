@@ -32,14 +32,14 @@ public class JsonBuilder extends AbstractWorker {
 		JsonBuilder b = new JsonBuilder();
 		
 		// recreate json
-		b.rebuildAllJson();
+//		b.rebuildAllJson();
 		
 		// or ...
 		
 		// fine-tune what you want to d
-//		b.copyAdditionalJsonResources();
+		b.copyAdditionalJsonResources();
 //		b.partitionFromDB();
-//		b.buildRandomFiles();
+		b.buildRandomFiles();
 //		b.runExamples();
 	}
 	
@@ -49,14 +49,20 @@ public class JsonBuilder extends AbstractWorker {
 	private RandomTreeBuilder randomTreeBuilder = new RandomTreeBuilder();
 	
 	public void deleteJsonDir() throws Exception {
+		System.out.println(">deleteJsonDir");
 		FileUtils.deleteDirectory(new File(outputDir));
+		System.out.println("<deleteJsonDir");
 	}
 	
 	public void rebuildAllJson() throws Exception {
+		System.out.println(">partitionFromDB");
 		partitionFromDB();
+		System.out.println(">runExamples");
 		runExamples();
 		// this is the longest running
+		System.out.println(">buildRandomFiles");
 		buildRandomFiles();
+		System.out.println(">copyAdditionalJsonResources");
 		copyAdditionalJsonResources();
 	}
 	
@@ -482,4 +488,10 @@ public class JsonBuilder extends AbstractWorker {
 		String encoded = Base64.getEncoder().encodeToString(bytes);
 		return encoded;
 	}
+
+	public void runMaintenance() throws Exception {
+		deleteJsonDir();
+		rebuildAllJson();
+	}
+
 }

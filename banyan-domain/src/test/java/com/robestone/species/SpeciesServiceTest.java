@@ -22,7 +22,6 @@ public class SpeciesServiceTest extends TestCase {
 		String path = "com/robestone/species/parse/SpeciesServices.spring.xml";
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(path);
 		service = (SpeciesService) context.getBean("SpeciesService");
-		service.setSearcher(new SqlSearcher(service));
 		
 		examplesService = (ExamplesService) context.getBean("ExamplesService");
 	}

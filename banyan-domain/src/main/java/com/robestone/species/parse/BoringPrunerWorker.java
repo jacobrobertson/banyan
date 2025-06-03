@@ -7,7 +7,7 @@ import com.robestone.species.Tree;
 public class BoringPrunerWorker extends AbstractWorker {
 
 	public static void main(String[] args) {
-		boolean persist = false;
+		boolean persist = true;
 		new BoringPrunerWorker().run(false, persist);
 	}
 	public void run(boolean fixCommonNames, boolean persist) {

@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -24,7 +23,7 @@ import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, ISpeciesService {
+public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
@@ -131,7 +130,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public void updateFromBoringWorkMarkInteresting(Collection<CompleteEntry> interesting) {
 		int count = 0;
-		int showEvery = 100000;
+		int showEvery = 1000;
 		logger.info(">updateFromBoringWork.interesting." + interesting.size());
 		for (CompleteEntry e: interesting) {
 			if (count++ % showEvery == 0) {
@@ -243,6 +242,10 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			template.update("insert into redirect (redirect_from, redirect_to) values (?, ?)", from, to);
 		}
 	}
+	public void deleteRedirect(String from) {
+		logger.info("deleteRedirect." + from);
+		template.update("delete from redirect where redirect_from = ?", from);
+	}
 	/**
 	 * Rare, but it happens, due to an improper refreshing when wikispecies has a
 	 * template change, but the pages using the template aren't re-parsed.
@@ -316,7 +319,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				new EntityMapperRowMapper());
 		return found;
 	}
-	private Map<String, String> findAllRedirectFromsMap() {
+	public Map<String, String> findAllRedirectFromsMap() {
 		Map<String, String> map = new HashMap<String, String>();
 		List<RedirectPair> found = template.query(
 				"select redirect_to, redirect_from from redirect", 
@@ -335,6 +338,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	public Collection<CompleteEntry> findEntriesForTreeReport() {
 		return template.query(
 				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id, common_name, image_link from species", 
+				this);
+	}
+	public Collection<CompleteEntry> findEntriesWithBasicParentInfo() {
+		return template.query(
+				"select id, latin_name, parent_latin_name, parent_id from species", 
 				this);
 	}
 	public Collection<CompleteEntry> findEntriesForExtinctReport() {
@@ -465,50 +473,30 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 						getBoringColumn() + " = false", 
 				new ParameterizedSingleColumnRowMapper<Integer>(), id);
 	}
+	public void udpateBlacklistedImages(String[] blacklist) {
+		for (String link: blacklist) {
+			Collection<CompleteEntry> found = template.query("select id from species where image_link like '%" + link + "%'", this);
+			System.out.println("udpateBlacklistedImages." + link + " > found." + found.size());
+			for (CompleteEntry entry: found) {
+				template.update("update species set image_link = null where id = ?", entry.getId());
+			}
+		}
+	}
 	public Collection<CompleteEntry> getThumbnails() {
 		String cols = "latin_name, image_link, id";
 		return template.query("select " + cols + " from species where " +
 				"not (image_link is null)", this);
 	}
-	
-	public Set<Integer> findBestIds(String terms, Collection<Integer> existingIds) {
-		String[] searches = terms.split(",");
-		Set<String> names = new HashSet<String>();
-		for (String one: searches) {
-			one = StringUtils.trimToNull(one);
-			if (one != null) {
-				names.add(one);
-			}
-		}
-		return findBestIds(names, existingIds);
-	}
-	
-	public Set<Integer> findBestIds(Set<String> names, Collection<Integer> existingIds) {
-		Set<Integer> ids = new HashSet<Integer>();
-		for (String name: names) {
-			int id = findBestId(name, existingIds);
-			if (id > 0) {
-				ids.add(id);
-			}
-		}
-		return ids;
-	}
 	public int findBestId(String query, Collection<Integer> existingIds) {
-		if (StringUtils.isNumeric(query)) {
-			return Integer.parseInt(query);
-		}
 		return getSearcher().search(query, existingIds);
 	}
 	private EntrySearcher getSearcher() {
 		if (searcher == null) {
-//			searcher = new SqlSearcher(this);
-			searcher = new LuceneSearcher(this);
+			searcher = new SqlSearcher(this);
 		}
 		return searcher;
 	}
-	public void setSearcher(EntrySearcher searcher) {
-		this.searcher = searcher;
-	}
+
 	public Entry findTreeForNodes(Collection<Integer> ids, Entry existingRoot) {
 		Set<Integer> set = new HashSet<Integer>(ids);
 		if (existingRoot != null) {
@@ -607,9 +595,6 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 	}
 	public void clearCache() {
 		cache.clear();
-		searcher = null;
-		// call one search to rebuild the indexes
-		getSearcher().search("clear", new ArrayList<Integer>());
 	}
 	
 	private Cache getCache() {
@@ -635,6 +620,13 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				entry.getParentLatinName(),
 				entry.getParentId(),
 				entry.getInterestingParentId(),
+				entry.getId()
+				);
+	}
+	public void updateParentId(CompleteEntry entry) {
+		template.update(
+				"update species set parent_id = ? where id = ?", 
+				entry.getParentId(),
 				entry.getId()
 				);
 	}
@@ -797,11 +789,15 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 		Tree tree = findInterestingTreeFromPersistence();
 		List<CompleteEntry> entries = tree.getEntries();
 		Map<Integer, Integer> subBranchLengths = new HashMap<Integer, Integer>();
+		logger.info("updateLinkedImageIds.assignSubBranchLength");
 		assignSubBranchLength(tree.getRoot(), subBranchLengths);
+		logger.info("updateLinkedImageIds.assignImageCounts");
 		Map<String, Integer> imageCounts = new HashMap<String, Integer>();
 		assignImageCounts(entries, imageCounts);
+		logger.info("updateLinkedImageIds.assignTreeDepths");
 		Map<Integer, Integer> treeDepths = new HashMap<Integer, Integer>();
 		assignTreeDepths(tree.getRoot(), entries, treeDepths);
+		logger.info("updateLinkedImageIds.assignLinkedImageIds");
 		assignLinkedImageIds(entries, subBranchLengths, treeDepths, imageCounts);
 		logger.info("<updateLinkedImageIds");
 	}
@@ -856,12 +852,17 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 			treeDepths.put(entry.getId(), depth);
 		}
 	}
-	private int getChildDepth(CompleteEntry treeRoot, CompleteEntry child) {
+	private int getChildDepth(CompleteEntry treeRoot, final CompleteEntry child0) {
 		int depth = 0;
+		CompleteEntry child = child0;
 		// TODO the null check is here because of data problems from wikispecies parsing
 		while (child != treeRoot && child != null) {
 			depth++;
-			child = child.getParent();
+			CompleteEntry parent = child.getParent();
+			if (depth > 1000) {
+				System.out.println("BAD.getChildDepth." + child.getLatinName() + "/" + child.getId() + " > " + parent.getLatinName() + "/" + parent.getId());
+			}
+			child = parent;
 		}
 		return depth;
 	}
@@ -1000,7 +1001,18 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry>, IS
 				template.update(
 						"update species set parent_id = ? where id = ?", 
 						parent.getId(), one.getId());
-				logger.debug(">assignParentIdsByParentLatinName.update." + one.getId() + "." + one.getLatinName() + " > " + parent.getId());
+				
+				if (one.getLatinName().equals("Amphibia")) {
+					logger.debug(">assignParentIdsByParentLatinName.update." + one.getId() + "." + one.getLatinName() + " > " + parent.getId());
+				}
+				
+				// TODO working to figure this out - it's not working
+				CompleteEntry check = template.queryForObject("select id, latin_name, parent_id " +
+						" from species where id = ?", this, one.getId());
+				logger.debug(">assignParentIdsByParentLatinName.check." 
+						+ one.getId() + "." + one.getLatinName() + " > " + parent.getId() + " // "
+						+ check.getId() + "." + check.getLatinName() + " > " + check.getParentId()
+						);
 			}
 		}
 		

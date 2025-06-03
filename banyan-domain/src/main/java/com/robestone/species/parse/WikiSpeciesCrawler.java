@@ -29,8 +29,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		int distance = 2;
 		//*
 		args = new String[] {
-				"Testudo kleinmanni"
-				//"Adnaviria", "Duplodnaviria", "Monodnaviria", "Riboviria", "Ribozyviria", "Varidnaviria"
+				"Cimex lectularius"
 		};
 		crawlAllStoredLinks = false;
 		//*/

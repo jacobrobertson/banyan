@@ -1881,11 +1881,16 @@ function buildRemoteIndexEntry(data, callback) {
 	}
 	if (data.local) {
 		var map = new Map(Object.entries(data.local));
-		map.forEach((values, localKey) => {
-			if (values && values.length > 0) {
-				// only add locals if the array has values
-				values.forEach(value => { value.label = value.name; });
-				dbLocalSearchIndex[localKey] = values;
+		map.forEach((ids, localKey) => {
+			// only add locals if the array has values
+			if (ids && ids.length > 0) {
+				var entries = [];
+				ids.forEach(id => {
+					var entry = data.entries[id];
+					entry.id = id;
+					entries.push(entry);
+				});
+				dbLocalSearchIndex[localKey] = entries;
 			} 
 		});
 	}

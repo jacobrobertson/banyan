@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -22,8 +23,8 @@ import com.robestone.util.html.EntityMapper;
 public class SearchIndexBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		new SearchIndexBuilder(5, 3, 6, true).run();
-
+//		new SearchIndexBuilder(5, 3, 4, false).run();
+		new SearchIndexBuilder().run();
 	}
 
 	private int topMatchesMax;
@@ -234,27 +235,26 @@ public class SearchIndexBuilder extends AbstractWorker {
 	}
 	
 	private boolean buildKey(KeyEntry key) {
-		
-		
-//		System.out.println("buildKey > " + key.key);
+		if (key.key.equals("ANTS")) {
+			System.out.println("buildKey > " + key.key);
+		}
 		
 		Set<CandidateEntry> intersection = createIntersection(key);
 		
 		for (CandidateEntry candidate : intersection) {
 			for (CandidateName name : candidate.names) {
 				int score = score(name, key.key);
-				if (score > 0 && (score >= key.topScore || key.topMatches.size() <= topMatchesMax)) {
+				if (score > 0 && (score > key.topScore || key.topMatches.size() <= topMatchesMax)) {
 					CandidateEntry copy = candidate.copy(score, name.prettyName);
-					key.topScore = score;
+					if (score > key.topScore) {
+						key.topScore = score;
+					}
 					key.topMatches.add(copy);
-					
-					// TODO this isn't accounting for two species with the same "non-boring" name
-					// -- maybe I also need to stop looking at synthetic common names - just the original and the latin
+					Collections.sort(key.topMatches);
 					if (key.topMatches.size() > topMatchesMax) {
-						Collections.sort(key.topMatches);
 						key.topMatches.remove(topMatchesMax);
 					}
-					
+					// break now - we don't want the id in the list twice
 					break;
 				}
 			}
@@ -297,27 +297,45 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private int score(CandidateName name, String key) {
 		int score = 0;
 		if (name.searchName.equals(key)) {
-			score = 10000;
-		} else {
-			if (name.searchName.startsWith(key)) {
-				score = 5000;
-			} else if (name.searchName.contains(key)) {
-				score = 1000;
+			// in this case we have an exact match, these are absolutely the highest
+			if (name.isLatin) {
+				score = 10_000_000;
+			} else {
+				score = 20_000_000;
 			}
-			if (score > 0) {
-				score += ((float) key.length() / (float) name.searchName.length()) * 100;
+		} else if (name.searchName.startsWith(key)) {
+			if (name.isLatin) {
+				score = 1_000_000;
+			} else {
+				score = 2_000_000;
+			}
+		} else if (containsKeyAsName(name.searchName, key)) {
+			if (name.isLatin) {
+				score = 100_000;
+			} else {
+				score = 200_000;
+			}
+		} else if (name.searchName.contains(key)) {
+			if (name.isLatin) {
+				score = 10_000;
+			} else {
+				score = 20_000;
 			}
 		}
-		
-		if (!name.isLatin) {
-			// strongly prefer non-latin
-			score += 500;
-		}
-		if (name.image) {
-			score += 100;
+
+		// give a boost based on how short the name is it's matching
+		if (score > 0) {
+			score += ((float) key.length() / (float) name.searchName.length()) * 1000;
+			// slight preference if there is an image - this will only help in rare common name cases
+			if (name.image) {
+				score += 10;
+			}
 		}
 		
 		return score;
+	}
+	private boolean containsKeyAsName(String name, String key) {
+		return (" " + name + " ").contains(" " + key + " ");
 	}
 	
 	public CandidateEntry toCandidate(CompleteEntry entry) {
@@ -331,7 +349,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		
 		String common = cleanSearchName(entry.getCommonName());
 		if (common != null) {
-			candidate.addName(common, entry.getCommonName(), true, entry.getImageLink() != null);
+			candidate.addName(common, entry.getCommonName(), false, entry.getImageLink() != null);
 		}
 		
 		return candidate;
@@ -348,7 +366,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			e.printStackTrace();
 		}
 		name = name.toUpperCase();
-		name = StringUtils.removePattern(name, "[^A-Z]");
+		name = StringUtils.replacePattern(name, "[^A-Z]", " ");
 		return name;
 	}
 	private List<CandidateEntry> toCandidates(List<CompleteEntry> entries) {
@@ -401,7 +419,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		int count = 1;
 		for (String localKey : localKeyList) {
 			List<CandidateEntry> keysLocals = localKeys.get(localKey);
-			appendLocalEntries(localKey, keysLocals, buf);
+			appendLocalIds(localKey, keysLocals, buf);
 			if (count != localKeyList.size()) {
 				buf.append(", ");
 			}
@@ -422,30 +440,41 @@ public class SearchIndexBuilder extends AbstractWorker {
 			}
 			count++;
 		}
-		buf.append("]\n");
+		buf.append("],\n");
+		
+		buf.append("\t\"entries\" : {\n");
+		// output unique candidates
+		Set<Integer> foundIds = new HashSet<Integer>();
+		for (String localKey : localKeyList) {
+			List<CandidateEntry> some = localKeys.get(localKey);
+			for (CandidateEntry entry : some) {
+				if (foundIds.add(entry.entry.getId())) {
+					appendEntry(buf, entry);
+					buf.append(",\n");
+				}
+			}
+			count++;
+		}
+		if (!foundIds.isEmpty()) {
+			buf.setLength(buf.length() - 2);
+		}
+		buf.append("\n\t}\n");
+		
 		
 		buf.append("}");
 		return buf.toString();
 	}
 
-	private void appendLocalEntries(String key, List<CandidateEntry> localKeys, StringBuilder buf) {
+	private void appendLocalIds(String key, List<CandidateEntry> localKeys, StringBuilder buf) {
 		buf.append("\t\t\"");
 		buf.append(key.toLowerCase());
-		buf.append("\" : [\n");
+		buf.append("\" : ");
 
-		int count = 1;
-		for (CandidateEntry c : localKeys) {
-			appendMatchedName(buf, c);
-			if (count != localKeys.size()) {
-				buf.append(",");
-			}
-			buf.append("\n");
-			count++;
-		}
-		
-		buf.append("\t\t]");
+		List<Integer> ids = localKeys.stream().map(ce -> ce.entry.getId()).collect(Collectors.toList());
+		// this is implementation dependent, but I think it's safe?
+		buf.append(ids);
 	}
-	
+
 	private void countLocals(KeyEntry key) {
 		key.allLocalsCount = key.topMatches.size();
 		for (KeyEntry child : key.children) {
@@ -469,14 +498,14 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 	}
 	
-	private void appendMatchedName(StringBuilder buf, CandidateEntry c) {
-		buf.append("\t\t\t {\"id\" : ");
+	private void appendEntry(StringBuilder buf, CandidateEntry c) {
+		buf.append("\t\t\"");
 		buf.append(c.entry.getId());
-		buf.append(", \"ids\" : \"");
+		buf.append("\" : { \"ids\" : \"");
 		String ids = EntryUtilities.getCrunchedIdsForAncestors(c.entry);
 		buf.append(ids); // crunched ids all the way up
-		buf.append("\", \"name\" : \"");
-		buf.append(JsonParser.escape(c.matchedName));
+//		buf.append("\", \"name\" : \"");
+//		buf.append(JsonParser.escape(c.matchedName));
 		buf.append("\", \"latin\" : \"");
 		buf.append(JsonParser.escape(c.entry.getLatinName()));
 		buf.append("\"");
@@ -487,6 +516,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		buf.append(" }");
 	}
+
 	
 	private void saveKeyFile(KeyEntry key) throws Exception {
 

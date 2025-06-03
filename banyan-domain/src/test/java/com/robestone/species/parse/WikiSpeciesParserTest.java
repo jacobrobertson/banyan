@@ -361,6 +361,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 //	public void testPterourus() throws IOException {
 //		doTest("Pterourus", null, "Papilio", null, Rank.Subgenus);
 //	}
+	public void testBicuspidella() throws IOException {
+		doTest("Bicuspidella", null, "Chlorophyceae", null, Rank.Genus);
+				
+	}
 	public void testCohortDictyoptera() throws IOException {
 		doTest("Cohort Dictyoptera", null, "Polyneoptera", "thumb/3/31/Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg/220px-Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg", Rank.Cohors);
 	}

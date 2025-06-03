@@ -11,7 +11,7 @@ public class AuthorityUtilities {
 	private static Pattern[] authTypes = getAuthTypes();
 	public static Pattern[] getAuthTypes() {
 		String[] authTypes = {
-				"([A-Za-z]+_)?Taxon_Authorities", "Repositories", "Sources",
+				"([A-Za-z]+_)?Taxon[_ ][Aa]uthorities", "Repositories", "Sources",
 //				"Entomologists", "Botanists", "Lichenologists",	"Palaeontologists", "Paleobotanists", "Ichthyologists",
 				"[A-Za-z_]+ists",
 				"ISSN"};

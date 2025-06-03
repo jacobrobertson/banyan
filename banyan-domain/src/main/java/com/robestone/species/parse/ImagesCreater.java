@@ -38,8 +38,13 @@ public class ImagesCreater extends AbstractWorker {
 
 	public static void main(String[] args) throws IOException {
 		
-		new ImagesCreater().
-		downloadOne("Chordata Craniata", 1, 1, false, false);
+		new ImagesCreater(true).downloadAll(true, false);
+		
+//		new ImagesCreater().removeBlackListedImages();
+		
+		
+//		new ImagesCreater().
+//		downloadOne("Chordata Craniata", 1, 1, false, false);
 //		downloadAll(true, false);
 
 /*		
@@ -59,6 +64,23 @@ public class ImagesCreater extends AbstractWorker {
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
 	private boolean forceMeasuring = false;
+	private boolean skipAlternativeDownloadUrls = false;
+	
+	// These are being blocked by mediawiki commons - I get 429 for any thumb even if there is a "standard thumb" already generated
+	private static String[] BLACKLIST = {
+			"6/6c/Prosopis_nigra_2c.JPG", 
+			"a/ae/Hoya_benitotanii_2011_stamp_of_the_Philippines.jpg", "b/b9/Osedax_rubiplumus.jpg"
+	};
+	
+	public ImagesCreater() {
+	}
+	public ImagesCreater(boolean skipAlternativeDownloadUrls) {
+		this.skipAlternativeDownloadUrls = skipAlternativeDownloadUrls;
+	}
+
+	public void removeBlackListedImages() {
+		speciesService.udpateBlacklistedImages(BLACKLIST);
+	}
 	
 	public void downloadAll(boolean onlyNew, boolean onlyTiny) throws IOException {
 		System.out.println(">images.downloadAll");
@@ -202,6 +224,9 @@ public class ImagesCreater extends AbstractWorker {
 				okay = okay || doDownloadWithAlternatives(dbLink, width, outFilePath, type, ext, key, true);
 				if (okay) {
 					return true;
+				}
+				if (skipAlternativeDownloadUrls) {
+					return false;
 				}
 			}
 		}

@@ -26,9 +26,10 @@ public class MiscWorker extends AbstractWorker {
 //		crawlEntriesWithCommonNameAndNoImage();
 //		research();
 //		runM
-		run();
+//		run();
 //		testGigantopithecus
 //		run2
+		speciesService.fixParents();
 	}
 	
 	

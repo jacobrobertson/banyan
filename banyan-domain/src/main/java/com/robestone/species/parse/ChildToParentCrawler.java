@@ -16,9 +16,10 @@ public class ChildToParentCrawler extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 		new ChildToParentCrawler().
-		crawlAllParents();
+//		fixChildrenWithWrongParentId();
+//		crawlAllParents();
 //		removeBrokenLinksToParentId();
-		//showChildAncestry("Animalia");
+		showChildAncestry("Amphibia");
 	}
 	
 	public void showChildAncestry(String child) {
@@ -56,12 +57,47 @@ public class ChildToParentCrawler extends AbstractWorker {
 	}
 	
 	/**
+	 * This is caused by a corrupted DB - should not need to be called ever.
+	 */
+	public void fixChildrenWithWrongParentId() throws Exception {
+		Collection<CompleteEntry> allEntries = speciesService.findEntriesWithBasicParentInfo();
+		System.out.println("fixChildrenWithWrongParentId." + allEntries.size());
+		
+		Map<String, CompleteEntry> mapByLatinName = new HashMap<String, CompleteEntry>();
+		allEntries.forEach(e -> mapByLatinName.put(e.getLatinName(), e));
+		
+		for (CompleteEntry child: allEntries) {
+			if (child.getParentLatinName() == null) {
+				// this isn't the problem we're solving here
+				continue;
+			}
+			CompleteEntry parent = mapByLatinName.get(child.getParentLatinName());
+			if (parent == null) {
+				// this isn't the problem we're solving here
+				continue;
+			}
+//			System.out.println("fixChildrenWithWrongParentId." + child.getLatinName() + "." + child.getId());
+			if (!parent.getId().equals(child.getParentId())) {
+				System.out.printf(
+						"fixChildrenWithWrongParentId.child=%s(%s)/%s(%s) vs parent=%s(%s)\n",
+						child.getLatinName(), child.getId(),
+						child.getParentLatinName(), child.getParentId(),
+						parent.getLatinName(), parent.getId()
+						);
+				child.setParentId(parent.getId());
+				speciesService.updateParentId(child);
+			}
+		}
+	}
+	
+	
+	/**
 	 * Find all children with no parent Id and try and crawl all those.
 	 * @throws Exception 
 	 */
 	public void crawlAllParents() throws Exception {
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
-		crawler.setForceNewDownloadForCache(true);
+		// crawler.setForceNewDownloadForCache(true);
 		
 //		Collection<String> names = speciesService.findAllUnmatchedParentNames();
 		Collection<CompleteEntry> names = speciesService.findEntriesWithInvalidParent();

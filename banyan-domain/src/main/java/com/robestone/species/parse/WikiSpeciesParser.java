@@ -23,7 +23,10 @@ public class WikiSpeciesParser {
 	private static Pattern extinctPattern = Pattern.compile(
 			toDag(":([\\s@DAG]*)?(?:<i>|<b>)*([\\s@DAG]*)(?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)"));
 	
-	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?\\s*(.*?)\\s*(?:</div>|<br />)");
+	/*
+	 * <span lang="en"><b>English:</b>&nbsp;Bed bug</span>
+	 */
+	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?(?:\\s|&nbsp;)*(.*?)\\s*(?:</div>|<br />|</span>)");
 	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");
 //	private Pattern depictedPattern = Pattern.compile("<div class=\"thumbcaption\">\\s*<div class=\"magnify\">\\s*<a href=\"/wiki/File:.*?\" class=\"internal\" title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<i><a href=\"/wiki/.*?\" title=\"(.*?)\">");
 	private Pattern depictedPattern = Pattern.compile("title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<a href=\"/w.*?/.*?\" (?:class=\".*?\"\\s*)?title=\".*?\">(.*?)<");
@@ -691,7 +694,7 @@ public class WikiSpeciesParser {
 	 * --- but I can ignore the <i> because that's already been cleaned
 	 */
 	private String removeEmptyRanksPattern = getRanksPatternPart(false) + 
-			"\\s*:\\s*(\\-|none|not divided|[Uu]nassigned|Unidentata[a-zA-Z ]*)?\\s*(?:<br\\s*/>|</p>)";
+			"\\s*:\\s*(\\-|none|not divided|[Ii]ncertae [Ss]edis|[Uu]nassigned|Unidentata[a-zA-Z ]*)?\\s*(?:<br\\s*/>|</p>)";
 	private String preProcessEmptyRanks(String p) {
 		p = p.replaceAll(removeEmptyRanksPattern, "");
 		return p;

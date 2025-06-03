@@ -87,11 +87,14 @@ public class InterestingSubspeciesWorker extends AbstractWorker {
 				entries.add(entry);
 				pass++;
 			}
-			logger.debug("assignInterestingSubspecies.pass." + pass);
+			logger.debug("assignInterestingSubspecies.pass." + pass + "." + entry.getLatinName());
 			logger.debug("assignInterestingSubspecies.entries." + entries.size());
 			tries++;
 			if (tries > 20) {
-				throw new RuntimeException();
+				logger.info("assignInterestingSubspecies.BAD." + pass + "." + entry.getLatinName());
+//				throw new RuntimeException();
+				// TODO - this broke at some point after the DB got corrupted, but I don't know how this works and I don't want to deal with it right now
+				break;
 			}
 		}
 		boolean assignIds = true;
