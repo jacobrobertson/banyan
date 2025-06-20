@@ -28,9 +28,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlOne = true; // to just "crawl" one only
 		int distance = 2;
 		//*
-		args = new String[] {
-				"Cimex lectularius"
-		};
+		args =  
+//		 new String[] { "Pinnipediformes" };
+		StringUtils.split(CRAWL_LIST, "\n\r"); // paste the RTRIM(latin_name) results from any search
+		
 		crawlAllStoredLinks = false;
 		//*/
 		
@@ -305,10 +306,10 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		} else {
 			System.out.print("--");
 		}
-		System.out.print("/");
+		System.out.print(" | ");
 		System.out.print(entry.getLatinName());
 		if (entry.getImageLink() != null) {
-			System.out.print("/");
+			System.out.print(" | ");
 			System.out.print(entry.getImageLink());
 		}
 		System.out.println();
@@ -349,4 +350,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public void setForceNewDownloadForCache(boolean forceNewDownloadForCache) {
 		this.forceNewDownloadForCache = forceNewDownloadForCache;
 	}
+	
+	public static final String CRAWL_LIST = 
+  "Pinnipedia";
 }

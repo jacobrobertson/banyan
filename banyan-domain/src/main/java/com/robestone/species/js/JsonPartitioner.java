@@ -17,16 +17,21 @@ public class JsonPartitioner {
 	private String pathChars = "0123456789abcdefghijklmnopqrstuvwxyz";
 
 	public void partition(Node node) {
+		System.out.println(">JsonPartitioner.assignParents");
 		assignParents(node);
+		System.out.println(">JsonPartitioner.assignSinglePartitions");
 		assignSinglePartitions(node);
+		System.out.println(">JsonPartitioner.analyze");
 		new Stats().analyze(node).output();
-		System.out.println("------------------");
+		System.out.println(">JsonPartitioner.mergeMiscPartitions");
 		mergeMiscPartitions(node);
 		new Stats().analyze(node).output();
-		System.out.println("------------------");
+		System.out.println(">JsonPartitioner.assignPaths");
 		node.setFileKey(getPathToken(0));
 		assignPaths(node);
+		System.out.println(">JsonPartitioner.testAllNodesCanFindTheirPartition");
 		testAllNodesCanFindTheirPartition(node);
+		System.out.println("<JsonPartitioner");
 	}
 	private void assignPaths(Node node) {
 		String pathPart = node.getFileKey();

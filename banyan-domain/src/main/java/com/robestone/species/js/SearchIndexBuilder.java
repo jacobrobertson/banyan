@@ -37,9 +37,11 @@ public class SearchIndexBuilder extends AbstractWorker {
 	
 	private List<CandidateEntry> candidates;
 	private Map<String, Set<CandidateEntry>> subKeyBuckets = new HashMap<String, Set<CandidateEntry>>();
+
+	private static final int MAX_KEY_LEN = 12;
 	
 	public SearchIndexBuilder() {
-		this(15, 3, 8, true);
+		this(15, 3, MAX_KEY_LEN, true);
 	}
 	public SearchIndexBuilder(int topMatchesMax, int minKeyLen, int maxKeyLen, boolean saveFile) {
 		this(topMatchesMax, minKeyLen, maxKeyLen, saveFile, null);
@@ -106,7 +108,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		this.candidates = candidates;
 	}
 	void createCandidates() throws Exception {
-		final Tree tree = speciesService.findInterestingTreeFromPersistence();
+		final Tree tree = buildTree();
 		List<CompleteEntry> entries = tree.getEntries();
 		List<CandidateEntry> entryNames = toCandidates(entries);
 		
@@ -122,6 +124,27 @@ public class SearchIndexBuilder extends AbstractWorker {
 		System.out.println("iterateOverKeys.found." + entryNames.size());
 		this.candidates = entryNames;
 	}
+	/**
+	 * The whole purpose of this method is to ensure the search index has the exact same entries as the partition
+	 */
+	private Tree buildTree() {
+		Node nroot = JsonBuilder.buildTree(speciesService);
+		
+		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
+		CompleteEntry root = buildTree(nroot, map);
+
+		Tree tree = new Tree(root, map);
+		return tree;
+	}
+	private CompleteEntry buildTree(Node node, Map<Integer, CompleteEntry> map) {
+		CompleteEntry entry = speciesService.findEntry(node.getId());
+		map.put(entry.getId(), entry);
+		for (Node child : node.getChildren()) {
+			buildTree(child, map);
+		}
+		return entry;
+	}
+
 	void addParents(CandidateEntry c, Tree tree, Map<Integer, CandidateEntry> ids) {
 		Integer pid = c.entry.getParentId();
 		if (pid != null && !ids.containsKey(pid)) {

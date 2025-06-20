@@ -17,8 +17,11 @@ body {height:90%;background: #e8f3db;}
 .SpeciesTree {height: 99%;}
 .Crumb {color: #c82; }
 
-.NodeTable { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
-.NodeTable td { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}
+.NodeTable { 
+	margin-top: .5em;
+	margin-bottom: .1em;
+}
+/*.NodeTable td { margin: 0px; padding: 0px; border-collapse: collapse; border: 0px;}*/
 
 #preview {
 	position:absolute;

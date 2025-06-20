@@ -60,7 +60,6 @@ public class Cache {
 		Image image = getImage(entry.getId());
 		if (image != null && entry.getImageLink() != null) {
 			image.setLink(entry.getImageLink());
-			image.setLocalNameFromLatinName(entry.getLatinName());
 		} else {
 			// see if we have a reference
 			int linkedId = entry.getEntryProperties().linkedImageId;

@@ -326,6 +326,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	public void testPlecoptera() throws IOException {
 		doTest("Plecoptera", "Stonefly", "Plecopterida incertae sedis", null, Rank.Ordo);
 	}
+	public void testPsidium_sect__Apertiflora() throws IOException {
+		doTest("Psidium sect. Apertiflora", null, "Psidium", null, Rank.Sectio);
+	}
 	public void testCossinaCossina() throws IOException {
 		doTest("Cossina Cossina", null, "Cossina", null, Rank.Subsectio);
 	}
@@ -397,6 +400,9 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	public void testTaraMolina() throws IOException {
 		doTest("Tara Molina", null, "Caesalpinieae", null, Rank.Genus);
+	}
+	public void testPinnipedia() throws IOException {
+		doTest("Pinnipedia", "Pinnipeds", "Pinnipediformes", "thumb/b/b1/Pinniped_collage.jpg/250px-Pinniped_collage.jpg", Rank.Cladus);
 	}
 	public void testRetroviridae() throws IOException {
 		doTest("Retroviridae", "Retroviruses", "Group VI: ssRNA(RT)", "thumb/9/97/Phylogeny_of_Retroviruses.svg/350px-Phylogeny_of_Retroviruses.svg.png", Rank.Familia);

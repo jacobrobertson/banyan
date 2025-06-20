@@ -13,6 +13,7 @@ import com.robestone.species.EntryUtilities;
 import com.robestone.species.SpeciesService;
 import com.robestone.species.parse.AbstractWorker;
 import com.robestone.species.parse.ImagesCreater;
+import com.robestone.species.parse.ImagesCreater.ImageInfo;
 
 public class RandomTreeBuilder extends AbstractWorker {
 	
@@ -45,11 +46,12 @@ public class RandomTreeBuilder extends AbstractWorker {
 		if (entry.getImage() == null) {
 			return;
 		}
-		String image = ImagesCreater.getImageFileName(entry);
+		ImageInfo ii = ImagesCreater.toImageInfo(entry);
+		String image = ii.getFilePathRelative();
 		CompleteEntry p = entry.getParent();
 		while (p != null) {
 			if (p.getImage() != null) {
-				String pimage = ImagesCreater.getImageFileName(p);
+				String pimage = ImagesCreater.toImageInfo(p).getFilePathRelative();
 				if (pimage.equals(image)) {
 					p.setPinned(false);
 				}

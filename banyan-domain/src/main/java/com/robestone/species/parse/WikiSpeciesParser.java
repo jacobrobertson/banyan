@@ -25,8 +25,11 @@ public class WikiSpeciesParser {
 	
 	/*
 	 * <span lang="en"><b>English:</b>&nbsp;Bed bug</span>
+	 * 
+	 * This one uses a different way, probably pulling data from other sources through wikidata, etc.
+	 *                 <b>English:</b>&nbsp;Painted tree rat, Painted Tree-rat, Painted Tree Rat<br>
 	 */
-	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?(?:\\s|&nbsp;)*(.*?)\\s*(?:</div>|<br />|</span>)");
+	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?(?:\\s|&nbsp;)*(.*?)\\s*(?:</div>|<br />|</span>|<br>)");
 	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");
 //	private Pattern depictedPattern = Pattern.compile("<div class=\"thumbcaption\">\\s*<div class=\"magnify\">\\s*<a href=\"/wiki/File:.*?\" class=\"internal\" title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<i><a href=\"/wiki/.*?\" title=\"(.*?)\">");
 	private Pattern depictedPattern = Pattern.compile("title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<a href=\"/w.*?/.*?\" (?:class=\".*?\"\\s*)?title=\".*?\">(.*?)<");
@@ -386,6 +389,7 @@ public class WikiSpeciesParser {
 		text = preProcessRedirectSelfLinks(selfLinkName, text);
 		text = preProcessAbbreviations(text);
 		text = preProcessCleanOther(text);
+		text = preProcessSelfLinkInnerMarkup(text);
 		text = getSmallerPage(text);
 		text = getSimplifiedPage(text);
 		text = preProcessEmptyRanks(text);
@@ -568,7 +572,7 @@ public class WikiSpeciesParser {
 //				"(?:<i>|<span class=\"\\p{L}+\">)*\\s*" +
 //				"<a href=\""
 		patternText += (preName + "(" + w + ")" + postName);
-		patternText += "[^:]*";
+		patternText += "[^:]*?";
 //				"title=\"(" + w + ")\"(?: class=\"mw-redirect\")?>" +
 //				"(?:<i>|<b>|\\s)*" +
 //				"(" + w + ")" +
@@ -579,7 +583,7 @@ public class WikiSpeciesParser {
 		patternText += ":\\s*Unassigned<br\\s*/>\\s*)?";
 		patternText += childRank;
 		patternText += "(:|\\s)+";
-		patternText += "[^:]*";
+		patternText += "(?:[^:]*>\\s*)?";
 		//"(<.*?>)*\\s*('\\[\\?)*\\s*" +
 		patternText += childLatin;
 		Pattern parentPattern = Pattern.compile(patternText);
@@ -623,6 +627,8 @@ public class WikiSpeciesParser {
 			String imageUpper = imageLink.toUpperCase();
 			if (imageLink.indexOf("-logo.") > 0) {
 				continue;
+			} else if (imageLink.indexOf("Edit-clear.svg") > 0) {
+				continue;
 			} else if (imageLink.indexOf("Achtung.svg") > 0) {
 				continue;
 			} else if (imageLink.indexOf("Disambig") > 0) {
@@ -649,8 +655,9 @@ public class WikiSpeciesParser {
 			} else if (
 					imageUpper.endsWith(".OGV")
 					|| imageUpper.endsWith(".OGG")
+//					|| imageUpper.endsWith(".PDF") // i can extract this probably
 					) {
-				// video or sound
+				// complex files or video or sound
 				continue;
 			} else if (imageUpper.endsWith(".SVG")) {
 				// not sure how many of these there are, and I see that 
@@ -763,9 +770,14 @@ public class WikiSpeciesParser {
 	 * <i><strong class="selflink">L.&#160; tityrus</strong></i><br />
 	 */
 	private static final Pattern preprocessAbbreviationsPattern = Pattern.compile("<abbr title=\".*?\">(.*?)</abbr>");
+
 	private static String preProcessAbbreviations(String page) {
+		return preProcessSimplePattern(preprocessAbbreviationsPattern, page);
+	}
+	
+	private static String preProcessSimplePattern(Pattern pattern, String page) {
 		String fixedPage = page;
-		Matcher m = preprocessAbbreviationsPattern.matcher(page);
+		Matcher m = pattern.matcher(page);
 		while (m.find()) {
 			String toReplace = m.group();
 			String replaceWith = m.group(1);
@@ -773,6 +785,26 @@ public class WikiSpeciesParser {
 		}
 		return fixedPage;
 	}
+	/**
+	 * Sectio: <a class="mw-selflink selflink"><i>Psidium <span style="font-style:normal;">sect.</span> Apertiflora</i></a><br>
+	 * Varietas: <a class="mw-selflink selflink"><i>Acampe praemorsa <span style="font-style:normal;">var.</span> longepedunculata</i></a> 
+	 * Forma: <a class="mw-selflink selflink"><i>Hypericum hyssopifolium <span style="font-style:normal;">f.</span> hyssopifolium</i></a>
+	 * 
+	 * not sure about this one - need more testing
+	 * Subgenus: <b><i>Jatropha</i> subg. <i>Jatropha</i></b> <br>
+	 * Sectio: <b> <i>Silene</i> sect. <i>Elisanthe</i> </b> <br>
+	 * Sectio. <a class="mw-selflink selflink"><i>T.</i> sect. <i>Neomarica</i></a> <br>
+	 * 
+	 * Another pattern
+	 */
+	private static final Pattern preProcessSelfLinkInnerSpans = Pattern.compile("<span style=\"font-style:normal;\">(sect\\.|subg\\.|var\\.|f\\.)</span>");
+//	private static final Pattern preProcessSelfLinkInnerItalics = Pattern.compile("</i>\\s+(sect\\.|subg\\.)\\s+<i>");
+	private static String preProcessSelfLinkInnerMarkup(String page) {
+		page = preProcessSimplePattern(preProcessSelfLinkInnerSpans, page);
+//		page = preProcessSimplePattern(preProcessSelfLinkInnerItalics, page);
+		return page;
+	}
+	
 	private static String preProcessCleanOther(String page) {
 		String[] others = {
 				"(nomen dubium)", // just clean these out until I have a better strategy

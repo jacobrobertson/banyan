@@ -25,7 +25,7 @@ public class MaintenanceWorker extends AbstractWorker {
 		MaintenanceWorker recent = new MaintenanceWorker();
 
 		recent.maxRecentChangesLinks = 300;
-		recent.maxOldLinks = 10000;
+		recent.maxOldLinks = 1000;
 		
 		boolean doEverything = !true; // when true - overrides all below
 		
@@ -35,7 +35,7 @@ public class MaintenanceWorker extends AbstractWorker {
 		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
-		boolean runPeriodicMaintenance = false;
+		boolean runPeriodicMaintenance = !true;
 		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
@@ -69,6 +69,8 @@ public class MaintenanceWorker extends AbstractWorker {
 			new RedirectWorker().recrawlRedirects();
 		}
 		if (runJs || doEverything) {
+			// JS will break if not all images are downloaded, and this is a pretty fast check if they're already done
+			new ImagesCreater().downloadAll(true, false);
 			new JsonBuilder().runMaintenance();
 			new SearchIndexBuilder().run();
 		}

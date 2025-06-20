@@ -76,7 +76,7 @@ var maxWidthShowMore = 159;
 var digitWidth = 9;
 
 var minSearchKeyLength = 3;
-var maxSearchKeyLength = 6;
+var maxSearchKeyLength = 12;
 var dbLocalSearchIndex = {};
 var dbRemoteSearchIndex = new Set(["@root"]);
 var defaultNoSuggestions = { label: "No results found" };
@@ -1310,7 +1310,7 @@ function renderExamplesTab(data, structure) {
 	$(".exampleQueryLink").click(queryLinkEvent);
 }
 function renderTreeAndRows(h, e) {
-	var table = $("<table id='tree-" + e.id + "'></table>").appendTo(h);
+	var table = $("<table class='NodeTable' id='tree-" + e.id + "'></table>").appendTo(h);
 	var tr = $("<tr></tr>").appendTo(table);
 	var children = e.childrenToShow;
 	if (e.collapsed.length > 0) {

@@ -10,6 +10,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import javax.imageio.ImageIO;
@@ -34,17 +36,22 @@ public class ImagesCreater extends AbstractWorker {
 	private static float sleepAfter429 = SLEEP_AFTER_429;
 	
 	private static final int TINY_LENGTH = 40;
-	public static String LOCAL_STORAGE_DIR = "D:/banyan/banyan-images/";
+	public static final String LOCAL_STORAGE_DIR = "D:/banyan/banyan-images/";
 
-	public static void main(String[] args) throws IOException {
+	private boolean requireAllImagesExistForCheck = false;
+	
+	public static void main(String[] args) throws Exception {
 		
-		new ImagesCreater(true).downloadAll(true, false);
+		ImagesCreater ic = new ImagesCreater();
+		ic.requireAllImagesExistForCheck = true;
+		ic.downloadAll(true, false);
+		
+//		new ImagesCreater().fixOldBadImages();
 		
 //		new ImagesCreater().removeBlackListedImages();
 		
 		
-//		new ImagesCreater().
-//		downloadOne("Chordata Craniata", 1, 1, false, false);
+//		new ImagesCreater().downloadOne("Pezoporus occidentalis", 1, 1, false, false);
 //		downloadAll(true, false);
 
 /*		
@@ -64,7 +71,6 @@ public class ImagesCreater extends AbstractWorker {
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
 	private boolean forceMeasuring = false;
-	private boolean skipAlternativeDownloadUrls = false;
 	
 	// These are being blocked by mediawiki commons - I get 429 for any thumb even if there is a "standard thumb" already generated
 	private static String[] BLACKLIST = {
@@ -73,9 +79,6 @@ public class ImagesCreater extends AbstractWorker {
 	};
 	
 	public ImagesCreater() {
-	}
-	public ImagesCreater(boolean skipAlternativeDownloadUrls) {
-		this.skipAlternativeDownloadUrls = skipAlternativeDownloadUrls;
 	}
 
 	public void removeBlackListedImages() {
@@ -115,10 +118,10 @@ public class ImagesCreater extends AbstractWorker {
 		downloadOne(entry, count, size, onlyNew, onlyTiny);
 	}
 	public void downloadOne(Entry entry, int count, int size, boolean onlyNew, boolean onlyTiny) throws IOException {
+		ImageInfo info = toImageInfo(entry);
+		
 		String latinName = entry.getLatinName();
 		String link = entry.getImageLink();
-		
-		String fileExtension = getExtensionFromLink(link);
 		
 		boolean download;
 		if (onlyNew) {
@@ -130,11 +133,10 @@ public class ImagesCreater extends AbstractWorker {
 		
 		boolean downloaded = false;
 		if (download) {
-			String hashPath = getImagePathHashed(latinName);
-			LogHelper.speciesLogger.info("make thumbs (" + size + "/" + count + ") " + latinName + "(" + hashPath + ") " + link);
+			LogHelper.speciesLogger.info("downloadOne(" + size + "/" + count + "): " + latinName + " (" + info.fileHashDir + ") " + link);
 			// create the thumbs
 			try {
-				downloaded = downloadThumbs(entry, latinName, fileExtension, link, onlyTiny);
+				downloaded = downloadThumbs(info, onlyTiny);
 			} catch (Exception e) {
 				// fails on some images - haven't figured out why yet
 				e.printStackTrace();
@@ -150,20 +152,43 @@ public class ImagesCreater extends AbstractWorker {
 		String fileExtension = link.substring(dotPos + 1);
 		return fileExtension.toLowerCase();
 	}
+	private static Pattern pagePattern = Pattern.compile("/(page[0-9]+-)");
+	private static String getPageTokenFromLink(String link) {
+		// https://upload.wikimedia.org/wikipedia/commons/thumb/f/fc/Flora_Graeca%2C_Volume_9.djvu/page85-161px-Flora_Graeca%2C_Volume_9.djvu.jpg
+		// https://commons.wikimedia.org/wiki/File:Flora_Graeca,_Volume_8.djvu?page=95
+		// should always be the first link, not the second, don't bother with that for now
+		
+		Matcher m = pagePattern.matcher(link);
+		if (m.find()) {
+			return m.group(1);
+		} else {
+			return null;
+		}
+	}
 	
-	private static boolean isThumbDownloaded(Entry entry) {
+	private boolean isThumbDownloaded(Entry entry) {
 		if (entry.getImageLink() == null) {
 			return false;
 		}
-		String path = getImageFilePath(entry, TINY);
-		return new File(path).exists();
+		
+		String[] types;
+		if (requireAllImagesExistForCheck) {
+			types = new String[] {TINY, DETAIL, PREVIEW};
+		} else {
+			types = new String[] {TINY};
+		}
+		for (String type : types) {
+			String path = getImageFilePath(entry, type);
+			boolean exists = new File(path).exists();
+			if (!exists) {
+				return false;
+			}
+		}
+		return true;
 	}
 	public static final String getImageFilePath(Entry e, String type) {
-		return getImageFilePath(e.getImageLink(), e.getLatinName(), type);
-	}
-	public static final String getImageFilePath(String link, String latinName, String type) {
-		String fileExtension = getExtensionFromLink(link);
-		String path = getFilePath(latinName, type, fileExtension);
+		ImageInfo info = toImageInfo(e);
+		String path = info.getFilePath(type);
 		return path;
 	}
 	public static String parseFileName(String link) {
@@ -177,18 +202,124 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		return link;
 	}
-	public static String getImageSourceUrl(Entry entry) {
-		String imageName = getImageFileName(entry);
-		String url = "http://species.wikimedia.org/wiki/File:" + imageName;
-		return url;
-	}
-	public static String getImageFileName(Entry entry) {
+	
+	public static ImageInfo toImageInfo(Entry entry) {
+		ImageInfo info = new ImageInfo();
+		info.entry = entry;
+		info.fileHashDir = getImagePathHashed(entry.getLatinName());
+		
 		String imageLink = parseFileName(entry.getImageLink());
 		int pos = imageLink.lastIndexOf('/');
-		String imageName = imageLink.substring(pos + 1);
-		return imageName;
+		String fileName = imageLink.substring(pos + 1);
+
+		String name = fileName.toUpperCase();
+		
+		if (name.endsWith(".SVG") || name.endsWith(".WEBP") || name.endsWith(".XCF")) {
+			info.urlExtraFileTypeToken = "";
+			info.urlExtraFileExtension = "png";
+		} else if (name.endsWith(".WEBM") || name.endsWith(".OGV")) {
+			// https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Amphileptus.webm/320px--Amphileptus.webm.jpg
+			info.urlExtraFileTypeToken = "";
+			info.urlExtraDash = true;
+			info.urlExtraFileExtension = "jpg";
+		} else if (name.endsWith(".TIF") || name.endsWith(".TIFF")) {
+			info.urlExtraFileTypeToken = "lossy-page1-";
+			info.urlExtraFileExtension = "jpg";
+		} else if (name.endsWith(".PDF") || name.endsWith(".DJVU")) {
+			// https://commons.wikimedia.org/wiki/File:Flora_Graeca,_Volume_8.djvu?page=95
+			// TODO need to get the right page info
+			String page = getPageTokenFromLink(entry.getImageLink());
+			if (page == null) {
+				page = "page1-";
+			}
+			info.urlExtraFileTypeToken = page;
+			info.urlExtraFileExtension = "jpg";
+		} else {
+			info.urlExtraFileTypeToken = "";
+			info.urlExtraFileExtension = null;
+		}
+
+		info.fileExtension = getExtensionFromLink(fileName);
+		
+		info.urlBasePath = parseFileName(entry.getImageLink());
+		
+		return info;
 	}
 	
+	public static class ImageInfo {
+		Entry entry;
+		
+		/**
+		 * For example x.svg -> x.svg.png
+		 */
+		String urlExtraFileExtension;
+
+		/**
+		 * For example x.pdf -> x .. page1 .. x.pdf
+		 */
+		String urlExtraFileTypeToken;
+
+		/**
+		 * 9/99/Parasite140015-fig2_Protoopalina_pingi_%28Opalinidae%29_Microscopy.tif
+		 */
+		String urlBasePath;
+
+		boolean urlExtraDash = false;
+		
+//		String fileName;
+		
+		String fileExtension;
+		
+		String fileHashDir;
+		
+		public String getUrlBasePath() {
+			return urlBasePath;
+		}
+		public String getFilePath(String thumbType) {
+			String iconFileName = LOCAL_STORAGE_DIR + thumbType + "/" +	getFilePathRelative();
+			return iconFileName;
+		}
+		public String getFilePathRelative() {
+			String thumbFileExtension = "." + getFileFinalExtension();
+			String iconFileName = fileHashDir + "/" + entry.getLatinName() + thumbFileExtension;
+			return iconFileName;
+		}
+		
+		String getFileFinalExtension() {
+			if (urlExtraFileExtension != null) {
+				return urlExtraFileExtension;
+			} else {
+				return fileExtension;
+			}
+		}
+		String getThumbUrl(int width) {
+			String prefix = "https://upload.wikimedia.org/wikipedia/commons/";
+			String fileName = urlBasePath;
+			String url = prefix;
+			if (width > 0) {
+				url += "thumb/";
+			}
+			url += fileName;
+			if (width > 0) {
+				url += "/";
+				url += urlExtraFileTypeToken;
+				url += (width + "px-");
+				if (urlExtraDash) {
+					url += "-";
+				}
+				int slash = fileName.lastIndexOf("/");
+				String baseFileName = fileName.substring(slash + 1);
+				String thumbnailName = getThumnailName(baseFileName);
+				url += thumbnailName;
+			}
+			if (urlExtraFileExtension != null) {
+				url += ("." + urlExtraFileExtension);
+			}
+			return url;
+		}
+
+	}
+
 	/**
 	 * For some files, (or file types?)
 	 * we need to use this syntax
@@ -211,31 +342,13 @@ public class ImagesCreater extends AbstractWorker {
 	 *  Another pattern, is to simply place this after the image url - seems to be when the name itself is way too long
 	 *  /90px-thumbnail.jpg
 	 *  https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/xxx.jpg/90px-thumbnail.jpg
+	 *  
+	 *  rules
+  		// x.svg -> x.svg.png
+		// x.tif or x.tiff -> lossy-page1 + jpg
+		// x.pdf or x.webp -> page1 + jpg
+
 	 */
-	private boolean downloadWithAlternatives(String dbLink, int width, String outFilePath, String type) {
-		
-		String[] keys = {null, "page1-", "lossy-page1-"};
-		String[] exts = {null, "jpg", "png"};
-		
-		for (String key: keys) {
-			for (String ext: exts) {
-				boolean okay = false;
-				okay = okay || doDownloadWithAlternatives(dbLink, width, outFilePath, type, ext, key, false);
-				okay = okay || doDownloadWithAlternatives(dbLink, width, outFilePath, type, ext, key, true);
-				if (okay) {
-					return true;
-				}
-				if (skipAlternativeDownloadUrls) {
-					return false;
-				}
-			}
-		}
-		return false;
-	}
-	private boolean doDownloadWithAlternatives(String dbLink, int width, String outFilePath, String type, String extension, String extraKey, boolean doubleDashPixels) {
-		String url = getThumbUrl(dbLink, width, extension, extraKey, doubleDashPixels);
-		return download(url, outFilePath, type);
-	}
 	
 	private static boolean download(String link, String outFilePath, String type) {
 		int tries = 1;
@@ -283,24 +396,24 @@ public class ImagesCreater extends AbstractWorker {
 		return false;
 	}
 	
-	private boolean downloadThumbs(Entry entry, String latinName, String fileExtension, String link, boolean onlyTiny) throws IOException {
+	private boolean downloadThumbs(ImageInfo info, boolean onlyTiny) throws IOException {
 		boolean downloaded = false;
-		File saved = downloadThumb(latinName, TINY, fileExtension, null, TINY_LENGTH, link, false);
+		File saved = downloadThumb(info, TINY, null, TINY_LENGTH, false);
 		if (saved == null) {
 			// in this case, the image was removed
 			return false;
 		}
 		float xratio = getXRatioFromThumb(saved);
 		if (xratio < 1f) {
-			downloadThumb(latinName, TINY, fileExtension, null, 
-					getWidthToDownload(TINY_LENGTH, xratio), link, false);
+			downloadThumb(info, TINY, null, 
+					getWidthToDownload(TINY_LENGTH, xratio), false);
 			downloaded = true;
 		}
 		if (!onlyTiny) {
 			int detailWidth = getWidthToDownload(400, xratio);
-			saved = downloadThumb(latinName, DETAIL, fileExtension, null, detailWidth, link, true);
+			saved = downloadThumb(info, DETAIL, null, detailWidth, true);
 			int previewWidth = getWidthToDownload(250, xratio);
-			downloadThumb(latinName, PREVIEW, fileExtension, saved, previewWidth, link, true);
+			downloadThumb(info, PREVIEW, saved, previewWidth, true);
 			downloaded = true;
 		}
 		return downloaded;
@@ -310,27 +423,23 @@ public class ImagesCreater extends AbstractWorker {
 		
 	}
 	*/
-	private static String getFilePath(String latinName, String thumbType, String fileExtension) {
-		String hashPath = getImagePathHashed(latinName);
-		String iconFileName = 
-			LOCAL_STORAGE_DIR + thumbType + "/" +
-			hashPath + "/" + 
-			latinName + "." + fileExtension;
-		return iconFileName;
-	}
-	private File downloadThumb(String latinName, String thumbType, String fileExtension, 
-			File saved, int width, String link, boolean recoverOnFail) throws IOException {
-		System.out.print(thumbType + "(" + width + ")"  + " > ");
-		String iconFileName = getFilePath(latinName, thumbType, fileExtension);
+	private File downloadThumb(ImageInfo info, String thumbType, 
+			File saved, int width, boolean recoverOnFail) throws IOException {
+		String iconFileName = info.getFilePath(thumbType);
 		File fileToMake = new File(iconFileName);
 		fileToMake.getParentFile().mkdirs();
 
-		boolean okay = downloadWithAlternatives(link, width, iconFileName, fileExtension);
+		String url = info.getThumbUrl(width);
+
+		System.out.println("\t>" + thumbType + "(" + width + ")["  + url +  "] -> " + fileToMake.getPath());
+		
+		String ext = info.getFileFinalExtension();
+		boolean okay = download(url, iconFileName, ext);
 		if (!okay && recoverOnFail) {
 			if (saved == null) {
 				// download un-changed image
-				String url = getThumbUrl(link, -1, null, null, false);
-				okay = download(url, iconFileName, fileExtension);
+				url = info.getThumbUrl(-1);
+				okay = download(url, iconFileName, ext);
 				// if even that one failed, then don't pass the file back
 				if (!okay) {
 					fileToMake = null;
@@ -342,33 +451,6 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		
 		return fileToMake;
-	}
-	private String getThumbUrl(String link, int width, String extraExtension, String extraKey, boolean doubleDashPixels) {
-		String prefix = "https://upload.wikimedia.org/wikipedia/commons/";
-		String fileName = parseFileName(link);
-		String url = prefix;
-		if (width > 0) {
-			url += "thumb/";
-		}
-		url += fileName;
-		if (width > 0) {
-			url += "/";
-			if (extraKey != null) {
-				url += extraKey;
-			}
-			url += (width + "px-");
-			if (doubleDashPixels) {
-				url += "-";
-			}
-			int slash = fileName.lastIndexOf("/");
-			String baseFileName = fileName.substring(slash + 1);
-			String thumbnailName = getThumnailName(baseFileName);
-			url += thumbnailName;
-		}
-		if (extraExtension != null) {
-			url += ("." + extraExtension);
-		}
-		return url;
 	}
 	
 	/**
@@ -387,7 +469,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Aedes_vexans.tif/lossy
 	 */
 	// get this number through testing - can't make it too short or that will fail also
 	private static int MAX_THUMBNAIL_NAME_LEN = 165; 
-	private String getThumnailName(String baseFileName) {
+	private static String getThumnailName(String baseFileName) {
 		
 		// convert base out of URL encoding before checking length
 		String decoded;
@@ -436,4 +518,31 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Aedes_vexans.tif/lossy
 			throw new RuntimeException("File: " + file.getAbsolutePath(), e);
 		}
 	}
+	
+	/**
+	 * Images that got downloaded, but should be re-downloaded
+	 */
+	public void fixOldBadImages() throws Exception {
+		// find all images not in the expected formats
+		File dir = new File(LOCAL_STORAGE_DIR);
+		fixOldBadImages(dir);
+		downloadAll(true, false);
+	}
+	private void fixOldBadImages(File dir) {
+		for (File file : dir.listFiles()) {
+			if (file.isFile()) {
+				String ext = getExtensionFromLink(file.getName()).toUpperCase();
+				if (!(ext.equals("PNG") || ext.equals("GIF") || ext.equals("JPG") || ext.equals("JPEG"))) {
+					System.out.println(file.getPath());
+					file.delete();
+				}
+			}
+		}
+		for (File file : dir.listFiles()) {
+			if (file.isDirectory()) {
+				fixOldBadImages(file);
+			}
+		}
+	}
+	
 }

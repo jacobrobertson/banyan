@@ -1,7 +1,5 @@
 package com.robestone.species;
 
-import com.robestone.species.parse.ImagesCreater;
-
 public class Image {
 
 	private int entryId;
@@ -13,7 +11,6 @@ public class Image {
 	private int detailWidth;
 	private int detailHeight;
 	private String link;
-	private String imagePathPart;
 	
 	public int getEntryId() {
 		return entryId;
@@ -62,13 +59,5 @@ public class Image {
 	}
 	public void setLink(String link) {
 		this.link = link;
-	}
-	public void setLocalNameFromLatinName(String latinName) {
-		int pos = link.lastIndexOf('.');
-		String extension = link.substring(pos + 1).toLowerCase();
-		this.imagePathPart = ImagesCreater.getImagePathHashed(latinName) + "/" + latinName + "." + extension;
-	}
-	public String getImagePathPart() {
-		return imagePathPart;
 	}
 }

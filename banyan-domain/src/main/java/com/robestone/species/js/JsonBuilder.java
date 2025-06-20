@@ -23,8 +23,10 @@ import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
+import com.robestone.species.SpeciesService;
 import com.robestone.species.parse.AbstractWorker;
 import com.robestone.species.parse.ImagesCreater;
+import com.robestone.species.parse.ImagesCreater.ImageInfo;
 
 public class JsonBuilder extends AbstractWorker {
 
@@ -37,9 +39,9 @@ public class JsonBuilder extends AbstractWorker {
 		// or ...
 		
 		// fine-tune what you want to d
-		b.copyAdditionalJsonResources();
-//		b.partitionFromDB();
-		b.buildRandomFiles();
+//		b.copyAdditionalJsonResources();
+		b.partitionFromDB();
+//		b.buildRandomFiles();
 //		b.runExamples();
 	}
 	
@@ -55,9 +57,7 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void rebuildAllJson() throws Exception {
-		System.out.println(">partitionFromDB");
 		partitionFromDB();
-		System.out.println(">runExamples");
 		runExamples();
 		// this is the longest running
 		System.out.println(">buildRandomFiles");
@@ -80,6 +80,8 @@ public class JsonBuilder extends AbstractWorker {
 		groups.add(examplesService.getFamilies());
 		groups.add(examplesService.getOtherFamilies());
 		
+		Map<Integer, Entry> entriesForImages = new HashMap<Integer, Entry>();
+		
 		// need to set the image path
 		for (ExampleGroup eg : groups) {
 			for (Example ex : eg.getExamples()) {
@@ -87,10 +89,11 @@ public class JsonBuilder extends AbstractWorker {
 				CompleteEntry imageEntry = speciesService.findEntryByLatinName(term);
 				imageEntry = speciesService.findEntry(imageEntry.getId());
 				ex.setDepictedImage(imageEntry.getImage());
+				entriesForImages.put(imageEntry.getId(), imageEntry);
 			}
 		}
 		
-		String s = parser.toJsonString(groups);
+		String s = parser.toJsonString(groups, entriesForImages);
 		File file = new File(outputDir + "/e/examples-index.json");
 		FileUtils.writeStringToFile(file, s, Charset.defaultCharset());
 	}
@@ -118,7 +121,8 @@ public class JsonBuilder extends AbstractWorker {
 			try {
 				Collection<CompleteEntry> entries = randomTreeBuilder.buildRandomTree(e.getId());
 				if (entries != null) {
-					List<JsonEntry> jentries = toJsonEntries(entries.toArray(new Entry[entries.size()]));
+					Map<Integer, Entry> imageEntries = getLinkedImageEntries(entries);
+					List<JsonEntry> jentries = toJsonEntries(entries, imageEntries);
 					String fileName = randomTreeBuilder.toRandomFileName(query, e.getId());
 					saveByFolders("r", fileName, jentries);
 				}
@@ -141,43 +145,11 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void partitionFromDB() throws Exception {
-		Node root = buildTree();
+		System.out.println(">partitionFromDB.buildTree");
+		Node root = buildTree(speciesService);
+		System.out.println(">partitionFromDB.partitionAndSave");
 		partitionAndSave(root);
-	}
-	// scans all files in a dir, ignoring "index.json"
-	public void partitionFromFileSystem2() throws Exception {
-		Map<Integer, Node> nodes = new HashMap<Integer, Node>();
-		File dir = new File(outputDir + "-1");
-		loadAllJsonFiles(dir, nodes);
-		Node root = null;
-		
-		for (Integer id : nodes.keySet()) {
-			Node n = nodes.get(id);
-			n.getChildren().clear();
-		}
-		for (Integer id : nodes.keySet()) {
-			Node n = nodes.get(id);
-			Node p = nodes.get(n.getEntry().getParentId());
-			if (p == null) {
-				root = n;
-			} else {
-				n.setParent(p);
-				p.getChildren().add(n);
-			}
-		}
-		
-		partitionAndSave(root);
-	}
-	private void loadAllJsonFiles(File dir, Map<Integer, Node> map) throws Exception {
-		File[] files = dir.listFiles();
-		for (File file : files) {
-			if (file.isDirectory()) {
-				loadAllJsonFiles(file, map);
-			} else if (!"index.json".equals(file.getName())) {
-				Node node = parser.parseFile(file);
-				map.put(node.getId(), node);
-			}
-		}
+		System.out.println("<partitionFromDB");
 	}
 	// recursively starts with one file
 	public void partitionFromFileSystem() throws Exception {
@@ -186,11 +158,14 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	public void partitionAndSave(Node root) throws Exception {
 		
+		System.out.println(">partitionAndSave.partitioner.partition");
 		JsonPartitioner partitioner = new JsonPartitioner();
 		partitioner.partition(root);
 		
+		System.out.println(">partitionAndSave.partitioner.getAndAssignPartitionMap");
 		Map<String, String> pMap = partitioner.getAndAssignPartitionMap(root);
 		
+		System.out.println(">partitionAndSave.outputPartitions");
 		outputPartitions(root);
 		String index = partitioner.getPartitionIndexFile(pMap);
 		String folder = outputDir + "/p/index.json";
@@ -206,7 +181,11 @@ public class JsonBuilder extends AbstractWorker {
 				JsonEntry jentry = pn.getEntry();
 				if (jentry == null) {
 					Entry eentry = speciesService.findEntry(pn.getId());
-					jentry = toJsonEntry(eentry);
+					Entry ientry = null;
+					if (eentry.getImage() != null) {
+						ientry = speciesService.findEntry(eentry.getImage().getEntryId());
+					}
+					jentry = toJsonEntry(eentry, ientry);
 				}
 				entries.add(jentry);
 			}
@@ -217,26 +196,31 @@ public class JsonBuilder extends AbstractWorker {
 		}
 	}
 	
-	private Node buildTree() {
-		return buildNodeRecursively(1, 0);
+	public static Node buildTree(SpeciesService speciesService) {
+		int[] count = {0};
+		return buildNodeRecursively(1, 0, count, speciesService);
 	}
-	private Node buildNodeRecursively(Integer id, int depth) {
+	private static Node buildNodeRecursively(Integer id, int depth, int[] count, SpeciesService speciesService) {
+		count[0]++;
 		Collection<Integer> ids = speciesService.findChildrenIds(id);
 		Node node = new Node(null, id, new ArrayList<>(ids));
 		int descendants = ids.size();
+		if (count[0] % 100 == 0) {
+			System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
+					", children=" + node.getChildIds().size() + ", desc=" + descendants + ",count=" + count[0]);
+		}
 		for (Integer cid : ids) {
-			Node cnode = buildNodeRecursively(cid, depth + 1);
+			Node cnode = buildNodeRecursively(cid, depth + 1, count, speciesService);
 			node.getChildren().add(cnode);
 			cnode.setParent(node);
 			descendants += cnode.getTotalDescendants();
 		}
-//		System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
-//				", children=" + node.getChildIds().size() + ", desc=" + descendants);
 		node.setTotalDescendants(descendants);
 		return node;
 	}
 	
 	public void runExamples() throws Exception {
+		System.out.println(">runExamples");
 		examplesService.crunchIds(false);
 		List<ExampleGroup> egs = examplesService.findExampleGroups();
 		for (ExampleGroup eg : egs) {
@@ -245,17 +229,27 @@ public class JsonBuilder extends AbstractWorker {
 				List<Integer> ids = EntryUtilities.CRUNCHER.toList(cids);
 				Set<Integer> set = new HashSet<>(ids);
 				CompleteEntry root = speciesService.findTreeForNodes(set);
-				Set<CompleteEntry> entries = EntryUtilities.getEntries(root);
-				Entry[] array = new Entry[entries.size()];
-				int index = 0;
-				for (Entry e : entries) {
-					array[index++] = e;
-				}
+				Set<? extends Entry> entries = EntryUtilities.getEntries(root);
+				Map<Integer, Entry> imageEntries = getLinkedImageEntries(entries);
 				// save one "fat" file for the example
-				saveExampleFile(ex.getSimpleTitle(), ex.getPinnedTerms(), array);
+				saveExampleFile(ex.getSimpleTitle(), ex.getPinnedTerms(), imageEntries, entries);
 			}
 		}
 		buildExampleIndexFile();
+		System.out.println("<runExamples");
+	}
+	
+	private Map<Integer, Entry> getLinkedImageEntries(Collection<? extends Entry> entries) {
+		Map<Integer, Entry> entriesForImages = new HashMap<Integer, Entry>();
+
+		for (Entry e : entries) {
+			if (e.getImage() != null) {
+				Entry imageEntry = speciesService.findEntry(e.getImage().getEntryId());
+				entriesForImages.put(imageEntry.getId(), imageEntry);
+			}
+		}
+		
+		return entriesForImages;
 	}
 	
 	/**
@@ -325,10 +319,14 @@ public class JsonBuilder extends AbstractWorker {
 		int i = (int) d;
 		return i;
 	}
-	private void saveExampleFile(String name, Set<String> pinnedTerms, Entry... entries) throws Exception {
+	private void saveExampleFile(String name, Set<String> pinnedTerms, Map<Integer, Entry> linkedImageEntries, Collection<? extends Entry> entries) throws Exception {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
-			JsonEntry je = toJsonEntry(e);
+			Entry imageEntry = null;
+			if (e.getImage() != null) {
+				imageEntry = linkedImageEntries.get(e.getImage().getEntryId());
+			}
+			JsonEntry je = toJsonEntry(e, imageEntry);
 			if (pinnedTerms.contains(e.getLatinName())) {
 				je.setPinned(true); // TODO allow us to not pin all the "terms"
 			}
@@ -358,22 +356,16 @@ public class JsonBuilder extends AbstractWorker {
 		FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
 	}
 	
-	//"6691": { "cname": "Complete Metamorphosis Insects", "parentId": "6692", "alt": "Endopterygota", 
-	//	"img": "15/Endopterygota.jpg", "href": "Complete_Metamorphosis_Insects_Endopterygota_6691", 
-	// "height": 16, "width": 20},
-	public String toJson(Entry... entries) {
-		List<JsonEntry> jentries = toJsonEntries(entries);
-		return parser.toJsonString(jentries);
-	}
-	public List<JsonEntry> toJsonEntries(Entry... entries) {
+	private List<JsonEntry> toJsonEntries(Collection<? extends Entry> entries, Map<Integer, Entry> linkedImageEntries) {
 		List<JsonEntry> jentries = new ArrayList<>();
 		for (Entry e : entries) {
-			JsonEntry je = toJsonEntry(e);
+			Entry i = linkedImageEntries.get(e.getImage().getEntryId());
+			JsonEntry je = toJsonEntry(e, i);
 			jentries.add(je);
 		}
 		return jentries;
 	}
-	public JsonEntry toJsonEntry(Entry e) {
+	private JsonEntry toJsonEntry(Entry e, Entry linkedImageEntry) {
 		JsonEntry je = new JsonEntry();
 		je.setId(e.getId());
 		je.setCnames(getCommonNames(e));
@@ -386,16 +378,25 @@ public class JsonBuilder extends AbstractWorker {
 
 		// TODO research why some of these have one but not the other
 		if (e.getImage() != null && e.getImageLink() != null) {
-			je.setImg(e.getImage().getImagePathPart());
 			je.settHeight(e.getImage().getTinyHeight());
 			je.settWidth(e.getImage().getTinyWidth());
 			je.setpHeight(e.getImage().getPreviewHeight());
 			je.setpWidth(e.getImage().getPreviewWidth());
 			je.setdHeight(e.getImage().getDetailHeight());
 			je.setdWidth(e.getImage().getDetailWidth());
-			je.setWikiSpeciesLink(ImagesCreater.getImageFileName(e));
-			String localImageRelativePath = ImagesCreater.LOCAL_STORAGE_DIR + "/tiny/" + e.getImage().getImagePathPart();
-			String data = createImageDataString(localImageRelativePath);
+
+			
+			Entry imageEntry = e;
+			if (linkedImageEntry != null) {
+				imageEntry = linkedImageEntry;
+			}
+			
+			ImageInfo ii = ImagesCreater.toImageInfo(imageEntry);
+			// "6e/Hippotion rafflesii rafflesii.jpg"
+			je.setImg(ii.getFilePathRelative());
+			je.setWikiSpeciesLink(ii.getUrlBasePath());
+			String localImageFullPath = ii.getFilePath(ImagesCreater.TINY); // ImagesCreater.LOCAL_STORAGE_DIR + "/tiny/" + e.getImage().getImagePathPart();
+			String data = createImageDataString(localImageFullPath);
 			je.setImgData(data);
 		}
 		je.setChildrenIds(new ArrayList<Integer>(getChildrenIds(e)));
@@ -459,26 +460,12 @@ public class JsonBuilder extends AbstractWorker {
 		FileUtils.writeStringToFile(new File(outputDir + subDirAndFileName), buf.toString(), Charset.defaultCharset());
 	}
 	
-	// (504, 504, 5, 'example-searches', 'Caption...', 'Ursidae,Viola arvensis,Viola epipsila,Vulpes', '')
-	public void outputExampleFromCrunchedIds() {
-		String cids = "04u13P2mn2nD5UxkVmWfH";
-		List<Integer> ids = EntryUtilities.CRUNCHER.toList(cids);
-		StringBuilder buf = new StringBuilder();
-		for (Integer id : ids) {
-			if (buf.length() > 0) {
-				buf.append(",");
-			}
-			buf.append(speciesService.findEntry(id).getLatinName());
-		}
-		System.out.println(buf);
-	}
-	
 	/**
 	 * Right now, these "tiny" images are actually much larger than how I'm rendering them.
 	 * I should either get wikicommons to resize them all for me (could download "tiny" and "embedded size") or resize here
 	 */
-	public String createImageDataString(String localImageRelativePath) {
-		File file = new File(localImageRelativePath);
+	public String createImageDataString(String localImagePath) {
+		File file = new File(localImagePath);
 		byte[] bytes;
 		try {
 			bytes = IOUtils.toByteArray(new FileInputStream(file));

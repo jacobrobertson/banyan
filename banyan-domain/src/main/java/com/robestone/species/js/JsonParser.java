@@ -22,9 +22,12 @@ import javax.json.JsonValue;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
+import com.robestone.species.parse.ImagesCreater;
+import com.robestone.species.parse.ImagesCreater.ImageInfo;
 
 // mostly just a very dumb implementation for testing purposes
 public class JsonParser {
@@ -279,7 +282,7 @@ public class JsonParser {
 		return buf.toString();
 	}
 
-	public String toJsonString(List<ExampleGroup> groups) {
+	public String toJsonString(List<ExampleGroup> groups, Map<Integer, Entry> entriesForImages) {
 		StringBuilder buf = new StringBuilder();
 		buf.append("{");
 		appendKey(buf, "groups");
@@ -307,7 +310,10 @@ public class JsonParser {
 				buf.append("\n{");
 				append(buf, false, "file", ex.getSimpleTitle());
 				append(buf, true, "caption", ex.getCaption());
-				append(buf, true, "image", ex.getDepictedImage().getImagePathPart());
+				// "6e/Hippotion rafflesii rafflesii.jpg"
+				Entry e = entriesForImages.get(ex.getDepictedImage().getEntryId());
+				ImageInfo ii = ImagesCreater.toImageInfo(e);
+				append(buf, true, "image", ii.getFilePathRelative());
 				append(buf, true, "width", ex.getDepictedImage().getPreviewWidth());
 				append(buf, true, "height", ex.getDepictedImage().getPreviewHeight());
 				buf.append("}");
