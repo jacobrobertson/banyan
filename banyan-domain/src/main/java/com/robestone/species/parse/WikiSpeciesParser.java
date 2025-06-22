@@ -28,9 +28,13 @@ public class WikiSpeciesParser {
 	 * 
 	 * This one uses a different way, probably pulling data from other sources through wikidata, etc.
 	 *                 <b>English:</b>&nbsp;Painted tree rat, Painted Tree-rat, Painted Tree Rat<br>
+	 *                 <span lang="en"><b>English:</b>&nbsp;West&nbsp;Usambara&nbsp;Two-horned&nbsp;Chameleon</span>
+	 *                 <span lang="en"><b>English:</b>&nbsp;Whip-lash Squid</span>
 	 */
-	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?(?:\\s|&nbsp;)*(.*?)\\s*(?:</div>|<br />|</span>|<br>)");
-	private Pattern commonNamePattern2 = Pattern.compile("<li>en:\\s*(.*?)</li>");
+	private String commonNameNamePartPattern = "(&nbsp;|[^<]+)+";
+	private Pattern commonNamePattern = Pattern.compile("<b>English:</b>(?:</span>)?" + commonNameNamePartPattern + "<");
+	private Pattern commonNamePattern2 = Pattern.compile("<li>en:" + commonNameNamePartPattern + "<");
+	
 //	private Pattern depictedPattern = Pattern.compile("<div class=\"thumbcaption\">\\s*<div class=\"magnify\">\\s*<a href=\"/wiki/File:.*?\" class=\"internal\" title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<i><a href=\"/wiki/.*?\" title=\"(.*?)\">");
 	private Pattern depictedPattern = Pattern.compile("title=\"Enlarge\">\\s*<img src=\".*?\" width=\".*?\" height=\".*?\" alt=\"\" /></a></div>\\s*<a href=\"/w.*?/.*?\" (?:class=\".*?\"\\s*)?title=\".*?\">(.*?)<");
 //	                                                                                                                                                <a href="/w/index.php?title=Onniella&amp;action=edit&amp;redlink=1" class="new" title="Onniella (page does not exist)">Onniella</a></i></div>
@@ -424,7 +428,7 @@ public class WikiSpeciesParser {
 			commonName = VernacularCrawler.getSidebar(latinName, fullText);
 		}
 		if (commonName != null) {
-			commonName = removeExtraFromCommonName(commonName);
+			commonName = cleanCommonNameHtml(commonName);
 			commonName = EntryUtilities.fixCommonName(commonName);
 		}
 		
@@ -448,12 +452,15 @@ public class WikiSpeciesParser {
 		
 		return results;
 	}
-	private String removeExtraFromCommonName(String commonName) {
+	private String cleanCommonNameHtml(String commonName) {
 		int pos = commonName.indexOf('[');
-		if (pos < 0) {
-			return commonName;
+		if (pos > 0) {
+			commonName = commonName.substring(0, pos);
 		}
-		return commonName.substring(0, pos);
+		// not positive why I need this, but I've been having parse failures pop up on the common name for this
+		commonName = StringUtils.replace(commonName, "&nbsp;", " ");
+		commonName = commonName.trim();
+		return commonName;
 	}
 	public CompleteEntry getParent(String text, String latinName, String rank) {
 //		text = getRankSection(text);
@@ -604,6 +611,7 @@ public class WikiSpeciesParser {
 	public static String getGroup(Pattern pattern, String source, int index) {
 		Matcher matcher = pattern.matcher(source);
 		if (matcher.find()) {
+//			System.out.println(matcher.group());
 			return StringUtils.trimToNull(new String(matcher.group(index))); // memory leak fix?
 		}
 		return null;
@@ -616,6 +624,10 @@ public class WikiSpeciesParser {
 		}
 		return false;
 	}
+	private String[] ICON_NAMES = {
+			"Under_construction", "-logo.", "Edit-clear.svg", "Achtung.svg", "Disambig", "Help-", "Merge-", "_important.", "Keep_tidy", "_apps_",
+			"-logo-", "Status_iucn", "Question_mark"
+	};
 	private String getImage(String page) {
 		Matcher matcher = imageLinkPattern.matcher(page);
 		while (matcher.find()) {
@@ -625,32 +637,22 @@ public class WikiSpeciesParser {
 			}
 			String imageLink = matcher.group(1);
 			String imageUpper = imageLink.toUpperCase();
-			if (imageLink.indexOf("-logo.") > 0) {
+			
+			boolean iconFound = false;
+			for (String icon : ICON_NAMES) {
+				if (imageLink.indexOf(icon) >= 0) {
+					iconFound = true;
+					break;
+				}
+			}
+			if (iconFound) {
 				continue;
-			} else if (imageLink.indexOf("Edit-clear.svg") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Achtung.svg") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Disambig") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Help-") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Merge-") > 0) {
-				continue;
-			} else if (imageLink.indexOf("_important.") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Keep_tidy") > 0) {
-				continue;
-			} else if (imageLink.indexOf("_apps_") > 0) {
-				continue;
-			} else if (imageLink.indexOf("&quot;") > 0) {
+			}
+			
+			if (imageLink.indexOf("&quot;") > 0) {
 				// happens when there is a video with embedded controls
 				continue;
 			} else if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
-				continue;
-			} else if (imageLink.indexOf("Status_iucn") >= 0) {
-				continue;
-			} else if (imageLink.indexOf("-logo-") >= 0) {
 				continue;
 			} else if (
 					imageUpper.endsWith(".OGV")
@@ -665,17 +667,14 @@ public class WikiSpeciesParser {
 				// and this might be the only way to stop them.
 				continue;
 			} else if (imageUpper.endsWith(".SVG.PNG") && 
-					(imageUpper.contains("LOGO_") || imageUpper.contains("-ALT-") || imageUpper.contains("LOCK-"))
+					// TODO should have "_logo." also
+					(imageUpper.contains("_LOGO_") || imageUpper.contains("-ALT-") || imageUpper.contains("LOCK-"))
 				) {
 				// Closed_Access_logo_alternative.svg/11px-Closed_Access_logo_alternative.svg.png
 				// Lock-gray-alt-2.svg.png
 				// Lock-red-broken.svg.png
 				// - this is a new one popping up, with a few alternatives
 				continue;
-//			} else if (imageLink.toUpperCase().endsWith(".GIF")) {
-//				// TODO might change this later - but there are thumbnail issues
-//				// with gifs, and technically wikimedia forbids gifs
-//				continue;
 			} else if (imageLink.contains("x, ")) {
 				// indicates it is a "srcset" of more than one image
 				continue;

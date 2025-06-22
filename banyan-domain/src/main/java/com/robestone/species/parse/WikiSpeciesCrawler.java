@@ -31,8 +31,6 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		args =  
 //		 new String[] { "Pinnipediformes" };
 		StringUtils.split(CRAWL_LIST, "\n\r"); // paste the RTRIM(latin_name) results from any search
-		
-		crawlAllStoredLinks = false;
 		//*/
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
@@ -352,5 +350,5 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public static final String CRAWL_LIST = 
-  "Pinnipedia";
+  "Neofiber alleni";
 }

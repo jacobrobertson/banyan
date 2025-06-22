@@ -59,11 +59,28 @@ public class SearchIndexBuilder extends AbstractWorker {
 	}
 	private static class KeyEntry {
 		String key;
+		String longestDuplicateChildKey;
 		int topScore = 0;
 		int allLocalsCount = 0;
 		boolean outputted = false;
 		List<CandidateEntry> topMatches = new ArrayList<CandidateEntry>();
 		List<KeyEntry> children = new ArrayList<KeyEntry>();
+		
+		/**
+		 * Only add if it is actually longer - which I think it might never be?
+		 */
+		void pullUpDuplicateChildKey(KeyEntry child) {
+			String childKey = child.longestDuplicateChildKey;
+			if (childKey == null) {
+				childKey = child.key;
+			}
+			if (longestDuplicateChildKey == null) {
+				longestDuplicateChildKey = childKey;
+			} else if (longestDuplicateChildKey.length() < childKey.length()) {
+				// TODO validate this condition is needed
+				longestDuplicateChildKey = childKey;
+			}
+		}
 	}
 	public static class CandidateName {
 		String searchName;
@@ -125,7 +142,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		this.candidates = entryNames;
 	}
 	/**
-	 * The whole purpose of this method is to ensure the search index has the exact same entries as the partition
+	 * The whole purpose of this method is to ensure the search index has the exact same entries as the partition.
+	 * We don't care about the "tree" just the entries, so we don't worry about hooking it all together.
 	 */
 	private Tree buildTree() {
 		Node nroot = JsonBuilder.buildTree(speciesService);
@@ -140,7 +158,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		CompleteEntry entry = speciesService.findEntry(node.getId());
 		map.put(entry.getId(), entry);
 		for (Node child : node.getChildren()) {
-			buildTree(child, map);
+			CompleteEntry centry = buildTree(child, map);
+			centry.setParent(entry);
 		}
 		return entry;
 	}
@@ -221,7 +240,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		// TODO - I think this is where I should remove duplicate children (same entry, but with longer local keys mapped)
 		//			that way it happens before the counting takes place
 		// 			and because we do it every time, we only need to look at the children
-		removeDuplicateChildren(key);
+		// NO - this is preventing "strawberryg" from working - if they type it in and that key doesn't exist, it doesn't know what to do
+		identifyDuplicateChildKeys(key);
 		
 		// visit only on terminal nodes, or when returning from one
 		if (
@@ -238,6 +258,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 	
 	/**
 	 * Example - we should remove the second one, it's redundant.
+	 * TODO - what I actually want to do is create an indicator in some way to show the redundancy, as deep as it can go
+	 * example - "strawberryg|uava" - means anything from strawberryg onwards is the same result (but not strawberryz, etc)
 	 * "alasiasandb" : [
 			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
 		], 
@@ -245,7 +267,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
 		], 
 	 */
-	private void removeDuplicateChildren(KeyEntry key) throws Exception {
+	private void identifyDuplicateChildKeys(KeyEntry key) throws Exception {
 		if (key.topMatches.size() != 1) {
 			return;
 		}
@@ -253,6 +275,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		for (KeyEntry child : key.children) {
 			if (child.topMatches.size() == 1 && child.topMatches.get(0).entry == entry.entry) {
 				child.topMatches.clear();
+				key.pullUpDuplicateChildKey(child);
 			}
 		}
 	}
@@ -390,6 +413,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		name = name.toUpperCase();
 		name = StringUtils.replacePattern(name, "[^A-Z]", " ");
+		name = StringUtils.remove(name, ' ');
 		return name;
 	}
 	private List<CandidateEntry> toCandidates(List<CompleteEntry> entries) {
