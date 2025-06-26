@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -33,12 +32,12 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private int maxKeyLen;
 	private boolean saveFile;
 	private int minKeysPerFile = 200;
-	private int testListSize = 0; //1_000;
+	private int testListSize = -1;//1_000;
 	
 	private List<CandidateEntry> candidates;
 	private Map<String, Set<CandidateEntry>> subKeyBuckets = new HashMap<String, Set<CandidateEntry>>();
 
-	private static final int MAX_KEY_LEN = 12;
+	private static final int MAX_KEY_LEN = 30;
 	
 	public SearchIndexBuilder() {
 		this(15, 3, MAX_KEY_LEN, true);
@@ -59,30 +58,28 @@ public class SearchIndexBuilder extends AbstractWorker {
 	}
 	private static class KeyEntry {
 		String key;
-		String longestDuplicateChildKey;
 		int topScore = 0;
-		int allLocalsCount = 0;
+		Set<Integer> allDownstreamEntryIds = new HashSet<Integer>();
 		boolean outputted = false;
 		List<CandidateEntry> topMatches = new ArrayList<CandidateEntry>();
 		List<KeyEntry> children = new ArrayList<KeyEntry>();
-		
+		public void fillEntryIds() {
+			for (CandidateEntry match : topMatches) {
+				allDownstreamEntryIds.add(match.entry.getId());
+			}
+		}
 		/**
-		 * Only add if it is actually longer - which I think it might never be?
+		 * This is a memory fix - too large of a tree being kept in memory - need to prune the tree once we're done
+		 * @param key
 		 */
-		void pullUpDuplicateChildKey(KeyEntry child) {
-			String childKey = child.longestDuplicateChildKey;
-			if (childKey == null) {
-				childKey = child.key;
-			}
-			if (longestDuplicateChildKey == null) {
-				longestDuplicateChildKey = childKey;
-			} else if (longestDuplicateChildKey.length() < childKey.length()) {
-				// TODO validate this condition is needed
-				longestDuplicateChildKey = childKey;
-			}
+		void dispose() {
+			allDownstreamEntryIds = null;
+			topMatches = null;
+			children = null;
 		}
 	}
 	public static class CandidateName {
+		String cleanName;
 		String searchName;
 		String prettyName;
 		boolean image;
@@ -100,13 +97,19 @@ public class SearchIndexBuilder extends AbstractWorker {
 			return (int) (c.score - score);
 		}
 		
-		public void addName(String searchName, String prettyName, boolean isLatin, boolean image) {
+		public List<CandidateName> getNames() {
+			return names;
+		}
+		
+		public CandidateName addName(String searchName, String prettyName, String cleanName, boolean isLatin, boolean image) {
 			CandidateName n = new CandidateName();
 			n.searchName = searchName;
 			n.prettyName = prettyName;
+			n.cleanName = cleanName;
 			n.isLatin = isLatin;
 			n.image = image;
 			names.add(n);
+			return n;
 		}
 		
 		public CandidateEntry copy(int score, String matchedName) {
@@ -129,16 +132,16 @@ public class SearchIndexBuilder extends AbstractWorker {
 		List<CompleteEntry> entries = tree.getEntries();
 		List<CandidateEntry> entryNames = toCandidates(entries);
 		
-		System.out.println("iterateOverKeys.found0." + entryNames.size());
-		if (testListSize > 0) {
-			Collections.shuffle(entryNames);
-			List<CandidateEntry> subNames = entryNames.subList(0, testListSize);
-			final Map<Integer, CandidateEntry> ids = new HashMap<>();
-			subNames.forEach(c -> ids.put(c.entry.getId(), c));
-			subNames.forEach(c -> addParents(c, tree, ids));
-			entryNames = new ArrayList<>(ids.values());
-		}
-		System.out.println("iterateOverKeys.found." + entryNames.size());
+		System.out.println(">createCandidates.found." + entryNames.size());
+//		if (testListSize > 0) {
+//			Collections.shuffle(entryNames);
+//			List<CandidateEntry> subNames = entryNames.subList(0, testListSize);
+//			final Map<Integer, CandidateEntry> ids = new HashMap<>();
+//			subNames.forEach(c -> ids.put(c.entry.getId(), c));
+//			subNames.forEach(c -> addParents(c, tree, ids));
+//			entryNames = new ArrayList<>(ids.values());
+//		}
+		System.out.println("<createCandidates.found." + entryNames.size());
 		this.candidates = entryNames;
 	}
 	/**
@@ -147,12 +150,41 @@ public class SearchIndexBuilder extends AbstractWorker {
 	 */
 	private Tree buildTree() {
 		Node nroot = JsonBuilder.buildTree(speciesService);
+		if (testListSize > 0) {
+			pruneTree(nroot);
+		}
 		
 		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
 		CompleteEntry root = buildTree(nroot, map);
 
 		Tree tree = new Tree(root, map);
 		return tree;
+	}
+	private void pruneTree(Node nroot) {
+		List<Node> current = new ArrayList<Node>();
+		int total = 1;
+		current.add(nroot);
+		while (true) {
+			List<Node> next = getAllChildren(current);
+			current = next;
+			total += next.size();
+			if (total > testListSize) {
+				break;
+			}
+		}
+		// these are the last round we collected, we need to get rid of the children
+		for (Node node : current) {
+			node.getChildren().clear();
+			node.getChildIds().clear();
+		}
+
+	}
+	private List<Node> getAllChildren(List<Node> next) {
+		List<Node> all = new ArrayList<Node>();
+		for (Node node : next) {
+			all.addAll(node.getChildren());
+		}
+		return all;
 	}
 	private CompleteEntry buildTree(Node node, Map<Integer, CompleteEntry> map) {
 		CompleteEntry entry = speciesService.findEntry(node.getId());
@@ -236,19 +268,9 @@ public class SearchIndexBuilder extends AbstractWorker {
 				}
 			}
 		}
-		
-		// TODO - I think this is where I should remove duplicate children (same entry, but with longer local keys mapped)
-		//			that way it happens before the counting takes place
-		// 			and because we do it every time, we only need to look at the children
-		// NO - this is preventing "strawberryg" from working - if they type it in and that key doesn't exist, it doesn't know what to do
-		identifyDuplicateChildKeys(key);
-		
+
 		// visit only on terminal nodes, or when returning from one
-		if (
-				(!key.topMatches.isEmpty() || !key.children.isEmpty())
-//				&&
-//				(key.key.length() >= minKeyLen || key.key.length() == 0)
-				) {
+		if (!key.topMatches.isEmpty() || !key.children.isEmpty()) {
 			found++;
 			// decide whether to save this or skip for now - we only want to save files when we can club them together
 			saveKeyFile(key);
@@ -256,35 +278,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return found;
 	}
 	
-	/**
-	 * Example - we should remove the second one, it's redundant.
-	 * TODO - what I actually want to do is create an indicator in some way to show the redundancy, as deep as it can go
-	 * example - "strawberryg|uava" - means anything from strawberryg onwards is the same result (but not strawberryz, etc)
-	 * "alasiasandb" : [
-			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
-		], 
-		"alasiasandbo" : [
-			 {"id" : 369882, "ids" : "_1ydQ", "name" : "Central Asia Sand Boa" }
-		], 
-	 */
-	private void identifyDuplicateChildKeys(KeyEntry key) throws Exception {
-		if (key.topMatches.size() != 1) {
-			return;
-		}
-		CandidateEntry entry = key.topMatches.get(0);
-		for (KeyEntry child : key.children) {
-			if (child.topMatches.size() == 1 && child.topMatches.get(0).entry == entry.entry) {
-				child.topMatches.clear();
-				key.pullUpDuplicateChildKey(child);
-			}
-		}
-	}
-	
 	private boolean buildKey(KeyEntry key) {
-		if (key.key.equals("ANTS")) {
-			System.out.println("buildKey > " + key.key);
-		}
-		
 		Set<CandidateEntry> intersection = createIntersection(key);
 		
 		for (CandidateEntry candidate : intersection) {
@@ -307,11 +301,6 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 
 		boolean found = !key.topMatches.isEmpty();
-		if (found) {
-//			System.out.println("visitKey." + key.key + "." + key.topMatches.size());
-		}
-//		System.out.println("buildKey < " + key.key + "." + key.allLocalsCount);
-		
 		return found;
 	}
 	Set<String> getSubKeys(String key) {
@@ -340,36 +329,27 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return intersection;
 	}
 	
-	private int score(CandidateName name, String key) {
+	public static int score(CandidateName name, String key) {
 		int score = 0;
 		if (name.searchName.equals(key)) {
 			// in this case we have an exact match, these are absolutely the highest
-			if (name.isLatin) {
-				score = 10_000_000;
-			} else {
-				score = 20_000_000;
+			score = 10_000_000;
+		} else {
+			if (name.searchName.startsWith(key)) {
+				score += 1_000_000;
 			}
-		} else if (name.searchName.startsWith(key)) {
-			if (name.isLatin) {
-				score = 1_000_000;
-			} else {
-				score = 2_000_000;
-			}
-		} else if (containsKeyAsName(name.searchName, key)) {
-			if (name.isLatin) {
-				score = 100_000;
-			} else {
-				score = 200_000;
-			}
-		} else if (name.searchName.contains(key)) {
-			if (name.isLatin) {
-				score = 10_000;
-			} else {
-				score = 20_000;
+			if (containsKeyAsName(name.cleanName, key)) {
+				score += 100_000;
+			} 
+			if (name.searchName.contains(key)) {
+				score += 10_000;
 			}
 		}
-
-		// give a boost based on how short the name is it's matching
+		if (!name.isLatin) {
+			score *= 2;
+		}
+		
+		// give a boost based on how short the name is that it's matching
 		if (score > 0) {
 			score += ((float) key.length() / (float) name.searchName.length()) * 1000;
 			// slight preference if there is an image - this will only help in rare common name cases
@@ -380,7 +360,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		
 		return score;
 	}
-	private boolean containsKeyAsName(String name, String key) {
+	private static boolean containsKeyAsName(String name, String key) {
 		return (" " + name + " ").contains(" " + key + " ");
 	}
 	
@@ -388,19 +368,21 @@ public class SearchIndexBuilder extends AbstractWorker {
 		CandidateEntry candidate = new CandidateEntry();
 		candidate.entry = entry;
 		
-		String latin = cleanSearchName(entry.getLatinName());
+		String latin = cleanSearchName(entry.getLatinName(), true);
 		if (latin != null) {
-			candidate.addName(latin, entry.getLatinName(), true, entry.getImageLink() != null);
+			String clean = cleanSearchName(entry.getLatinName(), false);
+			candidate.addName(latin, entry.getLatinName(), clean, true, entry.getImageLink() != null);
 		}
 		
-		String common = cleanSearchName(entry.getCommonName());
+		String common = cleanSearchName(entry.getCommonName(), true);
 		if (common != null) {
-			candidate.addName(common, entry.getCommonName(), false, entry.getImageLink() != null);
+			String clean = cleanSearchName(entry.getCommonName(), false);
+			candidate.addName(common, entry.getCommonName(), clean, false, entry.getImageLink() != null);
 		}
 		
 		return candidate;
 	}
-	private String cleanSearchName(String name) {
+	private String cleanSearchName(String name, boolean removeSpaces) {
 		if (name == null) {
 			return null;
 		}
@@ -413,7 +395,9 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		name = name.toUpperCase();
 		name = StringUtils.replacePattern(name, "[^A-Z]", " ");
-		name = StringUtils.remove(name, ' ');
+		if (removeSpaces) {
+			name = StringUtils.remove(name, ' ');
+		}
 		return name;
 	}
 	private List<CandidateEntry> toCandidates(List<CompleteEntry> entries) {
@@ -429,6 +413,47 @@ public class SearchIndexBuilder extends AbstractWorker {
 		
 		return candidates;
 	}
+
+	
+	/**
+	 * Combining duplicate child keys.
+	 * Why this is wanted - because then I can expand the search key length out to 20 or more and for the most part it's not going to create too many more files
+	 * 
+		"jia" : [257430, 329822, 74487, 77283, 205510, 173452, 15106, 308682, 222967, 150404, 65059, 116423, 188518, 79289, 49638], 
+		"jiaa" : [188516], 
+		"jiaan" : [188516], 
+		"jiaang" : [188516], 
+		"jiaangu" : [188516], 
+		"jiaangus" : [188516], 
+		"jiaangust" : [188516], 
+		"jiaangusti" : [188516], 
+		"jiaangustif" : [188516], 
+		"jiaangustifo" : [188516], 
+		"jiab" : [65059], 
+		"jiabu" : [65059], 
+		"jiabum" : [65059], 
+		"jiabumu" : [65059], 
+		"jiabumui" : [65059], 
+		"jiae" : [116423, 89600], 
+		"jiam" : [205510, 188520], 
+		"jiama" : [205510], 
+		"jiamar" : [205510], 
+		
+		What do we really want?  We want to take the above example, and combine when these conditions are met
+		1. any key with a parent that has it as it's only child
+		2. and has the exact same entries in the list (could be 1 or could be many)
+		
+		In these cases, "delete" the child and tell the parent to store the child's key as a duplicate 
+		
+		results:
+		
+		"jia" : [257430, 329822, 74487, 77283, 205510, 173452, 15106, 308682, 222967, 150404, 65059, 116423, 188518, 79289, 49638], 
+		"jiaa|ngustifo" : [188516], 
+		"jiab|umui" : [65059], 
+		"jiae" : [116423, 89600], 
+		"jiam" : [205510, 188520], 
+		"jiama|r" : [205510], 
+	 */
 
 	/*
 	 
@@ -448,7 +473,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	  
 	 */
 	
-	private String toString(KeyEntry key, List<String> remoteKeys, Map<String, List<CandidateEntry>> localKeys) {
+	private String toString(List<String> remoteKeys, Map<String, List<CandidateEntry>> localKeys) {
 		StringBuilder buf = new StringBuilder("{\n");
 		
 		// remove any without matches
@@ -460,24 +485,12 @@ public class SearchIndexBuilder extends AbstractWorker {
 			}
 		}
 		Collections.sort(localKeyList);
-		
-		// local can be empty - can optimize this later if needed, but won't be a big problem with the grouping
-		buf.append("\t\"local\" : {\n");
-		int count = 1;
-		for (String localKey : localKeyList) {
-			List<CandidateEntry> keysLocals = localKeys.get(localKey);
-			appendLocalIds(localKey, keysLocals, buf);
-			if (count != localKeyList.size()) {
-				buf.append(", ");
-			}
-			buf.append("\n");
-			count++;
-		}
-		buf.append("\t},\n");
+
+		appendLocalKeys(buf, localKeys, localKeyList);
 		
 		Collections.sort(remoteKeys);
 		buf.append("\t\"remote\" : [");
-		count = 1;
+		int count = 1;
 		for (String remoteKey : remoteKeys) {
 			buf.append("\"");
 			buf.append(remoteKey.toLowerCase());
@@ -512,21 +525,137 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return buf.toString();
 	}
 
-	private void appendLocalIds(String key, List<CandidateEntry> localKeys, StringBuilder buf) {
-		buf.append("\t\t\"");
-		buf.append(key.toLowerCase());
-		buf.append("\" : ");
+	private void appendLocalKeys(StringBuilder buf, Map<String, List<CandidateEntry>> localKeys, List<String> localKeyList) {
+		// local can be empty - can optimize this later if needed, but won't be a big problem with the grouping
+		buf.append("\t\"local\" : {\n");
+		
+		
+		 Map<String, Set<Integer>> treeKeys = buildLocalKeyTree(localKeyList, localKeys);
+		 List<String> keyNamesList = new ArrayList<String>(treeKeys.keySet());
+		 Collections.sort(keyNamesList);
+		
+		int count = 1;
+		for (String localKey : keyNamesList) {
 
-		List<Integer> ids = localKeys.stream().map(ce -> ce.entry.getId()).collect(Collectors.toList());
-		// this is implementation dependent, but I think it's safe?
-		buf.append(ids);
+			buf.append("\t\t\"");
+			buf.append(localKey.toLowerCase());
+			buf.append("\" : ");
+
+			Set<Integer> idsSet = treeKeys.get(localKey);
+			List<Integer> idsList = new ArrayList<Integer>(idsSet);
+			Collections.sort(idsList);
+			// this is implementation dependent, but I think it's safe?
+			buf.append(idsList);
+
+			if (count != keyNamesList.size()) {
+				buf.append(", ");
+			}
+			buf.append("\n");
+			count++;
+		}
+		buf.append("\t},\n");
+	}
+	private static class LocalKey {
+		String key;
+		String longestKey;
+		Set<Integer> ids = new HashSet<Integer>();
+		List<LocalKey> children = new ArrayList<LocalKey>();
+		LocalKey parent;
+	}
+	
+	private Map<String, Set<Integer>> buildLocalKeyTree(List<String> localKeyList, Map<String, List<CandidateEntry>> localKeysToCandidates) {
+		// Step 1 - build the tree
+		Map<String, LocalKey> localKeysMap = new HashMap<String, LocalKey>();
+		for (String key : localKeyList) {
+			LocalKey lkey = buildLocalKey(key, localKeysToCandidates);
+			localKeysMap.put(key, lkey);
+		}
+		for (String key : localKeyList) {
+			LocalKey lkey = localKeysMap.get(key);
+			LocalKey parent = localKeysMap.get(key.substring(0, key.length() - 1));
+			if (parent != null) {
+				parent.children.add(lkey);
+				lkey.parent = parent;
+			}
+		}
+		
+		// Step 2 - prune each tree and combine the keys
+		List<LocalKey> toPrune = new ArrayList<>();
+		for (String key : localKeyList) {
+			LocalKey lkey = localKeysMap.get(key);
+			if (lkey.parent == null) {
+				toPrune.add(lkey);
+			}
+		}
+		boolean pruned = true;
+		while (pruned) {
+			pruned = false;
+			for (LocalKey lkey : toPrune) {
+				boolean pruneThis = pruneLocalKey(lkey);
+				pruned = pruned || pruneThis;
+			}
+		}
+
+		// Step 3 - grab all the keys
+		Map<String, Set<Integer>> combinedKeys = new HashMap<String, Set<Integer>>();
+		for (LocalKey lkey : toPrune) {
+			addCombinedLocalKeys(lkey, combinedKeys);
+		}
+		
+		return combinedKeys;
+	}
+	private void addCombinedLocalKeys(LocalKey key, Map<String, Set<Integer>> combinedKeys) {
+		if (key.longestKey != null) {
+			String combinedKey = key.key + "|" + key.longestKey.substring(key.key.length());
+			combinedKeys.put(combinedKey, key.ids);
+		} else {
+			combinedKeys.put(key.key, key.ids);
+		}
+		for (LocalKey child : key.children) {
+			addCombinedLocalKeys(child, combinedKeys);
+		}
+	}
+	private boolean pruneLocalKey(LocalKey key) {
+		boolean pruned = false;
+		List<LocalKey> children = new ArrayList<LocalKey>(key.children);
+		for (LocalKey child : children) {
+			boolean prunedThis = pruneLocalKey(child);
+			pruned = pruned || prunedThis;
+		}
+		if (	key.parent != null && key.parent.longestKey == null
+				// the parent has just one child (this key), and it has the same ids
+			 && key.parent.children.size() == 1 
+			 && key.ids.size() == key.parent.ids.size() && key.ids.containsAll(key.parent.ids)) {
+			String longest = key.longestKey;
+			if (longest == null) {
+				longest = key.key;
+				key.longestKey = key.key;
+			}
+			key.parent.longestKey = longest;
+			key.parent.children.remove(key);
+			key.parent.children.addAll(key.children);
+			key.parent = null;
+			pruned = true;
+		}
+		return pruned;
+	}
+	private LocalKey buildLocalKey(String key, Map<String, List<CandidateEntry>> localKeys) {
+		LocalKey lkey = new LocalKey();
+		lkey.key = key;
+		List<CandidateEntry> entries = localKeys.get(key);
+		for (CandidateEntry ce : entries) {
+			lkey.ids.add(ce.entry.getId());
+		}
+		return lkey;
 	}
 
 	private void countLocals(KeyEntry key) {
-		key.allLocalsCount = key.topMatches.size();
+		key.fillEntryIds();
 		for (KeyEntry child : key.children) {
-			// all children have already been counted, I just need to add to this one
-			key.allLocalsCount += child.allLocalsCount;
+			// all children have already been filled, I just need to add to this one
+			if (!child.outputted) {
+				key.allDownstreamEntryIds.addAll(child.allDownstreamEntryIds);
+			}
 		}
 	}
 
@@ -567,12 +696,6 @@ public class SearchIndexBuilder extends AbstractWorker {
 	
 	private void saveKeyFile(KeyEntry key) throws Exception {
 
-//		if (key.key.toLowerCase().equals("nul")) {
-//			// TODO just force this into a fully remote file - it probably will be anyways once I start that.
-//			// I could also do some special case, like @nul or something, but would have to handle that in javascript too
-//			return;
-//		}
-
 		// we are visiting this key to see if it should be saved
 		countLocals(key);
 		
@@ -582,17 +705,17 @@ public class SearchIndexBuilder extends AbstractWorker {
 			return;
 		}
 		boolean isRoot = (key.key.length() == 0);
-		if (!isRoot && key.allLocalsCount < minKeysPerFile) {
+		if (!isRoot && key.allDownstreamEntryIds.size() < minKeysPerFile) {
 			return;
 		}
-		System.out.println("saveKeyFile." + key.key + "." + key.allLocalsCount);
 		
 		List<String> remoteKeys = new ArrayList<>();
 		Map<String, List<CandidateEntry>> localKeys = new HashMap<String, List<CandidateEntry>>();
 		gatherRemotesAndLocals(key, remoteKeys, localKeys);
 
-		String json = toString(key, remoteKeys, localKeys);
+		String json = toString(remoteKeys, localKeys);
 		System.out.println(json);
+		System.out.println("saveKeyFile." + key.key + "." + key.allDownstreamEntryIds.size());
 		if (!saveFile) {
 			return;
 		}
@@ -617,6 +740,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		File file = new File(folder);
 		FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
 		key.outputted = true;
+		key.dispose();
 	}
+	
 
 }

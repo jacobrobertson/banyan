@@ -19,6 +19,10 @@ import com.robestone.species.LogHelper;
 
 public class WikiSpeciesCache {
 
+	public static void main(String[] args) {
+		System.out.println(getFile("Herpophyllum"));
+	}
+	
 	public static final WikiSpeciesCache CACHE = new WikiSpeciesCache();
 	
 	public static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
@@ -69,7 +73,7 @@ public class WikiSpeciesCache {
 			//	but I need to ensure that the web page, etc. can get the file name correctly too
 		}
 	}
-	private File getFile(String latinName) {
+	private static File getFile(String latinName) {
 		String hash = ImagesCreater.getImagePathHashed(latinName);
 		String fileName = LOCAL_STORAGE_DIR + hash + "/" + latinName + ".html";
 		File file = new File(fileName);

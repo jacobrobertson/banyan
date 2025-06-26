@@ -40,9 +40,9 @@ public class JsonBuilder extends AbstractWorker {
 		
 		// fine-tune what you want to d
 //		b.copyAdditionalJsonResources();
-		b.partitionFromDB();
+//		b.partitionFromDB();
 //		b.buildRandomFiles();
-//		b.runExamples();
+		b.runExamples();
 	}
 	
 	public static final String outputDir = "D:/banyan/banyan-json/json";

@@ -393,6 +393,7 @@ public class WikiSpeciesParser {
 		text = preProcessRedirectSelfLinks(selfLinkName, text);
 		text = preProcessAbbreviations(text);
 		text = preProcessCleanOther(text);
+		text = preprocessIncertaeSedis(text);
 		text = preProcessSelfLinkInnerMarkup(text);
 		text = getSmallerPage(text);
 		text = getSimplifiedPage(text);
@@ -801,6 +802,50 @@ public class WikiSpeciesParser {
 	private static String preProcessSelfLinkInnerMarkup(String page) {
 		page = preProcessSimplePattern(preProcessSelfLinkInnerSpans, page);
 //		page = preProcessSimplePattern(preProcessSelfLinkInnerItalics, page);
+		return page;
+	}
+	
+	/**
+	 * Example 1:
+Divisio: <a href="/wiki/Ascomycota" title="Ascomycota">Ascomycota</a> <br>
+</p>
+</td></tr></tbody></table>
+<p>Familia: (<i>incertae sedis</i>) <br>
+Genus: <i><a class="mw-selflink selflink">Coniothyrina</a></i><br>
+	 * 
+	 * 
+	 * Example 2: These seem to be handled by the existing logic
+Classis: <a href="/wiki/Chlorophyceae" title="Chlorophyceae">Chlorophyceae</a><br>
+</p>
+</td></tr></tbody></table>
+<p>Ordo: incertae sedis<br>
+Familia: incertae sedis<br>
+Genus: <i><a class="mw-selflink selflink">Bicuspidella</a></i><br>
+
+	Example 3:
+Superfamilia <i>Incertae sedis</i>: <a href="/wiki/Testacelloidea" title="Testacelloidea">Testacelloidea</a><br>
+</p>
+</td></tr></tbody></table>
+<p>Familia: <a class="mw-selflink selflink">Testacellidae</a><br>
+	 */
+	private static final Pattern[] preprocessIncertaeSedis = {
+			// Familia: (<i>incertae sedis</i>) <br>
+			Pattern.compile("(" + getRanksPatternPart(true) + ":\\s*\\(<i>[Ii]ncertae [Ss]edis</i>\\))"),
+			// Superfamilia <i>Incertae sedis</i>: <a href="/wiki/Testacelloidea" title="Testacelloidea">Testacelloidea</a><br>
+			Pattern.compile(getRanksPatternPart(true) + "(\\s*(?:<i>)?[Ii]ncertae [Ss]edis(?:</i>)?\\s*):")
+	};
+	private static String preprocessIncertaeSedis(String page) {
+		for (Pattern pattern : preprocessIncertaeSedis) {
+			boolean matched = true;
+			while (matched) {
+				Matcher m = pattern.matcher(page);
+				matched = m.find();
+				if (matched) {
+					String toReplace = m.group(1);
+					page = page.replace(toReplace, "");
+				}
+			}
+		}
 		return page;
 	}
 	

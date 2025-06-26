@@ -350,5 +350,5 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public static final String CRAWL_LIST = 
-  "Neofiber alleni";
+  "Coniothyrina";
 }

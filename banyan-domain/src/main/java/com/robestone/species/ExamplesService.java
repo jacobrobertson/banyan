@@ -38,6 +38,7 @@ public class ExamplesService implements IExamplesService {
 			String terms = example.getTerms();
 			String crunched;
 			if (terms.startsWith("#")) {
+				// this logic isn't being used anymore - it uses numbers instead of latin names
 				String ids = terms.substring(1);
 				crunched = getUpdatedCrunchedIds(ids);
 				terms = "#" + crunched;

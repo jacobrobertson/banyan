@@ -1890,7 +1890,18 @@ function buildRemoteIndexEntry(data, callback) {
 					entry.id = id;
 					entries.push(entry);
 				});
-				dbLocalSearchIndex[localKey] = entries;
+				// handle the "crassulaaq|uatica" pattern
+				var pos = localKey.indexOf("|");
+				if (pos > 0) {
+					var left = localKey.substring(0, pos);
+					var right = localKey.substring(pos + 1);
+					for (var i = 0 ; i <= right.length ; i++) {
+						var key = left + right.substring(0, i);
+						dbLocalSearchIndex[key] = entries;
+					}
+				} else {
+					dbLocalSearchIndex[localKey] = entries;
+				}
 			} 
 		});
 	}

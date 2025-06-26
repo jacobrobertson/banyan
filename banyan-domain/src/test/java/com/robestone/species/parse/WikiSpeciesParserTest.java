@@ -119,6 +119,9 @@ public class WikiSpeciesParserTest extends TestCase {
 	public void testCarabus_Tachypus() throws IOException {
 		doTest("Carabus (Tachypus)", null, "Carabus subdiv. Latitarsi", "thumb/9/95/Carabus_auratus_with_prey.jpg/225px-Carabus_auratus_with_prey.jpg", Rank.Subgenus, false, null, "Carabus");
 	}
+	public void testConiothyrina() throws IOException {
+		doTest("Coniothyrina", null, "Ascomycota", null, Rank.Genus);
+	}
 	public void testMastigoteuthidae() throws IOException {
 		doTest("Mastigoteuthidae", "Whip-lash Squid", "Oegopsina", null, Rank.Familia, false);
 	}
@@ -264,6 +267,15 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 	}
 	public void testTrachymedusae() throws IOException {
 		doTest("Trachymedusae", null, "Trachylinae", null, Rank.Ordo);
+	}
+	public void testPhosphaticola() throws IOException {
+		doTest("Phosphaticola", null, "Cosmopterigidae", null, Rank.Genus);
+	}
+	public void testHerpophyllum() throws IOException {
+		doTest("Herpophyllum", null, "Florideophyceae", null, Rank.Genus);
+	}
+	public void testTestacellidae() throws IOException {
+		doTest("Testacellidae", null, "Testacelloidea", "thumb/4/48/Testacella_haliotidea.jpg/250px-Testacella_haliotidea.jpg", Rank.Familia);
 	}
 	public void testSordarialesincertaesedis() throws IOException {
 		doTest("Sordariales incertae sedis", null, "Sordariales", null, Rank.Familia);
