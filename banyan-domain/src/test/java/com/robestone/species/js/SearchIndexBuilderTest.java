@@ -3,7 +3,7 @@ package com.robestone.species.js;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.js.SearchIndexBuilder.CandidateEntry;
 import com.robestone.species.js.SearchIndexBuilder.CandidateName;
 
@@ -57,7 +57,7 @@ public class SearchIndexBuilderTest extends TestCase {
 	}
 	
 	private CandidateEntry testCandidateEntry(String name, List<CandidateEntry> candidates, SearchIndexBuilder b, String key, int expectedScore) {
-		CompleteEntry entry = new CompleteEntry();
+		Entry entry = new Entry();
 		entry.setLatinName(name);
 		entry.setId(Integer.valueOf(10));
 		

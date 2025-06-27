@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import com.robestone.species.CommonNameHint;
 import com.robestone.species.CommonNameSimilarityChecker;
 import com.robestone.species.CommonNameSplitter;
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Tree;
@@ -31,10 +31,10 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 	
 	public void run() {
 		Tree all = speciesService.findCompleteTreeFromPersistence();
-		for (CompleteEntry e: all.getEntries()) {
+		for (Entry e: all.getEntries()) {
 			CommonNameSplitter.assignCommonNames(e);
 		}
-		for (CompleteEntry e: all.getEntries()) {
+		for (Entry e: all.getEntries()) {
 			boolean indicator = nameHasIndicator(e.getCommonName());
 			if (e.getCommonName() != null && !indicator) {
 				continue;
@@ -63,10 +63,10 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 	}
 	private static final int MAX_GATHER_DEPTH = 5;
 	private static final int MAX_GATHER_NAMES = 100;
-	private void createCommonName(CompleteEntry e) {
+	private void createCommonName(Entry e) {
 		List<Score> names = new ArrayList<>();
 		// first gather all names from the max depth
-		List<CompleteEntry> start = new ArrayList<>();
+		List<Entry> start = new ArrayList<>();
 		start.add(e);
 		gatherCommonNames(start, names, 0);
 		normalizeNames(names);
@@ -79,8 +79,8 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 		return name != null &&
 				name.indexOf(EntryUtilities.COMMON_NAME_FROM_DESCENDENTS_INDICATOR) >= 0;
 	}
-	private void gatherCommonNames(List<CompleteEntry> entries, List<Score> names, final int currentDepth) {
-		List<CompleteEntry> allChildren = new ArrayList<>();
+	private void gatherCommonNames(List<Entry> entries, List<Score> names, final int currentDepth) {
+		List<Entry> allChildren = new ArrayList<>();
 		entries.forEach(e -> {
 			if (e.getCompleteEntryChildren() != null) {
 				allChildren.addAll(e.getCompleteEntryChildren());
@@ -131,7 +131,7 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 		}
 	}
 	
-	private void createCommonName(CompleteEntry e, List<Score> names) {
+	private void createCommonName(Entry e, List<Score> names) {
 		
 		int maxLength = MAX_COMMON_NAME_LENGTH;
 		List<String> keys = toKeys(names);
@@ -214,13 +214,13 @@ public class CommonNameFromDescendentsWorker extends AbstractWorker {
 		}
 	}
 	
-	private float getPercentUsed(List<String> names, CompleteEntry e) {
-		Set<CompleteEntry> children = EntryUtilities.getEntries(e);
+	private float getPercentUsed(List<String> names, Entry e) {
+		Set<Entry> children = EntryUtilities.getEntries(e);
 		
 		float count = 0;
 		float found = 0;
 		
-		for (CompleteEntry c : children) {
+		for (Entry c : children) {
 			String compare = c.getCommonNameClean();
 			if (compare != null) {
 				count++;

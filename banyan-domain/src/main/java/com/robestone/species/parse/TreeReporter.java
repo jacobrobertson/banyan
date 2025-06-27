@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
@@ -54,10 +53,10 @@ public class TreeReporter extends AbstractWorker {
 	}
 	public List<Tree> runTreeReport(int minInteresting, int minTreeNodes, int maxResults) {
 		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport");
-		Collection<CompleteEntry> entries = speciesService.findEntriesForTreeReport();
+		Collection<Entry> entries = speciesService.findEntriesForTreeReport();
 		LogHelper.speciesLogger.debug("runTreeReport.findAllEntriesForTreeReport." + entries.size());
 		
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			if (e.getInterestingParentId() != null) {
 				e.setParentId(e.getInterestingParentId());
 			}
@@ -75,7 +74,7 @@ public class TreeReporter extends AbstractWorker {
 			if (countInteresting < minInteresting && t.size() < minTreeNodes) {
 				continue;
 			}
-			CompleteEntry root = t.getRoot();
+			Entry root = t.getRoot();
 			System.out.println(root.getLatinName() + "." + t.size() + "/" + countInteresting);
 			if (SpeciesService.TREE_OF_LIFE_ID.equals(t.getRoot().getId())) {
 				continue;
@@ -99,7 +98,7 @@ public class TreeReporter extends AbstractWorker {
 	}
 	private int countInteresting(Tree tree) {
 		int count = 0;
-		for (CompleteEntry e: tree.getEntries()) {
+		for (Entry e: tree.getEntries()) {
 			if (isInteresting(e)) {
 				count++;
 			}
@@ -112,12 +111,12 @@ public class TreeReporter extends AbstractWorker {
 
 	public void loopReport() throws Exception {
 		LogHelper.speciesLogger.debug("loopReport>");
-		Collection<CompleteEntry> entries = speciesService.findEntriesForTreeReport();
+		Collection<Entry> entries = speciesService.findEntriesForTreeReport();
 		EntryUtilities.buildTree(entries);
 		LogHelper.speciesLogger.debug("loopReport>" + entries.size());
 		int count = 0;
-		for (CompleteEntry e: entries) {
-			CompleteEntry root = EntryUtilities.getRoot(e);
+		for (Entry e: entries) {
+			Entry root = EntryUtilities.getRoot(e);
 			if (root == null) {
 				System.out.println("\"" + e.getLatinName() + "\", // " + count++);
 			}

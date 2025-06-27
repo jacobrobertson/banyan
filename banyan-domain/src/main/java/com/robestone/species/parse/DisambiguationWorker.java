@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 
 public class DisambiguationWorker extends AbstractWorker {
 
@@ -26,10 +26,10 @@ public class DisambiguationWorker extends AbstractWorker {
 	public void runEntries() throws Exception {
 		
 		// get list of all entries with no parent id
-		Collection<CompleteEntry> entries = speciesService.findEntriesWithInvalidParent();
+		Collection<Entry> entries = speciesService.findEntriesWithInvalidParent();
 		
 		// for each of those, get the parent page
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			String parent = entry.getParentLatinName();
 			String child = entry.getLatinName();
 			String page = null; // WikiSpeciesCache...

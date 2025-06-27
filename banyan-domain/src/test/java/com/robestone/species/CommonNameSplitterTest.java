@@ -8,7 +8,7 @@ public class CommonNameSplitterTest extends TestCase {
 
 	private int setMaxKeepLength = 9;
 	public void testNormalizeShortSplit() {
-		CompleteEntry e = new CompleteEntry();
+		Entry e = new Entry();
 		e.setCommonName("funk; junk");
 		e.setLatinName("Any old name");
 		CommonNameSplitter.assignCommonNames(e, setMaxKeepLength);
@@ -24,7 +24,7 @@ public class CommonNameSplitterTest extends TestCase {
 		doTest("funk, or junk", "Funk", "Junk");
 		doTest("funk, and junk", "Funk", "Junk");
 		doTest("funk and junk");
-		doTest("funk · junk", "Funk", "Junk");
+		doTest("funk ï¿½ junk", "Funk", "Junk");
 		doTest("funk, junk; hunk / trunk man or sunk", "Funk", "Junk", "Hunk", "Trunk man", "Sunk");
 		doTest("Indian beet., Old maid's bonnets, and Sundial lupine", "Indian beet", "Old maid's bonnets", "Sundial lupine");
 	}
@@ -38,7 +38,7 @@ public class CommonNameSplitterTest extends TestCase {
 		doTestEntry(toSplit, "test-name", splits);
 	}
 	private void doTestEntry(String commonName, String latinName, String... splits) {
-		CompleteEntry entry = new CompleteEntry();
+		Entry entry = new Entry();
 		entry.setCommonName(commonName);
 		entry.setLatinName(latinName);
 		doTest(entry, splits);

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Rank;
@@ -18,12 +18,12 @@ public class Mocks {
 		getRoot();
 	}
 	
-	private void addIds(CompleteEntry root) {
+	private void addIds(Entry root) {
 //		addIds(root, new HashSet<Integer>());
 		addIds(root, 0, new HashSet<Integer>());
 	}
 	
-	int addIds(CompleteEntry root, int seed, Set<Integer> used) {
+	int addIds(Entry root, int seed, Set<Integer> used) {
 		boolean added = used.add(seed);
 		if (!added) {
 			throw new IllegalStateException("duplicate id " + seed);
@@ -32,21 +32,21 @@ public class Mocks {
 		root.setId(seed);
 		int nextId = seed + 100;
 		if (root.getChildren() != null) {
-			for (CompleteEntry child: root.getCompleteEntryChildren()) {
+			for (Entry child: root.getCompleteEntryChildren()) {
 				nextId = addIds(child, nextId, used);
 				nextId = nextId + 1;
 			}
 		}
 		return nextId;
 	}
-	void addIds(CompleteEntry root, Set<Integer> used) {
+	void addIds(Entry root, Set<Integer> used) {
 		int id = 10;
 		while (!used.add(id)) {
 			id = new Random().nextInt(50000);
 		}
 		root.setId(id);
 		if (root.getChildren() != null) {
-			for (CompleteEntry child: root.getCompleteEntryChildren()) {
+			for (Entry child: root.getCompleteEntryChildren()) {
 				addIds(child, used);
 			}
 		}
@@ -81,9 +81,9 @@ public class Mocks {
 		return null;
 	}
 	
-	private CompleteEntry root;
+	private Entry root;
 	private Tree tree;
-	public Set<CompleteEntry> getEntries() {
+	public Set<Entry> getEntries() {
 		return EntryUtilities.getEntries(getRoot());
 	}
 	public Tree getTree() {
@@ -92,16 +92,16 @@ public class Mocks {
 		}
 		return tree;
 	}
-	public CompleteEntry getRoot() {
+	public Entry getRoot() {
 		if (root == null) {
 			root = doGetRoot();
 		}
 		return root;
 	}
-	private CompleteEntry doGetRoot() {
-		CompleteEntry root = new CompleteEntry(Rank.Cladus, "Tree of Life", "");
-		CompleteEntry top = root;
-		CompleteEntry next = root;
+	private Entry doGetRoot() {
+		Entry root = new Entry(Rank.Cladus, "Tree of Life", "");
+		Entry top = root;
+		Entry next = root;
 		next = addChild(next, Rank.Cladus, "eukaryotes", "Eukaryota");
 		next = addChild(next, Rank.Supergroup, "Opisthokonta", "Opisthokonta");
 		next = addChild(next, Rank.Regnum, "animals", "Animalia");
@@ -128,10 +128,10 @@ public class Mocks {
 		return top;
 	}
 
-	private CompleteEntry getSearchCases() {
-		CompleteEntry searchCases = new CompleteEntry(Rank.Classis, "", "Search Cases");
+	private Entry getSearchCases() {
+		Entry searchCases = new Entry(Rank.Classis, "", "Search Cases");
 
-		CompleteEntry next = searchCases;
+		Entry next = searchCases;
 		
 		// if someone searches for "Friend" we probably want "F"
 		next = addChild(next, Rank.Infraclassis, "Friend mean", "M");
@@ -181,17 +181,17 @@ public class Mocks {
 
 		return searchCases;
 	}
-	private CompleteEntry getReptiles() {
-		CompleteEntry reptiles = new CompleteEntry(Rank.Classis, "", "Reptilia");
+	private Entry getReptiles() {
+		Entry reptiles = new Entry(Rank.Classis, "", "Reptilia");
 
-		CompleteEntry next = reptiles;
+		Entry next = reptiles;
 		
 		next = addChild(next, Rank.Subclassis, "Diapsid", "Diapsida");
 		next = addChild(next, Rank.Infraclassis, "", "Lepidosauromorpha");
 		next = addChild(next, Rank.Superordo, "", "Lepidosauria");
 		next = addChild(next, Rank.Ordo, "Scaled Reptiles", "Squamata");
 		next = addChild(next, Rank.Subordo, "Snakes", "Serpentes");
-		CompleteEntry snakes = next;
+		Entry snakes = next;
 		
 		next = addChild(next, Rank.Superfamilia, "", "Colubroidea");
 		next = addChild(next, Rank.Familia, "Colubrid", "Colubridae");
@@ -211,10 +211,10 @@ public class Mocks {
 		return reptiles;
 	}
 
-	private CompleteEntry getContrivedForTesting() {
-		CompleteEntry root = new CompleteEntry(Rank.Classis, "Testing", "Testerificus");
+	private Entry getContrivedForTesting() {
+		Entry root = new Entry(Rank.Classis, "Testing", "Testerificus");
 
-		CompleteEntry next = root;
+		Entry next = root;
 		addChild(next, Rank.Species, "Finky", "T1");
 		addChild(next, Rank.Species, "T2", "Finky");
 		addChild(next, Rank.Species, "Finkies", "T3");
@@ -258,24 +258,24 @@ public class Mocks {
 		return root;
 	}
 
-	private CompleteEntry getGigantopithecus() {
-		CompleteEntry root = new CompleteEntry(Rank.Classis, "Monkeys and Apes", "Monkeynusses");
+	private Entry getGigantopithecus() {
+		Entry root = new Entry(Rank.Classis, "Monkeys and Apes", "Monkeynusses");
 
-		CompleteEntry next = root;
+		Entry next = root;
 		next = addChild(next, Rank.Species, "", "Gigantopithecus");
 		next = addChild(next, Rank.Species, "Lion tamarin", "Leontopithecus");
 		return root;
 	}
 	
-	private CompleteEntry getMammals() {
-		CompleteEntry mammals = new CompleteEntry(Rank.Classis, "Mammals", "Mammalia");
+	private Entry getMammals() {
+		Entry mammals = new Entry(Rank.Classis, "Mammals", "Mammalia");
 
-		CompleteEntry next = mammals;
+		Entry next = mammals;
 		next = addChild(next, Rank.Subclassis, "", "Theria");
 		next = addChild(next, Rank.Infraclassis, "Placental mammals", "Placentalia");
 //		next = addChild(next, Rank.Empty, "", "");
 		next = addChild(next, Rank.Ordo, "Rodents", "Rodentia");
-		CompleteEntry rodents = next;
+		Entry rodents = next;
 		
 		next = addChild(next, Rank.Subordo, "Squirrel-like rodents", "Sciuromorpha");
 //		next = addChild(next, Rank.Empty, "", "");
@@ -305,22 +305,22 @@ public class Mocks {
 		return mammals;
 	}
 
-	private CompleteEntry addChild(CompleteEntry parent, Rank level, String common, String latin) {
+	private Entry addChild(Entry parent, Rank level, String common, String latin) {
 		// this is a temp measure instead of writing more complex logic elsewhere
 		if (level == Rank.Empty) {
 			return parent;
 		}
-		CompleteEntry entry = new CompleteEntry();
+		Entry entry = new Entry();
 		entry.setCommonName(common);
 		entry.setLatinName(latin);
 		entry.setRank(level);
 		return addChild(parent, entry);
 	}
-	private CompleteEntry addChild(CompleteEntry parent, CompleteEntry child) {
+	private Entry addChild(Entry parent, Entry child) {
 		child.setParent(parent);
-		List<CompleteEntry> children = parent.getCompleteEntryChildren();
+		List<Entry> children = parent.getCompleteEntryChildren();
 		if (children == null) {
-			children = new ArrayList<CompleteEntry>();
+			children = new ArrayList<Entry>();
 			parent.setChildren(children);
 		}
 		children.add(child);

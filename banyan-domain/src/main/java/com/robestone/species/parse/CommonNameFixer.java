@@ -1,6 +1,6 @@
 package com.robestone.species.parse;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Tree;
@@ -17,7 +17,7 @@ public class CommonNameFixer extends AbstractWorker {
 	}
 	public void run() {
 		Tree all = speciesService.findCompleteTreeFromPersistence();
-		for (CompleteEntry e: all.getEntries()) {
+		for (Entry e: all.getEntries()) {
 			String cn = e.getCommonName();
 			if (cn != null) {
 				String fixed = EntryUtilities.fixCommonName(cn);

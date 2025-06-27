@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Rank;
 
@@ -135,7 +135,7 @@ public class WikiSpeciesParser {
 		
 		return text;
 	}
-	private boolean isEntryOkay(CompleteEntry e) {
+	private boolean isEntryOkay(Entry e) {
 		if (e == null) {
 			return false;
 		}
@@ -147,8 +147,8 @@ public class WikiSpeciesParser {
 		}
 		return true;
 	}
-	public CompleteEntry parse(String name, String text) {
-		CompleteEntry entry = parse(name, name, text, true);
+	public Entry parse(String name, String text) {
+		Entry entry = parse(name, name, text, true);
 		
 		// incertae sedis
 		if (!isEntryOkay(entry)) {
@@ -385,10 +385,10 @@ public class WikiSpeciesParser {
 			return null;
 		}
 	}
-	public CompleteEntry parse(String name, String text, boolean checkVernacularParser) {
+	public Entry parse(String name, String text, boolean checkVernacularParser) {
 		return parse(name, name, text, checkVernacularParser);
 	}
-	public CompleteEntry parse(String pageNameLatin, String selfLinkName, String text, boolean checkVernacularParser) {
+	public Entry parse(String pageNameLatin, String selfLinkName, String text, boolean checkVernacularParser) {
 		String fullText = text;
 		text = preProcessRedirectSelfLinks(selfLinkName, text);
 		text = preProcessAbbreviations(text);
@@ -410,7 +410,7 @@ public class WikiSpeciesParser {
 
 		String extinct = getExtinct(text);
 		
-		CompleteEntry parent;
+		Entry parent;
 		// I'm removing this logic, and instead will use the WikiSpeciesTreeFixer
 //		if (SpeciesService.isTopLevelRank(latinName)) {
 //			parent = SpeciesService.TREE_OF_LIFE_ENTRY;
@@ -436,7 +436,7 @@ public class WikiSpeciesParser {
 		String imageLink = getImage(text);
 		String depictedImage = getGroup(depictedPattern, text);
 		
-		CompleteEntry results = new CompleteEntry();
+		Entry results = new Entry();
 		if (rank != null) {
 			results.setRank(Rank.valueOfWithAlternates(rank));
 		} else {
@@ -463,14 +463,14 @@ public class WikiSpeciesParser {
 		commonName = commonName.trim();
 		return commonName;
 	}
-	public CompleteEntry getParent(String text, String latinName, String rank) {
+	public Entry getParent(String text, String latinName, String rank) {
 //		text = getRankSection(text);
-		CompleteEntry parent = null;
+		Entry parent = null;
 		Pattern parentPattern = getParentPattern(rank, latinName, true);
 		String parentLatinName = getGroup(parentPattern, text, 1);
 		if (parentLatinName != null) {
 			parentLatinName = parentLatinName.replaceAll("_", " ");
-			parent = new CompleteEntry(null, null, parentLatinName);
+			parent = new Entry(null, null, parentLatinName);
 		}
 		// wrapping the grandparent hunt in here means we only look recursively until
 		// we find an existing parent.  For now, maybe don't worry about the fact
@@ -484,7 +484,7 @@ public class WikiSpeciesParser {
 				parentLatinName = null;
 			}
 			if (parentLatinName != null) {
-				parent = new CompleteEntry(null, null, parentLatinName);
+				parent = new Entry(null, null, parentLatinName);
 //				LogHelper.speciesLogger.info("red parent." + parentLatinName);
 				// get the parent rank too
 				String ename = getEscapedName(parentLatinName);
@@ -497,7 +497,7 @@ public class WikiSpeciesParser {
 					Rank parentRank = Rank.valueOfWithAlternates(parentRankString);
 					parent.setRank(parentRank);
 					// Keep going as long as we find "red" parents
-					CompleteEntry gparent = getParent(text, parentLatinName, parentRankString);
+					Entry gparent = getParent(text, parentLatinName, parentRankString);
 					parent.setParent(gparent);
 				}
 			}
@@ -722,7 +722,7 @@ public class WikiSpeciesParser {
 		}
 		return fixedPage;
 	}
-	private void cleanNameCharacters(CompleteEntry e) {
+	private void cleanNameCharacters(Entry e) {
 		if (e == null) {
 			return;
 		}

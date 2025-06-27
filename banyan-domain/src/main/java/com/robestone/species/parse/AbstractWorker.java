@@ -43,8 +43,8 @@ public class AbstractWorker {
 	
 	protected ParseStatusService parseStatusService;
 	public SpeciesService speciesService;
-	protected ExamplesService examplesService;
-	protected ImageService imageService;
+	public ExamplesService examplesService;
+	public ImageService imageService;
 	
 	private static boolean inited = false;
 	private static ParseStatusService S_parseStatusService;

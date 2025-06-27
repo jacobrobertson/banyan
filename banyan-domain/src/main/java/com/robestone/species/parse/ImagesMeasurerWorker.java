@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.robestone.image.ImageIoUtilities;
-import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.Image;
 
@@ -27,9 +26,9 @@ public class ImagesMeasurerWorker extends AbstractWorker {
 		}
 	}
 	public void run() {
-		Collection<CompleteEntry> entries = speciesService.getThumbnails();
+		Collection<Entry> entries = speciesService.getThumbnails();
 		
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			runOne(entry);
 		}
 	}

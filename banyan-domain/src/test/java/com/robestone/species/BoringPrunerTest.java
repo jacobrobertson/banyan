@@ -10,18 +10,18 @@ public class BoringPrunerTest extends TestCase {
 	public void testAlligatorsAndCaimans() {
 		BoringPruner pruner = new BoringPruner();
 		
-		CompleteEntry ac = completeEntry("Alligators & Caimans", "Alligatoridae", "pic1", 1, null);
+		Entry ac = completeEntry("Alligators & Caimans", "Alligatoridae", "pic1", 1, null);
 
-		CompleteEntry a1 = completeEntry("Alligators", "Alligatorinae", "pic1", 2, 1);
-		CompleteEntry a2 = completeEntry("Alligators", "Alligator", "pic1", 3, 2);
+		Entry a1 = completeEntry("Alligators", "Alligatorinae", "pic1", 2, 1);
+		Entry a2 = completeEntry("Alligators", "Alligator", "pic1", 3, 2);
 		
-		CompleteEntry aa = completeEntry("American Alligator", "ally amy", "pic1", 4, 3);
-		CompleteEntry ca = completeEntry("Chinese Alligator", "ally sino", "pic2", 5, 3);
+		Entry aa = completeEntry("American Alligator", "ally amy", "pic1", 4, 3);
+		Entry ca = completeEntry("Chinese Alligator", "ally sino", "pic2", 5, 3);
 		
-		CompleteEntry c = completeEntry("Caimans", "caiman", "pic3", 6, 1);
+		Entry c = completeEntry("Caimans", "caiman", "pic3", 6, 1);
 		
 		
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(ac);
 		entries.add(a1);
 		entries.add(a2);
@@ -44,11 +44,11 @@ public class BoringPrunerTest extends TestCase {
 	}
 	public void testPeppers() {
 		BoringPruner pruner = new BoringPruner();
-		CompleteEntry parent = completeEntry("Papa Pepper", "z", "pic1", 1, null);
-		CompleteEntry child1 = completeEntry("Pepper", "Pepito sonriso", null, 2, 1);
-		CompleteEntry child2 = completeEntry("Pepper", "Pepito fruncir", "pic2", 3, 1);
+		Entry parent = completeEntry("Papa Pepper", "z", "pic1", 1, null);
+		Entry child1 = completeEntry("Pepper", "Pepito sonriso", null, 2, 1);
+		Entry child2 = completeEntry("Pepper", "Pepito fruncir", "pic2", 3, 1);
 		
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(parent);
 		entries.add(child1);
 		entries.add(child2);
@@ -66,11 +66,11 @@ public class BoringPrunerTest extends TestCase {
 	}
 	public void testMantaBirostris() {
 		BoringPruner pruner = new BoringPruner();
-		CompleteEntry parent = completeEntry("Eagle rays", "z", "pic1", 1, null);
-		CompleteEntry child = completeEntry("MAnta Rays", "manta", null, 2, 1);
-		CompleteEntry gchild = completeEntry("Manta Rays", "Manta birostris", "pic2", 3, 2);
+		Entry parent = completeEntry("Eagle rays", "z", "pic1", 1, null);
+		Entry child = completeEntry("MAnta Rays", "manta", null, 2, 1);
+		Entry gchild = completeEntry("Manta Rays", "Manta birostris", "pic2", 3, 2);
 		
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(parent);
 		entries.add(child);
 		entries.add(gchild);
@@ -87,10 +87,10 @@ public class BoringPrunerTest extends TestCase {
 	
 	public void testMountainBeaver() {
 		BoringPruner pruner = new BoringPruner();
-		CompleteEntry parent = completeEntry("Mountain Beaver", "Aplodontia", "thumb/3/3c/Aplodontia.jpg/180px-Aplodontia.jpg", 1, null);
-		CompleteEntry child = completeEntry("Mountain Beaver", "Aplodontia rufa", "3/3c/Aplodontia.jpg", 2, 1);
+		Entry parent = completeEntry("Mountain Beaver", "Aplodontia", "thumb/3/3c/Aplodontia.jpg/180px-Aplodontia.jpg", 1, null);
+		Entry child = completeEntry("Mountain Beaver", "Aplodontia rufa", "3/3c/Aplodontia.jpg", 2, 1);
 		
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(parent);
 		entries.add(child);
 		
@@ -103,12 +103,12 @@ public class BoringPrunerTest extends TestCase {
 	}
 	public void testAngelSharks() {
 		BoringPruner pruner = new BoringPruner();
-		CompleteEntry gparent = completeEntry("Funk Shark", "Foo 1", null, 0, null);
-		CompleteEntry parent = completeEntry("Angel Shark", "Foo 1", null, 1, 0);
-		CompleteEntry child = completeEntry("Angel Sharks", "Foo 2", null, 2, 1);
-		CompleteEntry gchild = completeEntry("Angel Shark", "Foo 3", null, 3, 2);
+		Entry gparent = completeEntry("Funk Shark", "Foo 1", null, 0, null);
+		Entry parent = completeEntry("Angel Shark", "Foo 1", null, 1, 0);
+		Entry child = completeEntry("Angel Sharks", "Foo 2", null, 2, 1);
+		Entry gchild = completeEntry("Angel Shark", "Foo 3", null, 3, 2);
 		
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(gparent);
 		entries.add(parent);
 		entries.add(child);
@@ -124,10 +124,10 @@ public class BoringPrunerTest extends TestCase {
 	}
 	
 	private void doAssertCollections(BoringPruner pruner) {
-		for (CompleteEntry e: pruner.getInteresting()) {
+		for (Entry e: pruner.getInteresting()) {
 			assertFalse(pruner.getBoring().contains(e));
 		}
-		for (CompleteEntry e: pruner.getBoring()) {
+		for (Entry e: pruner.getBoring()) {
 			assertFalse(pruner.getInteresting().contains(e));
 		}
 	}
@@ -135,8 +135,8 @@ public class BoringPrunerTest extends TestCase {
 	// TODO
 //	Bromus hordeaceus
 	
-	private CompleteEntry completeEntry(String cn, String ln, String i, Integer id, Integer pid) {
-		CompleteEntry e = new CompleteEntry();
+	private Entry completeEntry(String cn, String ln, String i, Integer id, Integer pid) {
+		Entry e = new Entry();
 		e.setCommonName(cn);
 		e.setLatinName(ln);
 		e.setImageLink(i);

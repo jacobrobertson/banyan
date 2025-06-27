@@ -13,7 +13,7 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Tree;
 import com.robestone.species.parse.AbstractWorker;
@@ -86,7 +86,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		boolean isLatin;
 	}
 	public static class CandidateEntry implements Comparable<CandidateEntry> {
-		CompleteEntry entry;
+		Entry entry;
 		List<CandidateName> names = new ArrayList<CandidateName>();
 		int score;
 		int matchNameScorePart;
@@ -129,7 +129,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	}
 	void createCandidates() throws Exception {
 		final Tree tree = buildTree();
-		List<CompleteEntry> entries = tree.getEntries();
+		List<Entry> entries = tree.getEntries();
 		List<CandidateEntry> entryNames = toCandidates(entries);
 		
 		System.out.println(">createCandidates.found." + entryNames.size());
@@ -149,13 +149,13 @@ public class SearchIndexBuilder extends AbstractWorker {
 	 * We don't care about the "tree" just the entries, so we don't worry about hooking it all together.
 	 */
 	private Tree buildTree() {
-		Node nroot = JsonBuilder.buildTree(speciesService);
+		Node nroot = JsonPartitioner.buildTree(speciesService);
 		if (testListSize > 0) {
 			pruneTree(nroot);
 		}
 		
-		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
-		CompleteEntry root = buildTree(nroot, map);
+		Map<Integer, Entry> map = new HashMap<Integer, Entry>();
+		Entry root = buildTree(nroot, map);
 
 		Tree tree = new Tree(root, map);
 		return tree;
@@ -186,11 +186,11 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		return all;
 	}
-	private CompleteEntry buildTree(Node node, Map<Integer, CompleteEntry> map) {
-		CompleteEntry entry = speciesService.findEntry(node.getId());
+	private Entry buildTree(Node node, Map<Integer, Entry> map) {
+		Entry entry = speciesService.findEntry(node.getId());
 		map.put(entry.getId(), entry);
 		for (Node child : node.getChildren()) {
-			CompleteEntry centry = buildTree(child, map);
+			Entry centry = buildTree(child, map);
 			centry.setParent(entry);
 		}
 		return entry;
@@ -199,7 +199,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	void addParents(CandidateEntry c, Tree tree, Map<Integer, CandidateEntry> ids) {
 		Integer pid = c.entry.getParentId();
 		if (pid != null && !ids.containsKey(pid)) {
-			CompleteEntry pe = tree.get(pid);
+			Entry pe = tree.get(pid);
 			CandidateEntry pc = toCandidate(pe);
 			ids.put(pid, pc);
 			addParents(pc, tree, ids);
@@ -364,7 +364,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return (" " + name + " ").contains(" " + key + " ");
 	}
 	
-	public CandidateEntry toCandidate(CompleteEntry entry) {
+	public CandidateEntry toCandidate(Entry entry) {
 		CandidateEntry candidate = new CandidateEntry();
 		candidate.entry = entry;
 		
@@ -400,11 +400,11 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		return name;
 	}
-	private List<CandidateEntry> toCandidates(List<CompleteEntry> entries) {
+	private List<CandidateEntry> toCandidates(List<Entry> entries) {
 		List<CandidateEntry> candidates = new ArrayList<CandidateEntry>();
 		
 		// convert each one
-		for (CompleteEntry entry : entries) {
+		for (Entry entry : entries) {
 			CandidateEntry candidate = toCandidate(entry);
 			if (candidate != null) {
 				candidates.add(candidate);
@@ -683,11 +683,11 @@ public class SearchIndexBuilder extends AbstractWorker {
 //		buf.append("\", \"name\" : \"");
 //		buf.append(JsonParser.escape(c.matchedName));
 		buf.append("\", \"latin\" : \"");
-		buf.append(JsonParser.escape(c.entry.getLatinName()));
+		buf.append(JsonFileUtils.escape(c.entry.getLatinName()));
 		buf.append("\"");
 		if (c.entry.getCommonName() != null) {
 			buf.append(", \"common\" : \"");
-			buf.append(JsonParser.escape(c.entry.getCommonName()));
+			buf.append(JsonFileUtils.escape(c.entry.getCommonName()));
 			buf.append("\"");
 		}
 		buf.append(" }");
@@ -735,7 +735,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			fileName = name + ".json";
 		}
 
-		String folder = JsonBuilder.outputDir + "/s" + path + "/" + fileName;
+		String folder = JsonFileUtils.outputDir + "/s" + path + "/" + fileName;
 		
 		File file = new File(folder);
 		FileUtils.writeStringToFile(file, json, Charset.defaultCharset());

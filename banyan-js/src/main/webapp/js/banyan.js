@@ -1808,6 +1808,8 @@ function submitSearchQuery(event, ui) {
 	}
 	var id = ui.item.id;
 	var ids = uncrunch(ui.item.ids);
+	// make sure we're on the tree page, (not the detail page)
+	// (working on) renderCurrentTree(false);
 	loadJsonThenMarkNewIdsVisible(ids, function() {
 		if (getMapEntry(id).img) {
 			pinNode(id, true);

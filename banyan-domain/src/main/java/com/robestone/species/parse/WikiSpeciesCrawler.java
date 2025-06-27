@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Rank;
 import com.robestone.species.UpdateType;
@@ -25,7 +25,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = false;
 		boolean argIsParentTree = !true;
 		boolean downstreamOnly = false;
-		boolean crawlOne = true; // to just "crawl" one only
+		boolean crawlOne = !true; // to just "crawl" one only
 		int distance = 2;
 		//*
 		args =  
@@ -161,14 +161,14 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	public void crawlOne(ParseStatus ps) throws Exception {
 		crawlOne(ps, true);
 	}
-	public CompleteEntry crawlOne(ParseStatus ps, boolean parseLinks) throws Exception {
+	public Entry crawlOne(ParseStatus ps, boolean parseLinks) throws Exception {
 		// get the contents of the page
 		String page = WikiSpeciesCache.CACHE.readFile(ps.getLatinName(), forceNewDownloadForCache);
 		if (page == null) {
 			return null;
 		}
 		// visit the link before getting more links
-		CompleteEntry results = visitPage(ps, page);
+		Entry results = visitPage(ps, page);
 		if (parseLinks) {
 			// search for the right patterns, ie <a href="/wiki/Biciliata"
 			Set<String> links = parseLinks(page);
@@ -217,7 +217,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 	}
 	
-	public CompleteEntry visitPage(ParseStatus link, String page) {
+	public Entry visitPage(ParseStatus link, String page) {
 		// cannot tell a redirect page from auth page, so have to check for redirect first
 		String redirect = redirectPageParser.getRedirectTo(page);
 		if (redirect != null) {
@@ -238,8 +238,8 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			return null;
 		}
 		// parse it
-		CompleteEntry results = parsePage(link, page);
-		CompleteEntry firstResults = results;
+		Entry results = parsePage(link, page);
+		Entry firstResults = results;
 		if (results == null) {
 //			visitUnparseablePage(link, page);
 			// Nothing to do here...
@@ -258,9 +258,9 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		}
 		return firstResults;
 	}
-	private CompleteEntry parsePage(ParseStatus link, String page) {
+	private Entry parsePage(ParseStatus link, String page) {
 		String name = link.getLatinName();
-		CompleteEntry results = parser.parse(name, page);
+		Entry results = parser.parse(name, page);
 		if (isEntryParsedOkay(results)) {
 			return results;
 		}
@@ -277,7 +277,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	/**
 	 * Can't rely on other code to determine if this was parsed or not.
 	 */
-	private boolean isEntryParsedOkay(CompleteEntry e) {
+	private boolean isEntryParsedOkay(Entry e) {
 		if (e == null) {
 			return false;
 		} else if (e.getRank() != null && e.getRank() != Rank.Error) {
@@ -287,7 +287,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 			return false;
 		}
 	}
-	private void udpateOrInsert(CompleteEntry entry, boolean onlyInsert) {
+	private void udpateOrInsert(Entry entry, boolean onlyInsert) {
 		
 		UpdateType updated;
 		if (onlyInsert) {
@@ -350,5 +350,5 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public static final String CRAWL_LIST = 
-  "Coniothyrina";
+  "Aeoliscus punctulatus";
 }

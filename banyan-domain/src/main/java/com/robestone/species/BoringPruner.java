@@ -29,14 +29,14 @@ public class BoringPruner {
 
 	public Logger logger = LogHelper.speciesLogger;
 	
-	private Set<CompleteEntry> detached = new HashSet<CompleteEntry>();
-	private Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
+	private Set<Entry> detached = new HashSet<Entry>();
+	private Set<Entry> entries = new HashSet<Entry>();
 	private Tree tree;
 
-	public Set<CompleteEntry> getBoring() {
+	public Set<Entry> getBoring() {
 		return detached;
 	}
-	public Set<CompleteEntry> getInteresting() {
+	public Set<Entry> getInteresting() {
 		return entries;
 	}
 	
@@ -49,7 +49,7 @@ public class BoringPruner {
 		this.entries = EntryUtilities.getEntries(tree.getRoot());
 		
 		// some analysis if needed
-		List<CompleteEntry> list = new ArrayList<CompleteEntry>(entries);
+		List<Entry> list = new ArrayList<Entry>(entries);
 		Collections.sort(list, new EntryComparator());
 //		for (CompleteEntry e : list) {
 //			logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
@@ -82,7 +82,7 @@ public class BoringPruner {
 	 * For convenience, move clean names to regular names.
 	 */
 	private void promoteCleanNames() {
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			e.setCommonName(e.getCommonNameClean());
 			e.setLatinName(e.getLatinNameClean());
 		}
@@ -128,7 +128,7 @@ public class BoringPruner {
 	private void removeBoringCommonNames() {
 		logger.debug("removeBoringCommonNames > " + entries.size());
 		int count = 0;
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			if (e.getCommonName() != null) {
 //				logger.debug("removeBoringCommonNames ? " + e.getId());
 				if (isCommonNameBoring(e)) {
@@ -140,7 +140,7 @@ public class BoringPruner {
 		}
 		logger.debug("removeBoringCommonNames < " + count);
 	}
-	private boolean isCommonNameBoring(CompleteEntry e) {
+	private boolean isCommonNameBoring(Entry e) {
 		if (CommonNameSimilarityChecker.isCommonNameCleanBoring(e.getCommonName(), e.getLatinName())) {
 			return true;
 		}
@@ -159,7 +159,7 @@ public class BoringPruner {
 	 */
 	private void normalizeImageNames() {
 		logger.debug("normalizeImageNames > " + entries.size());
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			if (e.getImageLink() != null) {
 				String name = ImagesCreater.parseFileName(e.getImageLink());
 				if (!name.equals(e.getImageLink())) {
@@ -172,9 +172,9 @@ public class BoringPruner {
 	
 	private int pruneBoringLeaves() {
 		int changed = 0;
-		Collection<CompleteEntry> leaves = EntryUtilities.getLeaves(tree.getRoot());
+		Collection<Entry> leaves = EntryUtilities.getLeaves(tree.getRoot());
 		logger.debug("pruneBoringLeaves > " + leaves.size());
-		for (CompleteEntry e: leaves) {
+		for (Entry e: leaves) {
 			boolean boring = isLeafBoring(e);
 //			if (e.getLatinNameClean().startsWith("TESTUDO")) {
 //				logger.debug("pruneBoringLeaves.boring." + e.getId() + "." + e.getLatinName() + " / " + e.getCommonName());
@@ -197,13 +197,13 @@ public class BoringPruner {
 	private int pruneBoringParents() {
 		int count = 0;
 		logger.debug("pruneBoringParents > " + entries.size());
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			// we only care about entries that have exactly one child.
 			if (e.getLoadedChildrenSize() != 1) {
 				continue;
 			}
 			// see if the child is more interesting than the parent
-			CompleteEntry child = e.getCompleteEntryChildren().get(0);
+			Entry child = e.getCompleteEntryChildren().get(0);
 			boolean boring = isFirstSubsetOfSecond(e, child);
 			if (boring) {
 				rewireToGrandparent(child);
@@ -217,15 +217,15 @@ public class BoringPruner {
 		return count;
 	}
 	
-	private void rewireToGrandparent(CompleteEntry child) {
-		CompleteEntry gparent = child.getParent().getParent();
+	private void rewireToGrandparent(Entry child) {
+		Entry gparent = child.getParent().getParent();
 		detach(child.getParent());
 		child.setParent(gparent);
 		child.setParentId(gparent.getId());
 		gparent.getCompleteEntryChildren().add(child);
 	}
 	
-	private boolean isLeafBoring(CompleteEntry e) {
+	private boolean isLeafBoring(Entry e) {
 		
 		if (isLeafBoring_Simple(e)) {
 			return true;
@@ -246,16 +246,16 @@ public class BoringPruner {
 		return false;
 	}
 	
-	private boolean isLeafBoring_ComparedToParent(CompleteEntry e) {
+	private boolean isLeafBoring_ComparedToParent(Entry e) {
 		return isFirstSubsetOfSecond(e, e.getParent());
 	}
-	private boolean isLeafBoring_ComparedToSiblings(CompleteEntry e) {
+	private boolean isLeafBoring_ComparedToSiblings(Entry e) {
 		// cannot be boring if it has children (for the current pass...)
 		if (e.hasChildren()) {
 			return false;
 		}
-		List<CompleteEntry> siblings = e.getParent().getCompleteEntryChildren();
-		for (CompleteEntry sibling: siblings) {
+		List<Entry> siblings = e.getParent().getCompleteEntryChildren();
+		for (Entry sibling: siblings) {
 			if (sibling == e) {
 				continue;
 			}
@@ -265,7 +265,7 @@ public class BoringPruner {
 		}
 		return false;
 	}
-	private boolean isLeafBoring_Simple(CompleteEntry e) {
+	private boolean isLeafBoring_Simple(Entry e) {
 		return (e.getImageLink() == null && e.getCommonName() == null);
 	}
 	
@@ -273,7 +273,7 @@ public class BoringPruner {
 	 * The first might not be boring on its own, but this method
 	 * checks if it is merely a "subset" of the second.
 	 */
-	private boolean isFirstSubsetOfSecond(CompleteEntry first, CompleteEntry second) {
+	private boolean isFirstSubsetOfSecond(Entry first, Entry second) {
 		// TODO "Mountain Beaver" > "Mountain [b]eaver[s]"
 		
 		String firstCommonName = first.getCommonName();
@@ -307,7 +307,7 @@ public class BoringPruner {
 		return false;
 	}
 	
-	private void detach(CompleteEntry e) {
+	private void detach(Entry e) {
 		detached.add(e);
 		if (e.getParentId() != null) {
 			e.getParent().getChildren().remove(e);

@@ -58,9 +58,9 @@ public class ExamplesService implements IExamplesService {
 			List<Integer> ids = cruncher.toList(crunched);
 			LogHelper.speciesLogger.info("crunchIds." + ids);
 			LogHelper.speciesLogger.info("crunchIds." + terms + " >> " + crunched);
-			List<CompleteEntry> entries = speciesService.findEntries(new HashSet<Integer>(ids));
+			List<Entry> entries = speciesService.findEntries(new HashSet<Integer>(ids));
 			StringBuilder buf = new StringBuilder();
-			for (CompleteEntry entry: entries) {
+			for (Entry entry: entries) {
 				if (buf.length() > 0) {
 					buf.append(",");
 				}

@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 
@@ -47,7 +47,7 @@ public class VernacularCrawler {
 	public void run(String latinName) throws IOException {
 		String file = dir + latinName;
 		String page = IOUtils.toString(new FileInputStream(file));
-		CompleteEntry e = parser.parse(latinName, page, false);
+		Entry e = parser.parse(latinName, page, false);
 		if (e != null && e.getCommonName() == null) {
 			String sidebar = getSidebar(latinName, page);
 			if (sidebar != null) {

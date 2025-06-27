@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 
@@ -18,9 +17,9 @@ public class SiblingsWithSameCommonNamesAnalyzer extends AbstractWorker {
 		speciesService.updateCommonNamesSharedWithSiblingsFalse();
 		int i = 0;
 		Set<String> found = new HashSet<String>();
-		Collection<CompleteEntry> all = 
+		Collection<Entry> all = 
 			speciesService.findInterestingTreeFromPersistence().getEntries();
-		for (CompleteEntry e: all) {
+		for (Entry e: all) {
 			String key = getKey(e);
 			if (found.contains(key)) {
 				continue;
@@ -44,7 +43,7 @@ public class SiblingsWithSameCommonNamesAnalyzer extends AbstractWorker {
 			return 0;
 		}
 		int count = 0;
-		List<? extends Entry> children = entry.getParent().getChildren();
+		List<Entry> children = entry.getParent().getChildren();
 		for (Entry e: children) {
 			if (e == entry) {
 				continue;

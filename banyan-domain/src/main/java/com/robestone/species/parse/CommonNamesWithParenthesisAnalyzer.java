@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.robestone.species.CommonNameSplitter;
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 import com.robestone.species.ParenthesisSplitter;
@@ -19,13 +19,13 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 		new CommonNamesWithParenthesisAnalyzer().fix();
 	}
 	public void fix() {
-		Collection<CompleteEntry> all = 
+		Collection<Entry> all = 
 			speciesService.findCompleteTreeFromPersistence().getEntries();
-		for (CompleteEntry e: all) {
+		for (Entry e: all) {
 			fix(e);
 		}
 	}
-	public void fix(CompleteEntry e) {
+	public void fix(Entry e) {
 		String originalName = e.getCommonName();
 		CommonNameSplitter.assignCommonNames(e);
 		List<String> names = e.getCommonNames();
@@ -55,9 +55,9 @@ public class CommonNamesWithParenthesisAnalyzer extends AbstractWorker {
 	public void analyze() {
 		Set<String> innersClean = new HashSet<String>();
 		Set<String> inners = new HashSet<String>();
-		Collection<CompleteEntry> all = 
+		Collection<Entry> all = 
 			speciesService.findCompleteTreeFromPersistence().getEntries();
-		for (CompleteEntry e: all) {
+		for (Entry e: all) {
 			CommonNameSplitter.assignCommonNames(e);
 			Collection<String> names = e.getCommonNames();
 			if (names == null) {

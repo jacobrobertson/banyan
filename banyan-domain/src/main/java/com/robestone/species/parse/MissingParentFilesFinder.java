@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 
 /**
  * In the DB, I see an entry with a null parent
  * Get the list of all children of that entry
  * Use the existing method that scrapes all page names from a given page, and exclude the names of all children
- * For each of those pages, see if they link to the page.  If exactly one of them does, it’s a likely hit.
+ * For each of those pages, see if they link to the page.  If exactly one of them does, itï¿½s a likely hit.
  * TODO exclude AUTH pages also
  * TODO after getting the parent, I have to get the rank
  * TODO this will actually be most useful once I have the count, so I know if it's worth doing at all, because
@@ -43,10 +43,10 @@ public class MissingParentFilesFinder extends AbstractWorker {
 	public void searchFilesForParentIdNull() throws Exception {
 		LogHelper.speciesLogger.debug("searchFilesForParentIdNull>");
 		Set<String> parentsChecked = new HashSet<String>();
-		Collection<CompleteEntry> entries = speciesService.findEntriesWithInvalidParent();
+		Collection<Entry> entries = speciesService.findEntriesWithInvalidParent();
 		LogHelper.speciesLogger.debug("searchFilesForParentIdNull>>");
 		Map<String, List<String>> reasons = new HashMap<String, List<String>>();
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			// check if the child exists - it might have been a red link
 			String cname = e.getLatinName();
 			boolean exists = WikiSpeciesCache.CACHE.isFilePresent(cname, false);
@@ -68,7 +68,7 @@ public class MissingParentFilesFinder extends AbstractWorker {
 			}
 		}
 	}
-	public String parseParentFileToDetermineFailure(CompleteEntry entry) throws Exception {
+	public String parseParentFileToDetermineFailure(Entry entry) throws Exception {
 		String pname = entry.getParentLatinName();
 //		LogHelper.speciesLogger.debug("parseParentFileToDetermineFailure>" + pname + " < " + entry.getLatinName());
 		String page = WikiSpeciesCache.CACHE.readFile(pname, false);
@@ -77,14 +77,14 @@ public class MissingParentFilesFinder extends AbstractWorker {
 			return "FileNotFound";
 		}
 //		LogHelper.speciesLogger.debug("parseParentFileToDetermineFailure>2>");
-		CompleteEntry parsed = parser.parse(pname, page);
+		Entry parsed = parser.parse(pname, page);
 //		LogHelper.speciesLogger.debug("parseParentFileToDetermineFailure>3>");
 		if (parsed == null) {
 			return "ParseFailed";
 		}
 		return "Okay";
 	}
-	private void addReason(String reason, CompleteEntry entry, Map<String, List<String>> reasons) {
+	private void addReason(String reason, Entry entry, Map<String, List<String>> reasons) {
 		LogHelper.speciesLogger.debug("parseReason." + reason + "." + entry.getParentLatinName() + " < " + entry.getLatinName());
 		List<String> names = reasons.get(reason);
 		if (names == null) {
@@ -94,9 +94,9 @@ public class MissingParentFilesFinder extends AbstractWorker {
 		names.add(entry.getParentLatinName());
 	}
 	public void searchParentIdNull() throws Exception {
-		Collection<CompleteEntry> entries = speciesService.findEntriesWithInvalidParent();
+		Collection<Entry> entries = speciesService.findEntriesWithInvalidParent();
 		List<Integer> ids = new ArrayList<Integer>();
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			ids.add(e.getId());
 		}
 		int count = countParentIdNullSubTree(ids);

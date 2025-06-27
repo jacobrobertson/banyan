@@ -38,6 +38,14 @@ public class EntryUtilities {
 		return getCrunchedIds(ids);
 	}
 	
+	public static Set<Entry> getEntries(Entry root, Set<Integer> ids) {
+		Set<Entry> entries = new HashSet<Entry>();
+		for (Integer id : ids) {
+			Entry e = findEntry(root, id);
+			entries.add(e);
+		}
+		return entries;
+	}
 	public static Collection<Integer> getLeavesIdsForHideChildren(Entry root, Integer parentId) {
 		// get ids to exclude
 		Entry parent = findEntry(root, parentId);
@@ -56,8 +64,8 @@ public class EntryUtilities {
 		return ids;
 	}
 	
-	public static void cleanEntries(Collection<CompleteEntry> entries) {
-		for (CompleteEntry entry: entries) {
+	public static void cleanEntries(Collection<Entry> entries) {
+		for (Entry entry: entries) {
 			cleanEntry(entry);
 		}
 	}
@@ -65,7 +73,7 @@ public class EntryUtilities {
 	 * Set the "clean" properties.
 	 * @param entry
 	 */
-	public static void cleanEntry(CompleteEntry entry) {
+	public static void cleanEntry(Entry entry) {
 		entry.setLatinNameClean(getClean(entry.getLatinName(), false));
 		entry.setLatinNameCleanest(getClean(entry.getLatinName(), true));
 		entry.setCommonNameClean(getClean(entry.getCommonName(), false));
@@ -100,28 +108,28 @@ public class EntryUtilities {
 			}
 		}
 	}
-	static Map<Integer, CompleteEntry> toMap(CompleteEntry root) {
-		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
+	static Map<Integer, Entry> toMap(Entry root) {
+		Map<Integer, Entry> map = new HashMap<Integer, Entry>();
 		addToMap(map, root);
 		return map;
 	}
-	private static void addToMap(Map<Integer, CompleteEntry> map, CompleteEntry entry) {
+	private static void addToMap(Map<Integer, Entry> map, Entry entry) {
 		map.put(entry.getId(), entry);
 		if (entry.hasChildren()) {
-			for (CompleteEntry child: entry.getCompleteEntryChildren()) {
+			for (Entry child: entry.getCompleteEntryChildren()) {
 				addToMap(map, child);
 			}
 		}
 	}
-	public static Collection<? extends Entry> getEntriesForEntry(Entry root) {
-		return getEntries((CompleteEntry) root);
+	public static Collection<Entry> getEntriesForEntry(Entry root) {
+		return getEntries((Entry) root);
 	}
-	public static Set<CompleteEntry> getEntries(CompleteEntry root) {
-		Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
+	public static Set<Entry> getEntries(Entry root) {
+		Set<Entry> entries = new HashSet<Entry>();
 		addEntries(root, entries, new HashSet<>());
 		return entries;
 	}
-	static Collection<Integer> getIds(Collection<? extends Entry> entries) {
+	static Collection<Integer> getIds(Collection<Entry> entries) {
 		Set<Integer> ids = new HashSet<Integer>();
 		for (Entry e: entries) {
 			ids.add(e.getId());
@@ -131,11 +139,11 @@ public class EntryUtilities {
 	/**
 	 * @param safeIds to prevent any recursive tree
 	 */
-	private static void addEntries(CompleteEntry entry, Set<CompleteEntry> entries, Set<Integer> safeIds) {
+	private static void addEntries(Entry entry, Set<Entry> entries, Set<Integer> safeIds) {
 		entries.add(entry);
 		safeIds.add(entry.getId());
 		if (entry.hasChildren()) {
-			for (CompleteEntry child: entry.getCompleteEntryChildren()) {
+			for (Entry child: entry.getCompleteEntryChildren()) {
 				if (child == null) {
 					throw new IllegalArgumentException("Child is null for parent: " + entry.getId() + "/" + entry.getLatinName());
 				}
@@ -158,35 +166,35 @@ public class EntryUtilities {
 		return getLeavesIds(entry, NO_IDS);
 	}
 	private static Collection<Integer> getLeavesIds(Entry entry, Set<Integer> toExclude) {
-		Collection<CompleteEntry> leaves = getLeaves((CompleteEntry) entry, toExclude);
+		Collection<Entry> leaves = getLeaves((Entry) entry, toExclude);
 		Collection<Integer> ids = getIds(leaves);
 		return ids;
 	}
-	public static Set<CompleteEntry> getLeaves(CompleteEntry root) {
+	public static Set<Entry> getLeaves(Entry root) {
 		return getLeaves(root, NO_IDS);
 	}
-	private static Set<CompleteEntry> getLeaves(CompleteEntry root, Set<Integer> toExclude) {
-		Set<CompleteEntry> entries = new HashSet<CompleteEntry>();
+	private static Set<Entry> getLeaves(Entry root, Set<Integer> toExclude) {
+		Set<Entry> entries = new HashSet<Entry>();
 		addLeaves(root, entries, toExclude);
 		return entries;
 	}
-	private static void addLeaves(CompleteEntry entry, Set<CompleteEntry> entries, Set<Integer> toExclude) {
+	private static void addLeaves(Entry entry, Set<Entry> entries, Set<Integer> toExclude) {
 		if (isLeaf(entry, toExclude)) {
 			entries.add(entry);
 		} else {
-			for (CompleteEntry child: entry.getCompleteEntryChildren()) {
+			for (Entry child: entry.getCompleteEntryChildren()) {
 				if (!toExclude.contains(child.getId())) {
 					addLeaves(child, entries, toExclude);
 				}
 			}
 		}
 	}
-	private static boolean isLeaf(CompleteEntry entry, Set<Integer> toExclude) {
+	private static boolean isLeaf(Entry entry, Set<Integer> toExclude) {
 		int count = entry.getLoadedChildrenSize();
 		if (count == 0) {
 			return true;
 		}
-		for (CompleteEntry child: entry.getCompleteEntryChildren()) {
+		for (Entry child: entry.getCompleteEntryChildren()) {
 			if (toExclude.contains(child.getId())) {
 				count--;
 			}
@@ -347,18 +355,15 @@ public class EntryUtilities {
 	/**
 	 * Hook it all together, sort, and return the root.
 	 */
-	public static Tree buildTree(CompleteEntry e) {
-		return buildTree(getEntries(e));
-	}
 	public static Tree buildTree(Entry e) {
-		return buildTree((CompleteEntry) e);
+		return buildTree(getEntries(e));
 	}
 	/**
 	 * Hook it all together, sort, and return the root.
 	 */
-	public static Tree buildTree(Collection<CompleteEntry> col) {
-		Map<Integer, CompleteEntry> map = new HashMap<Integer, CompleteEntry>();
-		for (CompleteEntry entry: col) {
+	public static Tree buildTree(Collection<Entry> col) {
+		Map<Integer, Entry> map = new HashMap<Integer, Entry>();
+		for (Entry entry: col) {
 			map.put(entry.getId(), entry);
 		}
 		return buildTree(map);
@@ -366,26 +371,26 @@ public class EntryUtilities {
 	/**
 	 * Hook it all together, sort, and return the root.
 	 */
-	public static Tree buildTree(Map<Integer, CompleteEntry> map) {
+	public static Tree buildTree(Map<Integer, Entry> map) {
 		// ensure each child list is empty before re-hooking
-		for (CompleteEntry e: map.values()) {
+		for (Entry e: map.values()) {
 			e.setChildren(null);
 		}
 		// hook them together
-		for (CompleteEntry e: map.values()) {
-			CompleteEntry parent = map.get(e.getParentId());
+		for (Entry e: map.values()) {
+			Entry parent = map.get(e.getParentId());
 			if (parent != null) {
 				e.setParent(parent);
 				if (parent.getChildren() == null) {
-					parent.setChildren(new ArrayList<CompleteEntry>());
+					parent.setChildren(new ArrayList<Entry>());
 				}
 				parent.getCompleteEntryChildren().add(e);
 			}
 		}
 		
 		// find the top
-		CompleteEntry top = null;
-		for (CompleteEntry e: map.values()) {
+		Entry top = null;
+		for (Entry e: map.values()) {
 			if (e.getParent() == null) {
 				// candidate for top
 				if (top == null || SpeciesService.TREE_OF_LIFE_ID.equals(e.getId())) {
@@ -412,16 +417,16 @@ public class EntryUtilities {
 	
 	public static List<Tree> findDisconnectedTrees(Tree tree) {
 		List<Tree> trees = new ArrayList<Tree>();
-		CompleteEntry root = tree.getRoot();
+		Entry root = tree.getRoot();
 		Set<String> rootNames = new HashSet<String>();
 		rootNames.add(root.getLatinName());
 		int count = 0;
 		int logEvery = 5000;
-		Map<Integer, CompleteEntry> map = tree.getEntriesMap();
+		Map<Integer, Entry> map = tree.getEntriesMap();
 		for (Integer id: map.keySet()) {
 			count++;
-			CompleteEntry e = map.get(id);
-			CompleteEntry p = getRoot(e);
+			Entry e = map.get(id);
+			Entry p = getRoot(e);
 			if (count++ % logEvery == 0) {
 				LogHelper.speciesLogger.debug(
 						"findDisconnectedTrees.log." + count + "." + 
@@ -451,10 +456,10 @@ public class EntryUtilities {
 		
 		return trees;
 	}
-	public static CompleteEntry getRoot(CompleteEntry e) {
+	public static Entry getRoot(Entry e) {
 		// need a way to check that I don't get in a loop
 		Set<Integer> ids = new HashSet<Integer>();
-		CompleteEntry parent = null;
+		Entry parent = null;
 		while (e != null) {
 			if (ids.contains(e.getId())) {
 				return null;
@@ -588,7 +593,7 @@ public class EntryUtilities {
 		
 		EntryProperties props = new EntryProperties(best.getEntryProperties());
 		props.image = image;
-		CompleteEntry e = new CompleteEntry(props);
+		Entry e = new Entry(props);
 		e.setCollapsedCount(entries.size() - 1);
 		return e;
 	}

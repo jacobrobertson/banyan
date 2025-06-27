@@ -34,7 +34,7 @@ public class EntryUtilitiesTest extends TestCase {
 		
 	}
 	private Tree createMockTree() {
-		List<CompleteEntry> list = new ArrayList<CompleteEntry>();
+		List<Entry> list = new ArrayList<Entry>();
 		
 		addEntry(list, 0, 100);
 		addEntry(list, 1, 0);
@@ -58,8 +58,8 @@ public class EntryUtilitiesTest extends TestCase {
 		
 		return EntryUtilities.buildTree(list);
 	}
-	private CompleteEntry addEntry(List<CompleteEntry> list, int c, int p) {
-		CompleteEntry e = new CompleteEntry();
+	private Entry addEntry(List<Entry> list, int c, int p) {
+		Entry e = new Entry();
 		e.setId(c);
 		e.setLatinName("latinName" + c);
 		e.setParentId(p);
@@ -76,15 +76,15 @@ public class EntryUtilitiesTest extends TestCase {
 		
 		assertEquals("L0", e.getLatinName());
 		
-		((CompleteEntry)list.get(3)).setCommonName("L3");
+		((Entry)list.get(3)).setCommonName("L3");
 		e = EntryUtilities.collapseListToOne(list);
 		assertEquals("L3", e.getLatinName());
 		
-		((CompleteEntry)list.get(4)).setCommonName("L4");
+		((Entry)list.get(4)).setCommonName("L4");
 		e = EntryUtilities.collapseListToOne(list);
 		assertEquals("L3", e.getLatinName());
 		
-		((CompleteEntry)list.get(4)).setCommonName("z L 4 a");
+		((Entry)list.get(4)).setCommonName("z L 4 a");
 		e = EntryUtilities.collapseListToOne(list);
 		assertEquals("L4", e.getLatinName());
 	}
@@ -106,7 +106,7 @@ public class EntryUtilitiesTest extends TestCase {
 		for (int i = 0; i < names.length; i += 2) {
 			String latinName = names[i];
 			String commonName = names[i + 1];
-			CompleteEntry e = new CompleteEntry();
+			Entry e = new Entry();
 			e.setCommonName(commonName);
 			e.setLatinName(latinName);
 			entries.add(e);

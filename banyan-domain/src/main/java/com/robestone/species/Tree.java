@@ -6,25 +6,25 @@ import java.util.Map;
 
 public class Tree {
 
-	private CompleteEntry root;
-	private Map<Integer, CompleteEntry> map;
+	private Entry root;
+	private Map<Integer, Entry> map;
 
-	public Tree(CompleteEntry root, Map<Integer, CompleteEntry> map) {
+	public Tree(Entry root, Map<Integer, Entry> map) {
 		this.root = root;
 		this.map = map;
 	}
 
-	public CompleteEntry get(Integer id) {
+	public Entry get(Integer id) {
 		return map.get(id);
 	}
 
-	public CompleteEntry getRoot() {
+	public Entry getRoot() {
 		return root;
 	}
-	public List<CompleteEntry> getEntries() {
-		return new ArrayList<CompleteEntry>(map.values());
+	public List<Entry> getEntries() {
+		return new ArrayList<Entry>(map.values());
 	}
-	public Map<Integer, CompleteEntry> getEntriesMap() {
+	public Map<Integer, Entry> getEntriesMap() {
 		return map;
 	}
 	public int size() {

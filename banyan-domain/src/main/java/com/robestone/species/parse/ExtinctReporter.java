@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 
 public class ExtinctReporter extends AbstractWorker {
 
@@ -16,14 +16,14 @@ public class ExtinctReporter extends AbstractWorker {
 	
 	public void runAssignExtinct() throws Exception {
 		// get list of all entries with no parent id
-		Collection<CompleteEntry> entries = speciesService.findEntriesForExtinctReport();
+		Collection<Entry> entries = speciesService.findEntriesForExtinctReport();
 		System.out.println("extinct." + entries.size());
 		
 		int count = 0;
 		int show = 10000;
 		
 		// for each of those, get the parent page
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			String name = entry.getLatinName();
 			count++;
 			if (count % show == 0) {
@@ -35,10 +35,10 @@ public class ExtinctReporter extends AbstractWorker {
 	}
 	public void runEntry(String name, String parent) throws Exception {
 		String page = WikiSpeciesCache.CACHE.readFile(parent, false);
-		//Familiae (1): †<a href="/wiki/Xinjiangchelyidae" title="Xinjiangchelyidae">Xinjiangchelyidae</a></p>
-		// †<i><a href="/wiki/Proganochelys
+		//Familiae (1): ï¿½<a href="/wiki/Xinjiangchelyidae" title="Xinjiangchelyidae">Xinjiangchelyidae</a></p>
+		// ï¿½<i><a href="/wiki/Proganochelys
 		String ename = WikiSpeciesParser.getEscapedName(name);
-		Pattern pattern = Pattern.compile("†(<i>|<b>|\\s|:)*<a href=\"/wiki/" + ename + "\"");
+		Pattern pattern = Pattern.compile("ï¿½(<i>|<b>|\\s|:)*<a href=\"/wiki/" + ename + "\"");
 		Matcher matcher = pattern.matcher(page);
 		if (matcher.find()) {
 			System.out.println("extinct." + name + " > " + parent + " >> " + matcher.group());

@@ -1,8 +1,10 @@
 package com.robestone.species;
 
+import static com.robestone.species.CommonNameHintType.Disambiguation;
+import static com.robestone.species.CommonNameHintType.Locale;
+
 import java.util.ArrayList;
 import java.util.List;
-import static com.robestone.species.CommonNameHintType.*;
 
 public class CommonNameHint {
 

@@ -110,8 +110,8 @@ public class WikiSpeciesTreeFixer {
 		}
 	}
 	public void fixReplaceAllParentLatinNames(String toReplace, String replaceWith) {
-		List<CompleteEntry> entries = speciesService.findEntriesByParentLatinName(toReplace);
-		for (CompleteEntry entry: entries) {
+		List<Entry> entries = speciesService.findEntriesByParentLatinName(toReplace);
+		for (Entry entry: entries) {
 			entry.setParentLatinName(replaceWith);
 			LogHelper.speciesLogger.info("fixReplaceAllParentLatinNames." + 
 					entry.getLatinName() + "(" + entry.getId() + ")." +
@@ -126,7 +126,7 @@ public class WikiSpeciesTreeFixer {
 		}
 	}
 	public void fixAssignParent(String child, String newParent) {
-		CompleteEntry entry = speciesService.findEntryByLatinName(child, true);
+		Entry entry = speciesService.findEntryByLatinName(child, true);
 		LogHelper.speciesLogger.info("fixAssignParent." + 
 				entry.getLatinName() + "(" + entry.getId() + ")." +
 				entry.getParentLatinName() + " => " + newParent);

@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 
 public class ExamplesCrawler extends AbstractWorker {
@@ -40,9 +40,9 @@ public class ExamplesCrawler extends AbstractWorker {
 			for (String name : crawlLinks) {
 				ParseStatus ps = new ParseStatus();
 				ps.setUrl(name);
-				CompleteEntry one = crawler.crawlOne(ps, false);
+				Entry one = crawler.crawlOne(ps, false);
 				if (one != null) {
-					CompleteEntry fresh = speciesService.findEntryByLatinName(name, true);
+					Entry fresh = speciesService.findEntryByLatinName(name, true);
 					LogHelper.speciesLogger.info("crawlExamplesTerms." + name + "." + fresh.getId() + ">" + fresh.getParentLatinName());
 					if (fresh.getParentLatinName() == null) {
 						LogHelper.speciesLogger.info("crawlExamplesTerms." + name + "." + fresh.getId() + ">null");

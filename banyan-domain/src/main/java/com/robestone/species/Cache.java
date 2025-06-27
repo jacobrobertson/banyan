@@ -49,14 +49,14 @@ public class Cache {
 	public EntryProperties getEntryProperties(Integer id) {
 		EntryProperties p = entryProperties.get(id);
 		if (p == null) {
-			CompleteEntry e = speciesService.findEntryFromPersistence(id);
+			Entry e = speciesService.findEntryFromPersistence(id);
 			p = e.getEntryProperties();
 			p.image = getImage(e);
 			entryProperties.put(id, p);
 		}
 		return p;
 	}
-	private Image getImage(CompleteEntry entry) {
+	private Image getImage(Entry entry) {
 		Image image = getImage(entry.getId());
 		if (image != null && entry.getImageLink() != null) {
 			image.setLink(entry.getImageLink());

@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.apache.log4j.Level;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
 import com.robestone.species.js.JsonBuilder;
@@ -25,18 +25,18 @@ public class MaintenanceWorker extends AbstractWorker {
 		MaintenanceWorker recent = new MaintenanceWorker();
 
 		recent.maxRecentChangesLinks = 300;
-		recent.maxOldLinks = 1000;
+		recent.maxOldLinks = 10000;
 		
 		boolean doEverything = !true; // when true - overrides all below
 		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
 		boolean crawlOldLinks = true;
-		boolean runMaintenance = !true;
+		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
-		boolean runPeriodicMaintenance = !true;
-		boolean runJs = !true;
+		boolean runPeriodicMaintenance = true;
+		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
@@ -221,9 +221,9 @@ public class MaintenanceWorker extends AbstractWorker {
 		crawler.crawl();
 	}
 	private void addLatinNamesWithCommonNameAndNoImage(Set<String> names) throws Exception {
-		Collection<CompleteEntry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
+		Collection<Entry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
 		System.out.println("pushEntriesWithCommonNameAndNoImage.willCrawl." + entries.size());
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			String common = entry.getCommonName().trim();
 			if (common.length() > 0) {
 				names.add(entry.getLatinName());

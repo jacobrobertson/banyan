@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.io.IOUtils;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.Rank;
 
 public class WikiSpeciesParserTest extends TestCase {
@@ -471,7 +471,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 				"<p>Genus: †<i><b>Moeritherium</b></i><br />"
 		};
 		for (String test : tests) {
-			CompleteEntry results = parser.parse("Moeritherium", test);
+			Entry results = parser.parse("Moeritherium", test);
 			assertNotNull(results);
 			assertNotNull(results.getLatinName());
 			assertNotNull(results.getRank());
@@ -507,7 +507,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 			parentRank = Rank.Error;
 		}
 		String page = getPage(fileName);
-		CompleteEntry results = parser.parse(latin, page);
+		Entry results = parser.parse(latin, page);
 		
 		if (rank == null) {
 			assertNull(results);

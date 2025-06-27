@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.robestone.species.BoringPruner;
-import com.robestone.species.CompleteEntry;
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Tree;
@@ -55,9 +54,9 @@ public class MiscWorker extends AbstractWorker {
 	public void showParents(String name) {
 		Set<Integer> ids = new HashSet<Integer>();
 		String tab = "";
-		CompleteEntry entry = speciesService.findEntryByLatinName(name, true);
+		Entry entry = speciesService.findEntryByLatinName(name, true);
 		while (entry != null && entry.getParentId() != null) {
-			CompleteEntry parent = speciesService.findEntryById(entry.getParentId(), true);
+			Entry parent = speciesService.findEntryById(entry.getParentId(), true);
 			System.out.println(tab + entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName() + 
 					" > " + entry.getParentId() + "(" + entry.getParentLatinName() + ") > " + parent.getLatinName());
 			ids.add(entry.getId());
@@ -84,7 +83,7 @@ public class MiscWorker extends AbstractWorker {
 					+ ", " + entry.isBoring() + ", " + entry.getParentId() + "/" + entry.getInterestingParentId()
 					);
 			if (entry.getChildren() != null && !entry.getChildren().isEmpty()) {
-				entry = (CompleteEntry) entry.getChildren().get(0);
+				entry = (Entry) entry.getChildren().get(0);
 			} else {
 				entry = null;
 			}
@@ -100,8 +99,8 @@ public class MiscWorker extends AbstractWorker {
 		
 		Tree tree = speciesService.findCompleteTreeFromPersistence();
 		
-		Collection<CompleteEntry> all = tree.getEntriesMap().values();
-		for (CompleteEntry e: all) {
+		Collection<Entry> all = tree.getEntriesMap().values();
+		for (Entry e: all) {
 			print("all.", e);
 		}
 		//*
@@ -128,10 +127,10 @@ public class MiscWorker extends AbstractWorker {
 		System.out.println(reason + e.getId() + "." + e.getLatinName() + " > " + e.getParentId());
 	}
 	public void testGigantopithecus() {
-		CompleteEntry e = speciesService.findEntryByLatinName("Gigantopithecus", true);
-		CompleteEntry p = speciesService.findEntryByLatinName(e.getParentLatinName());
+		Entry e = speciesService.findEntryByLatinName("Gigantopithecus", true);
+		Entry p = speciesService.findEntryByLatinName(e.getParentLatinName());
 		e.setParentId(p.getId());
-		Collection<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Collection<Entry> entries = new ArrayList<Entry>();
 		entries.add(e);
 		entries.add(p);
 		Tree tree = EntryUtilities.buildTree(entries);
@@ -140,10 +139,10 @@ public class MiscWorker extends AbstractWorker {
 	}
 	
 	public void crawlEntriesWithCommonNameAndNoImage() throws Exception {
-		Collection<CompleteEntry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
+		Collection<Entry> entries = speciesService.findEntriesWithCommonNameAndNoImage();
 		System.out.println("crawlEntriesWithCommonNameAndNoImage.willCrawl." + entries.size());
 		Set<String> names = new HashSet<String>();
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			String common = entry.getCommonName().trim();
 			if (common.length() > 0) {
 //				System.out.println("crawlEntriesWithCommonNameAndNoImage.willCrawl." + common + " / " + entry.getLatinName());

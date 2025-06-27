@@ -23,13 +23,13 @@ import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.ParameterizedSingleColumnRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
+public class SpeciesService implements ParameterizedRowMapper<Entry> {
 
 	private Logger logger = Logger.getLogger(SpeciesService.class);
 	
 	// If I always insert this first in a new DB, it will be 1
 	public static final Integer TREE_OF_LIFE_ID = 1;
-	public static final CompleteEntry TREE_OF_LIFE_ENTRY = new CompleteEntry(Rank.Cladus, "Tree of Life", "Arbor vitae"); {
+	public static final Entry TREE_OF_LIFE_ENTRY = new Entry(Rank.Cladus, "Tree of Life", "Arbor vitae"); {
 		TREE_OF_LIFE_ENTRY.setId(TREE_OF_LIFE_ID);
 	}
 	
@@ -56,7 +56,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	/**
 	 * @return a random tree of given size.
 	 */
-	public CompleteEntry findRandomTree(int treeSize) {
+	public Entry findRandomTree(int treeSize) {
 		Set<Integer> idsToUse = new HashSet<Integer>();
 		Integer[] all = cache.getAllIds(); // assumes the cache is loaded
 		int size = all.length;
@@ -81,8 +81,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				"update species set interesting_crunched_ids = ? where id = ?", 
 				ids, entry.getId());
 	}
-	public List<CompleteEntry> findEntriesForLuceneIndex() {
-		List<CompleteEntry> entries = template.query(
+	public List<Entry> findEntriesForLuceneIndex() {
+		List<Entry> entries = template.query(
 				"select id, interesting_parent_id, common_name, latin_name from species where boring_final = false", this);
 		return entries;
 	}
@@ -93,12 +93,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		return ids;
 	}
 	public Tree findCompleteTreeFromPersistence() {
-		Collection<CompleteEntry> entries = template.query(
+		Collection<Entry> entries = template.query(
 				"select id, parent_id, common_name, latin_name, image_link from species", this);
 		return EntryUtilities.buildTree(entries);
 	}
 	public Tree findCompleteTreeFromPersistenceWithBoringFlag() {
-		Collection<CompleteEntry> entries = template.query(
+		Collection<Entry> entries = template.query(
 				"select id, parent_id, common_name, latin_name, image_link, boring from species", this);
 		return EntryUtilities.buildTree(entries);
 	}
@@ -111,12 +111,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	}
 	public Tree findInterestingTreeFromPersistence() {
 		logger.info("findInterestingTreeFromPersistence >");
-		List<CompleteEntry> entries = template.query("select " +
+		List<Entry> entries = template.query("select " +
 				getMinimalEntryColumns(false) + 
 				", interesting_crunched_ids, linked_image_id " +
 				" from species where boring_final = false", this);
 		logger.info("findInterestingTreeFromPersistence." + entries.size());
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			cleanEntryFromPersistence(entry);
 		}
 		logger.info("findInterestingTreeFromPersistence < cleaned > buildTree");
@@ -124,15 +124,15 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		logger.info("findInterestingTreeFromPersistence <");
 		return tree;
 	}
-	public void updateFromBoringWork(Collection<CompleteEntry> interesting, Collection<CompleteEntry> boring) {
+	public void updateFromBoringWork(Collection<Entry> interesting, Collection<Entry> boring) {
 		updateFromBoringWorkMarkInteresting(interesting);
 		updateFromBoringWorkMarkBoring(boring);
 	}
-	public void updateFromBoringWorkMarkInteresting(Collection<CompleteEntry> interesting) {
+	public void updateFromBoringWorkMarkInteresting(Collection<Entry> interesting) {
 		int count = 0;
 		int showEvery = 1000;
 		logger.info(">updateFromBoringWork.interesting." + interesting.size());
-		for (CompleteEntry e: interesting) {
+		for (Entry e: interesting) {
 			if (count++ % showEvery == 0) {
 				logger.info(">updateFromBoringWork.interesting." + count + "." + e.getLatinName());
 			}
@@ -155,7 +155,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				sql, 
 				new ParameterizedSingleColumnRowMapper<Integer>(), parameters);
 	}
-	public void updateFromBoringWorkMarkBoring(Collection<CompleteEntry> boring) {
+	public void updateFromBoringWorkMarkBoring(Collection<Entry> boring) {
 		int count = 0;
 		logger.info(">updateFromBoringWork.boring." + boring.size());
 		count = 0;
@@ -164,7 +164,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		String placeholders = getPlaceholders(subSize);
 		int subCount = 0;
 		Object[] subIds = new Integer[subSize];
-		for (CompleteEntry e: boring) {
+		for (Entry e: boring) {
 			subIds[subCount] = e.getId();
 			count++;
 			subCount++;
@@ -196,7 +196,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		}
 		return buf.toString();
 	}
-	public void updateCommonName(CompleteEntry e) {
+	public void updateCommonName(Entry e) {
 		template.update("update species set common_name = ? where id = ?", e.getCommonName(), e.getId());
 	}
 	public Collection<Rank> findUsedRanks() {
@@ -213,11 +213,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		logger.info(">fixExtinct");
 		while (true) {
 			// select all that are extinct (1)
-			Collection<CompleteEntry> entries = template.query(
+			Collection<Entry> entries = template.query(
 					"select id, parent_id from species where extinct = true", this);
 			// update all children
 			int updated = 0;
-			for (CompleteEntry entry: entries) {
+			for (Entry entry: entries) {
 				// only update those needing updating
 				updated += template.update(
 						"update species set extinct = true where parent_id = ? and not extinct = true", 
@@ -258,12 +258,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	 * This happens usually because of a redirect page, but can also
 	 * happen when a worker is stopped abnormally.
 	 */
-	private void assignParentIdsForRedirectOrMissingId(List<CompleteEntry> entries) {
+	private void assignParentIdsForRedirectOrMissingId(List<Entry> entries) {
 		logger.info(">assignParentIdsForRedirectOrMissingId");
 		Map<String, String> redirects = findAllRedirectFromsMap();
 		Map<String, Entry> entriesByLatinName = new HashMap<String, Entry>();
 		Map<Integer, Entry> entriesById = new HashMap<Integer, Entry>();
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			entriesByLatinName.put(e.getLatinName(), e);
 			entriesById.put(e.getId(), e);
 		}
@@ -271,7 +271,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		logger.info("assignParentIdsForRedirectOrMissingId.entries." + entries.size());
 		// reassign all entries to the redirect to if it exists
 		int count = 0;
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			Entry p = null;
 			// see if we have a redirect-to
 			String to = redirects.get(e.getParentLatinName()); // findRedirectTo(e.getParentLatinName());
@@ -330,23 +330,23 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		return map;
 	}
 
-	public Collection<CompleteEntry> findEntriesWithInvalidParent() {
+	public Collection<Entry> findEntriesWithInvalidParent() {
 		return template.query(
 				"select id, latin_name, parent_latin_name from species where parent_id is null", 
 				this);
 	}
-	public Collection<CompleteEntry> findEntriesForTreeReport() {
+	public Collection<Entry> findEntriesForTreeReport() {
 		return template.query(
 				"select id, latin_name, parent_latin_name, parent_id, interesting_parent_id, common_name, image_link from species", 
 				this);
 	}
-	public Collection<CompleteEntry> findEntriesWithBasicParentInfo() {
+	public Collection<Entry> findEntriesWithBasicParentInfo() {
 		return template.query(
 				"select id, latin_name, parent_latin_name, parent_id from species", 
 				this);
 	}
-	public Collection<CompleteEntry> findEntriesForExtinctReport() {
-		Collection<CompleteEntry> entries = template.query(
+	public Collection<Entry> findEntriesForExtinctReport() {
+		Collection<Entry> entries = template.query(
 				"select latin_name, parent_latin_name from species where extinct = false and parent_latin_name is not null", 
 				this);
 		
@@ -355,8 +355,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				"select latin_name from extinct_assigned where extinct = true", 
 				new EntityMapperRowMapper());
 		Set<String> set = new HashSet<String>(extinctNamesList);
-		Collection<CompleteEntry> filtered = new ArrayList<CompleteEntry>();
-		for (CompleteEntry e: entries) {
+		Collection<Entry> filtered = new ArrayList<Entry>();
+		for (Entry e: entries) {
 			if (!set.contains(e.getLatinName())) {
 				filtered.add(e);
 			}
@@ -410,23 +410,23 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	private void findLatinNamesInTree(String rootLatinName, int distance, boolean downstreamOnly, Set<String> found) {
 		
 		// find the root id
-		CompleteEntry entry = findEntryByLatinName(rootLatinName);
+		Entry entry = findEntryByLatinName(rootLatinName);
 		
 		// get each adjoining node - up and down
 		List<Integer> childIds = findChildrenIdsFromPersistence(entry.getId());
-		List<CompleteEntry> nodes = new ArrayList<>();
+		List<Entry> nodes = new ArrayList<>();
 		for (Integer childId: childIds) {
-			CompleteEntry child = findEntry(childId);
+			Entry child = findEntry(childId);
 			nodes.add(child);
 		}
 
 		if (!downstreamOnly) {
-			CompleteEntry parent = findEntry(entry.getParentId());
+			Entry parent = findEntry(entry.getParentId());
 			nodes.add(parent);
 		}
 		
 		distance--;
-		for (CompleteEntry node: nodes) {
+		for (Entry node: nodes) {
 			
 			boolean added = found.add(node.getLatinName());
 			
@@ -438,7 +438,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		
 	}
 	
-	public Collection<CompleteEntry> findBoringEntries(boolean bothBoring) {
+	public Collection<Entry> findBoringEntries(boolean bothBoring) {
 		String andOr;
 		if (bothBoring) {
 			andOr = "and";
@@ -450,14 +450,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				"where common_name is null " + andOr + " image_link is null", 
 				this);
 	}
-	public Collection<CompleteEntry> findEntriesWithCommonNameAndNoImage() {
+	public Collection<Entry> findEntriesWithCommonNameAndNoImage() {
 		return template.query(
 				"select common_name, latin_name, image_link from species " +
 				"where common_name is not null and image_link is null", 
 				this);
 	}
-	public List<CompleteEntry> findChildren(Integer id) {
-		List<CompleteEntry> children = new ArrayList<CompleteEntry>();
+	public List<Entry> findChildren(Integer id) {
+		List<Entry> children = new ArrayList<Entry>();
 		Collection<Integer> ids = findChildrenIds(id);
 		for (Integer cid: ids) {
 			children.add(findEntry(cid));
@@ -475,14 +475,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	}
 	public void udpateBlacklistedImages(String[] blacklist) {
 		for (String link: blacklist) {
-			Collection<CompleteEntry> found = template.query("select id from species where image_link like '%" + link + "%'", this);
+			Collection<Entry> found = template.query("select id from species where image_link like '%" + link + "%'", this);
 			System.out.println("udpateBlacklistedImages." + link + " > found." + found.size());
-			for (CompleteEntry entry: found) {
+			for (Entry entry: found) {
 				template.update("update species set image_link = null where id = ?", entry.getId());
 			}
 		}
 	}
-	public Collection<CompleteEntry> getThumbnails() {
+	public Collection<Entry> getThumbnails() {
 		String cols = "latin_name, image_link, id";
 		return template.query("select " + cols + " from species where " +
 				"not (image_link is null)", this);
@@ -500,7 +500,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	public Entry findTreeForNodes(Collection<Integer> ids, Entry existingRoot) {
 		Set<Integer> set = new HashSet<Integer>(ids);
 		if (existingRoot != null) {
-			Map<Integer, CompleteEntry> map = EntryUtilities.toMap((CompleteEntry) existingRoot);
+			Map<Integer, Entry> map = EntryUtilities.toMap((Entry) existingRoot);
 			// make sure the ids are all unique
 			ids.removeAll(map.keySet());
 			return findTreeForNodes(set, map);
@@ -508,10 +508,10 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 			return findTreeForNodes(set);
 		}
 	}
-	public CompleteEntry findTreeForNodes(Set<Integer> ids) {
-		return findTreeForNodes(ids, new HashMap<Integer, CompleteEntry>());
+	public Entry findTreeForNodes(Set<Integer> ids) {
+		return findTreeForNodes(ids, new HashMap<Integer, Entry>());
 	}
-	private CompleteEntry findTreeForNodes(Set<Integer> ids, Map<Integer, CompleteEntry> map) {
+	private Entry findTreeForNodes(Set<Integer> ids, Map<Integer, Entry> map) {
 		
 		Set<Integer> foundIds = new HashSet<Integer>(map.keySet());
 		// get the list of all in the tree
@@ -525,11 +525,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 //			logger.debug("findTreeForNodes.while." + ids);
 			
 			// get all the entries matching the desired ids
-			List<CompleteEntry> some = findEntries(ids);
+			List<Entry> some = findEntries(ids);
 			ids = new HashSet<Integer>();
 			
 			// iterate over the new entries - haven't found their parents yet
-			for (CompleteEntry e: some) {
+			for (Entry e: some) {
 				if (e.getParentId() == null && e.getId().intValue() != SpeciesService.TREE_OF_LIFE_ID) {
 					// something wrong here... need to fix this or understand why it's null sometimes right now
 					logger.info(">findTreeForNodes." + e.getId() + ".parentId=null");
@@ -546,15 +546,15 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		Tree top = EntryUtilities.buildTree(map);
 		return top.getRoot();
 	}
-	public List<CompleteEntry> findEntries(Set<Integer> ids) {
-		List<CompleteEntry> found = new ArrayList<CompleteEntry>();
+	public List<Entry> findEntries(Set<Integer> ids) {
+		List<Entry> found = new ArrayList<Entry>();
 		for (Integer id: ids) {
-			CompleteEntry one = findEntry(id);
+			Entry one = findEntry(id);
 			found.add(one);
 		}
 		return found;
 	}
-	public CompleteEntry findEntry(Integer id) {
+	public Entry findEntry(Integer id) {
 		return getEntryFromCache(id);
 	}
 	public Entry findDepictedEntry(Entry entry) {
@@ -568,9 +568,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		}
 		return depictedEntry;
 	}
-	CompleteEntry findEntryFromPersistence(Integer id) {
+	Entry findEntryFromPersistence(Integer id) {
 		try {
-			CompleteEntry entry = template.queryForObject("select " +
+			Entry entry = template.queryForObject("select " +
 							getMinimalEntryColumns(false) + 
 							", interesting_crunched_ids, shares_sibling_name, linked_image_id " +
 							" from species where id = ?", this, id);
@@ -581,12 +581,12 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 			return null;
 		}
 	}
-	private void cleanEntryFromPersistence(CompleteEntry entry) {
+	private void cleanEntryFromPersistence(Entry entry) {
 		makeInteresting(entry);
 		fixCommonName(entry);
 		CommonNameSplitter.assignCommonNames(entry);
 	}
-	private void fixCommonName(CompleteEntry entry) {
+	private void fixCommonName(Entry entry) {
 		String commonName = entry.getCommonName();
 		// This should have been taken care of during load, but
 		// there's some that snuck through, so we fix it now
@@ -600,17 +600,17 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	private Cache getCache() {
 		return cache;
 	}
-	private CompleteEntry getEntryFromCache(Integer id) {
+	private Entry getEntryFromCache(Integer id) {
 		EntryProperties p = getCache().getEntryProperties(id);
-		return new CompleteEntry(p);
+		return new Entry(p);
 	}
 	
-	private void makeInteresting(CompleteEntry entry) {
+	private void makeInteresting(Entry entry) {
 		if (useInterestingAttributesForSearches) {
 			entry.copyInterestingAttributes();
 		}
 	}
-	public void updateParent(CompleteEntry entry) {
+	public void updateParent(Entry entry) {
 		template.update(
 				"update species set " +
 						" parent_latin_name = ?," +  
@@ -623,14 +623,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				entry.getId()
 				);
 	}
-	public void updateParentId(CompleteEntry entry) {
+	public void updateParentId(Entry entry) {
 		template.update(
 				"update species set parent_id = ? where id = ?", 
 				entry.getParentId(),
 				entry.getId()
 				);
 	}
-	public void updateParentIdToNull(CompleteEntry entry) {
+	public void updateParentIdToNull(Entry entry) {
 		template.update(
 				"update species set " +
 						" parent_id = null" +  
@@ -638,8 +638,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				entry.getId()
 				);
 	}
-	public UpdateType insertEntryMaybe(CompleteEntry entry) {
-		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
+	public UpdateType insertEntryMaybe(Entry entry) {
+		Entry found = findEntryByLatinName(entry.getLatinName(), true);
 		if (found != null) {
 			return UpdateType.NoChange;
 		} else {
@@ -647,8 +647,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 			return UpdateType.Insert;
 		}
 	}
-	public UpdateType updateOrInsertEntryMaybe(CompleteEntry entry) {
-		CompleteEntry found = findEntryByLatinName(entry.getLatinName(), true);
+	public UpdateType updateOrInsertEntryMaybe(Entry entry) {
+		Entry found = findEntryByLatinName(entry.getLatinName(), true);
 		if (found != null) {
 			// attempt to get updated information
 			// the assumption is that any repeated parsing should get either
@@ -722,11 +722,11 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		return cols;
 	}
 	
-	public CompleteEntry findEntryByLatinName(String latinName) {
+	public Entry findEntryByLatinName(String latinName) {
 		return findEntryByLatinName(latinName, false);
 	}
-	public CompleteEntry findEntryByLatinName(String latinName, boolean getParentLatinName) {
-		List<CompleteEntry> found = template.query(
+	public Entry findEntryByLatinName(String latinName, boolean getParentLatinName) {
+		List<Entry> found = template.query(
 				"select " +
 				getMinimalEntryColumns(getParentLatinName) +
 				" from species where latin_name = ?", this, latinName);
@@ -734,14 +734,14 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 			return null;
 		}
 		if (found.size() == 1) {
-			CompleteEntry entry = found.get(0);
+			Entry entry = found.get(0);
 			makeInteresting(entry);
 			return entry;
 		}
 		throw new IncorrectResultSizeDataAccessException(latinName, 1, found.size());
 	}
-	public CompleteEntry findEntryById(Integer id, boolean getParentLatinName) {
-		List<CompleteEntry> found = template.query(
+	public Entry findEntryById(Integer id, boolean getParentLatinName) {
+		List<Entry> found = template.query(
 				"select " +
 				getMinimalEntryColumns(getParentLatinName) +
 				" from species where id = ?", this, id);
@@ -749,7 +749,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 			return null;
 		}
 		if (found.size() == 1) {
-			CompleteEntry entry = found.get(0);
+			Entry entry = found.get(0);
 			makeInteresting(entry);
 			return entry;
 		}
@@ -760,7 +760,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				"select latin_name from species where parent_latin_name = ?",
 				new EntityMapperRowMapper(), parentLatinName);
 	}
-	public List<CompleteEntry> findEntriesByParentLatinName(String parentLatinName) {
+	public List<Entry> findEntriesByParentLatinName(String parentLatinName) {
 		return template.query(
 				"select id, latin_name, parent_id from species where parent_latin_name = ?",
 				this, parentLatinName);
@@ -770,9 +770,9 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		logger.info(">fixBoringCommonNames");
 		// this is technically the slow way to do it (could do with one query),
 		// but I want to see the console output
-		List<CompleteEntry> found = template.query(
+		List<Entry> found = template.query(
 				"select id from species where common_name = latin_name", this);
-		for (CompleteEntry entry: found) {
+		for (Entry entry: found) {
 //			logger.debug("fixBoringCommonNames." + entry.getId());
 			template.update(
 					"update species set " +
@@ -787,7 +787,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	public void updateLinkedImageIds() {
 		logger.info(">updateLinkedImageIds");
 		Tree tree = findInterestingTreeFromPersistence();
-		List<CompleteEntry> entries = tree.getEntries();
+		List<Entry> entries = tree.getEntries();
 		Map<Integer, Integer> subBranchLengths = new HashMap<Integer, Integer>();
 		logger.info("updateLinkedImageIds.assignSubBranchLength");
 		assignSubBranchLength(tree.getRoot(), subBranchLengths);
@@ -804,8 +804,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	/**
 	 * Figures out how many times each image is used
 	 */
-	private void assignImageCounts(List<CompleteEntry> entries, Map<String, Integer> imageCounts) {
-		for (CompleteEntry entry: entries) {
+	private void assignImageCounts(List<Entry> entries, Map<String, Integer> imageCounts) {
+		for (Entry entry: entries) {
 			String image = entry.getImageLink();
 			if (image != null) {
 				increaseImageCount(imageCounts, image);
@@ -824,13 +824,13 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	/**
 	 * Assigns each entry a distance to the leaf.  For example, a leaf = 0, and an entry with only leafs = 1
 	 */
-	private int assignSubBranchLength(CompleteEntry entry, Map<Integer, Integer> subBranchLengths) {
+	private int assignSubBranchLength(Entry entry, Map<Integer, Integer> subBranchLengths) {
 		if (!entry.hasChildren()) {
 			subBranchLengths.put(entry.getId(), 0);
 			return 0;
 		}
 		int longestChild = 0;
-		for (CompleteEntry child: entry.getCompleteEntryChildren()) {
+		for (Entry child: entry.getCompleteEntryChildren()) {
 			Integer childLength = subBranchLengths.get(child.getId());
 			if (childLength == null) {
 				childLength = assignSubBranchLength(child, subBranchLengths);
@@ -846,19 +846,19 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	/**
 	 * Assigns each entry its depth in the tree - the distance from the true root element of the tree
 	 */
-	private void assignTreeDepths(CompleteEntry treeRoot, List<CompleteEntry> entries, Map<Integer, Integer> treeDepths) {
-		for (CompleteEntry entry: entries) {
+	private void assignTreeDepths(Entry treeRoot, List<Entry> entries, Map<Integer, Integer> treeDepths) {
+		for (Entry entry: entries) {
 			int depth = getChildDepth(treeRoot, entry);
 			treeDepths.put(entry.getId(), depth);
 		}
 	}
-	private int getChildDepth(CompleteEntry treeRoot, final CompleteEntry child0) {
+	private int getChildDepth(Entry treeRoot, final Entry child0) {
 		int depth = 0;
-		CompleteEntry child = child0;
+		Entry child = child0;
 		// TODO the null check is here because of data problems from wikispecies parsing
 		while (child != treeRoot && child != null) {
 			depth++;
-			CompleteEntry parent = child.getParent();
+			Entry parent = child.getParent();
 			if (depth > 1000) {
 				System.out.println("BAD.getChildDepth." + child.getLatinName() + "/" + child.getId() + " > " + parent.getLatinName() + "/" + parent.getId());
 			}
@@ -866,17 +866,17 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		}
 		return depth;
 	}
-	private void assignLinkedImageIds(List<CompleteEntry> entries, 
+	private void assignLinkedImageIds(List<Entry> entries, 
 			Map<Integer, Integer> subBranchLengths, Map<Integer, Integer> treeDepths, Map<String, Integer> imageCounts) {
 		List<Object[]> batchUpdates = new ArrayList<Object[]>();
 		int maxLength = 100; // arbitrary number, but this should cover it, and won't really add much time
 		for (int i = 1; i < maxLength; i++) {
-			for (CompleteEntry entry: entries) {
+			for (Entry entry: entries) {
 				if (entry.hasChildren() && entry.getImageLink() == null) {
 					Integer subBranchLength = subBranchLengths.get(entry.getId());
 					// TODO null check here due to orphan branches
 					if (subBranchLength != null && subBranchLength.intValue() == i) {
-						CompleteEntry linkedEntry = 
+						Entry linkedEntry = 
 							getLinkedImageEntry(entry, entry, null, treeDepths, imageCounts);
 						if (linkedEntry != null) {
 //							logger.debug("updateLinkedImageIds." + entry.getId() + "->" + linkedEntry.getId());
@@ -902,8 +902,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	 * - first pass fill in all entries with descendants of just one depth
 	 * - second pass, go to two deep - and keep repeating
 	 */
-	private CompleteEntry getLinkedImageEntry(CompleteEntry rootEntry, CompleteEntry checkEntry, 
-			CompleteEntry currentBest, Map<Integer, Integer> treeDepths, Map<String, Integer> imageCounts) {
+	private Entry getLinkedImageEntry(Entry rootEntry, Entry checkEntry, 
+			Entry currentBest, Map<Integer, Integer> treeDepths, Map<String, Integer> imageCounts) {
 		// first check the leaf conditions
 		if (!checkEntry.hasChildren()) {
 			if (checkEntry == rootEntry) {
@@ -934,8 +934,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				return null;
 			}
 		}
-		for (CompleteEntry child: checkEntry.getCompleteEntryChildren()) {
-			CompleteEntry found = getLinkedImageEntry(rootEntry, child, currentBest, treeDepths, imageCounts);
+		for (Entry child: checkEntry.getCompleteEntryChildren()) {
+			Entry found = getLinkedImageEntry(rootEntry, child, currentBest, treeDepths, imageCounts);
 			if (found != null) {
 				currentBest = found;
 			}
@@ -946,8 +946,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		int count = 0;
 		int showEvery = 10000;
 		logger.info(">recreateCleanNames");
-		List<CompleteEntry> found = template.query("select id, latin_name, common_name from species", this);
-		for (CompleteEntry entry: found) {
+		List<Entry> found = template.query("select id, latin_name, common_name from species", this);
+		for (Entry entry: found) {
 			EntryUtilities.cleanEntry(entry);
 			if (count++ % showEvery == 0) {
 				logger.debug(">recreateCleanNames(" + count + ")." + entry.getId() + "." + entry.getLatinName());
@@ -970,7 +970,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	}
 	public void fixParents() {
 		logger.info(">fixParents");
-		List<CompleteEntry> found = template.query("select id, parent_id, latin_name, parent_latin_name, depicted_latin_name from species", this);
+		List<Entry> found = template.query("select id, parent_id, latin_name, parent_latin_name, depicted_latin_name from species", this);
 		logger.info(">fixParents." + found.size());
 		// start by fixing all parent ids based on latin name
 		assignParentIdsByParentLatinName(found);
@@ -981,21 +981,21 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		logger.info("<fixParents");
 	}
 	
-	private void assignParentIdsByParentLatinName(List<CompleteEntry> found) {
+	private void assignParentIdsByParentLatinName(List<Entry> found) {
 		int showEvery = 10000;
 		logger.info(">assignParentIdsByParentLatinName");
 
 		// build some helpful maps
 		Set<String> depictedSet = new HashSet<String>();
 		Map<String, Entry> entriesLatinNameMap = new HashMap<String, Entry>();
-		for (CompleteEntry one: found) {
+		for (Entry one: found) {
 			if (one.getDepictedLatinName() != null) {
 				depictedSet.add(one.getDepictedLatinName());
 			}
 			entriesLatinNameMap.put(one.getLatinName(), one);
 		}
 		// assign a new parent wherever it isn't already correct
-		for (CompleteEntry one: found) {
+		for (Entry one: found) {
 			Entry parent = entriesLatinNameMap.get(one.getParentLatinName());
 			if (parent != null && !parent.getId().equals(one.getParentId())) {
 				template.update(
@@ -1007,7 +1007,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 				}
 				
 				// TODO working to figure this out - it's not working
-				CompleteEntry check = template.queryForObject("select id, latin_name, parent_id " +
+				Entry check = template.queryForObject("select id, latin_name, parent_id " +
 						" from species where id = ?", this, one.getId());
 				logger.debug(">assignParentIdsByParentLatinName.check." 
 						+ one.getId() + "." + one.getLatinName() + " > " + parent.getId() + " // "
@@ -1017,7 +1017,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		}
 		
 		int count = 0;
-		for (CompleteEntry one: found) {
+		for (Entry one: found) {
 			if (depictedSet.contains(one.getLatinName())) {
 				count++;
 				if (count % showEvery == 0) {
@@ -1030,7 +1030,7 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 		}
 		logger.info("<assignParentIdsByParentLatinName." + found.size());
 	}
-	public void insertEntry(CompleteEntry entry) {
+	public void insertEntry(Entry entry) {
 		EntryUtilities.cleanEntry(entry);
 		template.update(
 			"insert into species (" +
@@ -1067,8 +1067,8 @@ public class SpeciesService implements ParameterizedRowMapper<CompleteEntry> {
 	public void setDataSource(DataSource dataSource) {
 		this.template = new EntityMapperJdbcTemplate(dataSource);
 	}
-	public CompleteEntry mapRow(ResultSet rs, int row) throws SQLException {
-		CompleteEntry entry = new CompleteEntry();
+	public Entry mapRow(ResultSet rs, int row) throws SQLException {
+		Entry entry = new Entry();
 		ResultSetMetaData md = rs.getMetaData();
 		int count = md.getColumnCount();
 		for (int i = 1; i <= count; i++) {

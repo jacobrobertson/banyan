@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.robestone.species.CommonNameSimilarityChecker;
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.LogHelper;
 
@@ -37,39 +37,39 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 	private boolean ignoreCommonNames = false;
 
 	public void runOne(String latinName) {
-		CompleteEntry one = speciesService.findEntryByLatinName(latinName);
-		List<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Entry one = speciesService.findEntryByLatinName(latinName);
+		List<Entry> entries = new ArrayList<Entry>();
 		entries.add(one);
 		run(entries);
 	}
 	public void run() {
 		// get list of species that are missing either common or image
-		Collection<CompleteEntry> entriesCol;
+		Collection<Entry> entriesCol;
 		boolean allBoring = false;
 		if (allBoring) {
 			entriesCol = speciesService.findBoringEntries(true);
 		} else {
 			entriesCol = speciesService.findEntriesWithCommonNameAndNoImage();
 		}
-		List<CompleteEntry> entries = new ArrayList<CompleteEntry>(entriesCol);
+		List<Entry> entries = new ArrayList<Entry>(entriesCol);
 		Collections.shuffle(entries);
 		run(entries);
 	}
-	public void run(List<CompleteEntry> entries) {
+	public void run(List<Entry> entries) {
 		int maxToShow = 200;
 		int totalCount = 0;
 		int interestingCount = 0;
 		boolean onlyKeepBest = false;
 		
 		Set<String> latinNames = new HashSet<>();
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			latinNames.add(entry.getLatinName());
 		}
 		
 		
 		LogHelper.speciesLogger.debug("WikipediaImageAndNameFinder.run. total/max " + entries.size() + "/" + maxToShow);
 		
-		for (CompleteEntry entry: entries) {
+		for (Entry entry: entries) {
 			try {
 				totalCount++;
 				Taxobox box = crawler.toTaxobox(entry.getLatinName());
@@ -128,7 +128,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 			throw new RuntimeException(e);
 		}
 	}
-	private boolean isBoxInteresting(Taxobox box, CompleteEntry entry) {
+	private boolean isBoxInteresting(Taxobox box, Entry entry) {
 		if (box == null) {
 			return false;
 		}
@@ -144,7 +144,7 @@ public class WikipediaImageAndNameFinder extends AbstractWorker {
 		return false;
 		
 	}
-	private boolean isNamesInteresting(Taxobox box, CompleteEntry entry) {
+	private boolean isNamesInteresting(Taxobox box, Entry entry) {
 		if (entry.getCommonName() != null) {
 			return false;
 		}

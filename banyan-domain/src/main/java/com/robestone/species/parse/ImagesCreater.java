@@ -91,7 +91,7 @@ public class ImagesCreater extends AbstractWorker {
 	
 	public void downloadAll(boolean onlyNew, boolean onlyTiny) throws IOException {
 		System.out.println(">images.downloadAll");
-		Collection<? extends Entry> links = speciesService.getThumbnails();
+		Collection<Entry> links = speciesService.getThumbnails();
 		int size = links.size();
 		int count = 0;
 		int chunk = 0;

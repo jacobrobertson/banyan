@@ -18,10 +18,10 @@ public class CommonNameSplitter {
 	
 	private static int maxKeepLength = MAX_KEEP_LENGTH;
 	
-	public static void assignCommonNames(CompleteEntry entry) {
+	public static void assignCommonNames(Entry entry) {
 		assignCommonNames(entry, maxKeepLength);
 	}
-	public static void assignCommonNames(CompleteEntry entry, int maxKeepLength) {
+	public static void assignCommonNames(Entry entry, int maxKeepLength) {
 		List<String> split = splitCommonName(entry, maxKeepLength);
 		entry.setCommonNames(split);
 		if (split != null) {
@@ -35,7 +35,7 @@ public class CommonNameSplitter {
 			}
 		}
 	}
-	public static void joinCommonName(CompleteEntry entry) {
+	public static void joinCommonName(Entry entry) {
 		String joined = joinCommonNames(entry.getCommonName(), entry.getCommonNames());
 		entry.setCommonName(joined);
 	}
@@ -101,7 +101,7 @@ public class CommonNameSplitter {
 		return filtered;
 	}
 	private static List<String> splitCommonName(String name) {
-		String[] split = StringUtils.split(name, ",;/:·");
+		String[] split = StringUtils.split(name, ",;/:ï¿½");
 		List<String> names = new ArrayList<String>();
 		for (String s: split) {
 			s = trimPart(s);

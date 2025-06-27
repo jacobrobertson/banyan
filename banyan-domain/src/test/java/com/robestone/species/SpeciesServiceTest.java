@@ -34,9 +34,9 @@ public class SpeciesServiceTest extends TestCase {
 			for (Example example: examples) {
 				String cids = example.getCrunchedIds();
 				Set<Integer> ids = EntryUtilities.CRUNCHER.toSet(cids);
-				List<CompleteEntry> entries = service.findEntries(ids);
+				List<Entry> entries = service.findEntries(ids);
 				assertTrue(!entries.isEmpty());
-				for (CompleteEntry entry: entries) {
+				for (Entry entry: entries) {
 					assertTrue(entry.getLatinName() != null);
 					System.out.println("testExampleService." + entry.getId() + ", " + entry.getLatinName() + ", " + entry.getCommonName());
 				}
@@ -66,8 +66,8 @@ public class SpeciesServiceTest extends TestCase {
 	}
 	public void testCache() {
 		int id = service.findBestId("owl", new HashSet<Integer>());
-		CompleteEntry found1 = service.findEntry(id);
-		CompleteEntry found2 = service.findEntry(id);
+		Entry found1 = service.findEntry(id);
+		Entry found2 = service.findEntry(id);
 		
 		EntryProperties p1 = found1.getEntryProperties();
 		EntryProperties p2 = found2.getEntryProperties();
@@ -75,7 +75,7 @@ public class SpeciesServiceTest extends TestCase {
 		assertSame(p1, p2);
 		
 		service.clearCache();
-		CompleteEntry found3 = service.findEntry(id);
+		Entry found3 = service.findEntry(id);
 		EntryProperties p3 = found3.getEntryProperties();
 		assertTrue(p3 != p1);
 	}
@@ -85,7 +85,7 @@ public class SpeciesServiceTest extends TestCase {
 		assertEquals("Owl", found.getCommonName());
 	}
 	public void test45293Fails() {
-		CompleteEntry entry = service.findEntry(45293);
+		Entry entry = service.findEntry(45293);
 		String commonName = getShortenedRenderableCommonName(entry);
 		assertEquals(entry.getCommonName(), commonName);
 	}
@@ -161,9 +161,9 @@ public class SpeciesServiceTest extends TestCase {
 		assertEquals(loadedChildren, cids.size());
 		
 		Set<Integer> ids = new HashSet<Integer>(cids);
-		CompleteEntry root = service.findTreeForNodes(ids);
+		Entry root = service.findTreeForNodes(ids);
 		Tree tree = EntryUtilities.buildTree(root);
-		CompleteEntry cuc = tree.get(found.getId());
+		Entry cuc = tree.get(found.getId());
 		assertEquals(loadedChildren, cuc.getChildren().size());
 	}
 	public void zzztestCucumbers() {
@@ -186,11 +186,11 @@ public class SpeciesServiceTest extends TestCase {
 		int id = service.findBestId(name, new HashSet<Integer>());
 		Set<Integer> ids = new HashSet<Integer>();
 		ids.add(id);
-		CompleteEntry entry = service.findTreeForNodes(ids);
+		Entry entry = service.findTreeForNodes(ids);
 		
 		Tree tree = EntryUtilities.buildTree(entry);
 		
-		CompleteEntry found = tree.get(id);
+		Entry found = tree.get(id);
 		
 		assertEquals(id, found.getId().intValue());
 		

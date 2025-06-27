@@ -1,11 +1,19 @@
 package com.robestone.species.js;
 
+import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+
+import com.robestone.species.Entry;
+import com.robestone.species.SpeciesService;
 
 /**
  * Create json files from the master tree
@@ -15,7 +23,11 @@ public class JsonPartitioner {
 
 	private int maxPartitionSize = 300;
 	private String pathChars = "0123456789abcdefghijklmnopqrstuvwxyz";
+	private SpeciesService speciesService;
 
+	public JsonPartitioner(SpeciesService speciesService) {
+		this.speciesService = speciesService;
+	}
 	public void partition(Node node) {
 		System.out.println(">JsonPartitioner.assignParents");
 		assignParents(node);
@@ -260,4 +272,82 @@ public class JsonPartitioner {
 		buf.append("}");
 		return buf.toString();
 	}
+	public void partitionFromDB() throws Exception {
+		System.out.println(">partitionFromDB.buildTree");
+		Node root = buildTree(speciesService);
+		System.out.println(">partitionFromDB.partitionAndSave");
+		partitionAndSave(root);
+		System.out.println("<partitionFromDB");
+	}
+	// recursively starts with one file
+	public void partitionFromFileSystem() throws Exception {
+		Node root = JsonFileUtils.parseRecursive(1);
+		partitionAndSave(root);
+	}
+	public void partitionAndSave(Node root) throws Exception {
+		
+		System.out.println(">partitionAndSave.partitioner.partition");
+		partition(root);
+		
+		System.out.println(">partitionAndSave.partitioner.getAndAssignPartitionMap");
+		Map<String, String> pMap = getAndAssignPartitionMap(root);
+		
+		System.out.println(">partitionAndSave.outputPartitions");
+		outputPartitions(root);
+		String index = getPartitionIndexFile(pMap);
+		String folder = JsonFileUtils.outputDir + "/p/index.json";
+		File file = new File(folder);
+		FileUtils.writeStringToFile(file, index, Charset.defaultCharset());
+	}
+	
+	public void outputPartitions(Node node) throws Exception {
+		if (!node.getPartition().isEmpty()) {
+			String fileName = "p/" + node.getFilePath() + ".json";
+			List<JsonEntry> entries = new ArrayList<>();
+			for (Node pn : node.getPartition()) {
+				JsonEntry jentry = pn.getEntry();
+				if (jentry == null) {
+					Entry eentry = speciesService.findEntry(pn.getId());
+					Entry ientry = null;
+					if (eentry.getImage() != null) {
+						ientry = speciesService.findEntry(eentry.getImage().getEntryId());
+					}
+					jentry = JsonFileUtils.toJsonEntry(eentry, ientry, speciesService);
+				}
+				entries.add(jentry);
+			}
+			JsonFileUtils.saveByFileName(fileName, entries);
+		}
+		for (Node child : node.getChildren()) {
+			outputPartitions(child);
+		}
+	}
+	
+	public static Node buildTree(SpeciesService speciesService) {
+		int[] count = {0};
+		return buildNodeRecursively(1, 0, count, speciesService);
+	}
+	private static Node buildNodeRecursively(Integer id, int depth, int[] count, SpeciesService speciesService) {
+		count[0]++;
+		Collection<Integer> ids = speciesService.findChildrenIds(id);
+		Node node = new Node(null, id, new ArrayList<>(ids));
+		int descendants = ids.size();
+		if (count[0] % 100 == 0) {
+			System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
+					", children=" + node.getChildIds().size() + ", desc=" + descendants + ",count=" + count[0]);
+		}
+		for (Integer cid : ids) {
+			Node cnode = buildNodeRecursively(cid, depth + 1, count, speciesService);
+			node.getChildren().add(cnode);
+			cnode.setParent(node);
+			descendants += cnode.getTotalDescendants();
+		}
+		node.setTotalDescendants(descendants);
+		return node;
+	}
+	public static void testPartition() throws Exception {
+		Node root = JsonFileUtils.parseRecursive(1);
+		new JsonPartitioner(null).partition(root);
+	}
+
 }

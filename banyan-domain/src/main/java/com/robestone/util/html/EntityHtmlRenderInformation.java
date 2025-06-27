@@ -3,7 +3,7 @@
  */
 package com.robestone.util.html;
 
-import java.util.*;
+import java.util.Arrays;
 
 /**
  * Helper class that identifies entities that will have trouble rendering in html
@@ -149,7 +149,7 @@ agrgrave &agrgrave; a ? 8048 ?
 alefsym ? ? ? 8501 ? 
 
 These need to render by the name
-acute ´ ? ? 714 ? 
+acute ï¿½ ? ? 714 ? 
 
 
 	*/

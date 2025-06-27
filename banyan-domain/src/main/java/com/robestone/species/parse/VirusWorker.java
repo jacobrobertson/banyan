@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.robestone.species.CompleteEntry;
+import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 
 public class VirusWorker extends AbstractWorker {
@@ -16,11 +16,11 @@ public class VirusWorker extends AbstractWorker {
 	
 	public void makeVirusesInteresting() {
 		LogHelper.speciesLogger.info("makeVirusesInteresting");
-		CompleteEntry entry = speciesService.findEntryByLatinName("Virus");
-		List<CompleteEntry> entries = new ArrayList<CompleteEntry>();
+		Entry entry = speciesService.findEntryByLatinName("Virus");
+		List<Entry> entries = new ArrayList<Entry>();
 		Set<Integer> ids = new HashSet<Integer>();
 		findChildren(entry.getId(), ids, entries);
-		for (CompleteEntry e: entries) {
+		for (Entry e: entries) {
 			if (e.getCommonName() == null) {
 				System.out.println("virus." + e.getLatinName());
 				e.setCommonName(e.getLatinName());
@@ -28,10 +28,10 @@ public class VirusWorker extends AbstractWorker {
 			}
 		}
 	}
-	private void findChildren(Integer id, Set<Integer> ids, List<CompleteEntry> entries) {
+	private void findChildren(Integer id, Set<Integer> ids, List<Entry> entries) {
 		LogHelper.speciesLogger.info("makeVirusesInteresting.findChildren." + id);
-		List<CompleteEntry> children = speciesService.findChildren(id);
-		for (CompleteEntry e: children) {
+		List<Entry> children = speciesService.findChildren(id);
+		for (Entry e: children) {
 			boolean added = ids.add(e.getId());
 			if (added) {
 				entries.add(e);
