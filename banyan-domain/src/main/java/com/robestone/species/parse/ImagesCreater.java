@@ -48,29 +48,11 @@ public class ImagesCreater extends AbstractWorker {
 		
 		ImagesCreater ic = new ImagesCreater();
 		ic.requireAllImagesExistForCheck = true;
-//		ic.downloadAll(true, false);
+		ic.downloadAll(true, false);
 		
-		ic.fixOldBadImages();
+//		ic.fixOldBadImages(false);
 		
-//		new ImagesCreater().removeBlackListedImages();
-		
-		
-//		new ImagesCreater().downloadOne("Pezoporus occidentalis", 1, 1, false, false);
-//		downloadAll(true, false);
 
-/*		
-		if (args != null && args.length > 0) {
-			if (args[0].equals("fixTiny")) {
-				new ImagesCreater().downloadAll(false, true);
-			}
-		} else {
-	//		LOCAL_STORAGE_DIR = "C:/Users/jacob/Desktop/Wikispecies/thumbs/";
-			new ImagesCreater().
-	//		downloadTests("Tree of Life")
-			downloadAll(false, true)
-			;
-		}
-		*/
 	}
 	
 	private ImagesMeasurerWorker imagesMeasurer = new ImagesMeasurerWorker();
@@ -150,6 +132,13 @@ public class ImagesCreater extends AbstractWorker {
 		if (downloaded || forceMeasuring) {
 			imagesMeasurer.runOne(entry);
 		}
+	}
+	/**
+	 * Specifically to fix things like this - Group VI: ssRNA
+	 */
+	public static String getCleanLatinName(String name) {
+		name = StringUtils.remove(name, ':');
+		return name;
 	}
 	private static String getExtensionFromLink(String link) {
 		int dotPos = link.lastIndexOf('.');
@@ -231,7 +220,6 @@ public class ImagesCreater extends AbstractWorker {
 			info.urlExtraFileExtension = "jpg";
 		} else if (name.endsWith(".PDF") || name.endsWith(".DJVU")) {
 			// https://commons.wikimedia.org/wiki/File:Flora_Graeca,_Volume_8.djvu?page=95
-			// TODO need to get the right page info
 			String page = getPageTokenFromLink(entry.getImageLink());
 			if (page == null) {
 				page = "page1-";
@@ -285,7 +273,9 @@ public class ImagesCreater extends AbstractWorker {
 		}
 		public String getFilePathRelative() {
 			String thumbFileExtension = "." + getFileFinalExtension();
-			String iconFileName = fileHashDir + "/" + entry.getLatinName() + thumbFileExtension;
+			String latinName = entry.getLatinName();
+			latinName = getCleanLatinName(latinName);
+			String iconFileName = fileHashDir + "/" + latinName + thumbFileExtension;
 			return iconFileName;
 		}
 		
@@ -526,11 +516,13 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Aedes_vexans.tif/lossy
 	/**
 	 * Images that got downloaded, but should be re-downloaded
 	 */
-	public void fixOldBadImages() throws Exception {
+	public void fixOldBadImages(boolean downloadAll) throws Exception {
 		// find all images not in the expected formats
 		File dir = new File(LOCAL_STORAGE_DIR);
 		fixOldBadImages(dir);
-		downloadAll(true, false);
+		if (downloadAll) {
+			downloadAll(true, false);
+		}
 	}
 	private void fixOldBadImages(File dir) {
 		for (File file : dir.listFiles()) {

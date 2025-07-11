@@ -354,6 +354,9 @@ public class JsonFileUtils {
 			}
 	
 			if (e.getImg() != null) {
+				String latinName = e.getImg();
+				latinName = ImagesCreater.getCleanLatinName(latinName);
+
 				append(buf, true, "img", e.getImg());
 				append(buf, true, "tHeight", e.gettHeight());
 				append(buf, true, "tWidth", e.gettWidth());

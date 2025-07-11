@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 
-public class SqlSearcher implements EntrySearcher {
+public class SqlSearcher {
 
 	private Logger logger = Logger.getLogger(SqlSearcher.class);
 

@@ -649,11 +649,15 @@ public class WikiSpeciesParser {
 			if (iconFound) {
 				continue;
 			}
-			
-			if (imageLink.indexOf("&quot;") > 0) {
-				// happens when there is a video with embedded controls
+
+			// taking this out - this should be fixed by the other logic
+//			if (imageLink.indexOf("&quot;") > 0) {
+//				// happens when there is a video with embedded controls
+//				continue;
+//			} else 
+			if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
 				continue;
-			} else if (imageLink.toUpperCase().indexOf("POTY_") > 0) {
+			} else if (imageUpper.indexOf("_MAP.") > 0 || imageUpper.indexOf("DISTRIBUTIONMAP.") > 0 || imageUpper.indexOf("DISTRIBUTION_MAP.") > 0) {
 				continue;
 			} else if (
 					imageUpper.endsWith(".OGV")
@@ -662,14 +666,14 @@ public class WikiSpeciesParser {
 					) {
 				// complex files or video or sound
 				continue;
-			} else if (imageUpper.endsWith(".SVG")) {
+//			} else if (imageUpper.endsWith(".SVG")) {
 				// not sure how many of these there are, and I see that 
 				// some wiki icons are sneaking in, with weird names,
 				// and this might be the only way to stop them.
-				continue;
+				// -- this should be allowed, as I'm addressing it other ways
+//				continue;
 			} else if (imageUpper.endsWith(".SVG.PNG") && 
-					// TODO should have "_logo." also
-					(imageUpper.contains("_LOGO_") || imageUpper.contains("-ALT-") || imageUpper.contains("LOCK-"))
+					(imageUpper.contains("_LOGO") || imageUpper.contains("-ALT-") || imageUpper.contains("LOCK-"))
 				) {
 				// Closed_Access_logo_alternative.svg/11px-Closed_Access_logo_alternative.svg.png
 				// Lock-gray-alt-2.svg.png

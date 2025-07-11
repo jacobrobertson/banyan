@@ -23,7 +23,9 @@ public class SearchIndexBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
 //		new SearchIndexBuilder(5, 3, 4, false).run();
-		new SearchIndexBuilder().run();
+		SearchIndexBuilder sb = new SearchIndexBuilder();
+//		sb.testListSize = 1000;
+		sb.run();
 	}
 
 	private int topMatchesMax;
@@ -37,10 +39,12 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private List<CandidateEntry> candidates;
 	private Map<String, Set<CandidateEntry>> subKeyBuckets = new HashMap<String, Set<CandidateEntry>>();
 
-	private static final int MAX_KEY_LEN = 30;
+	private static final int MIN_KEY_LEN = 3;
+	private static final int MAX_KEY_LEN = 20;
+	private static final int MAX_TOP_MATCHES = 15;
 	
 	public SearchIndexBuilder() {
-		this(15, 3, MAX_KEY_LEN, true);
+		this(MAX_TOP_MATCHES, MIN_KEY_LEN, MAX_KEY_LEN, true);
 	}
 	public SearchIndexBuilder(int topMatchesMax, int minKeyLen, int maxKeyLen, boolean saveFile) {
 		this(topMatchesMax, minKeyLen, maxKeyLen, saveFile, null);
@@ -56,13 +60,28 @@ public class SearchIndexBuilder extends AbstractWorker {
 		createCandidates();
 		iterateOverKeys();
 	}
-	private static class KeyEntry {
+	public static class KeyEntry {
 		String key;
 		int topScore = 0;
 		Set<Integer> allDownstreamEntryIds = new HashSet<Integer>();
 		boolean outputted = false;
 		List<CandidateEntry> topMatches = new ArrayList<CandidateEntry>();
 		List<KeyEntry> children = new ArrayList<KeyEntry>();
+		
+		// convenience key parts for scoring
+		String _key_;
+		String _key;
+		String _keyNoS_;
+		
+		public KeyEntry(String key) {
+			this.key = key;
+			this._key_ = " " + key + " ";
+			this._key = " " + key;
+			if (key != null && key.endsWith("S")) {
+				_keyNoS_ = " " + key.substring(0, key.length() - 1) + " ";
+			}
+		}
+		
 		public void fillEntryIds() {
 			for (CandidateEntry match : topMatches) {
 				allDownstreamEntryIds.add(match.entry.getId());
@@ -84,17 +103,19 @@ public class SearchIndexBuilder extends AbstractWorker {
 		String prettyName;
 		boolean image;
 		boolean isLatin;
+		
+		// convenience for matching
+		String _cleanName;
+		String _cleanName_;
 	}
 	public static class CandidateEntry implements Comparable<CandidateEntry> {
 		Entry entry;
 		List<CandidateName> names = new ArrayList<CandidateName>();
 		int score;
-		int matchNameScorePart;
-		String matchedName;
 		
 		@Override
 		public int compareTo(CandidateEntry c) {
-			return (int) (c.score - score);
+			return c.score - score;
 		}
 		
 		public List<CandidateName> getNames() {
@@ -106,16 +127,17 @@ public class SearchIndexBuilder extends AbstractWorker {
 			n.searchName = searchName;
 			n.prettyName = prettyName;
 			n.cleanName = cleanName;
+			n._cleanName = " " + cleanName;
+			n._cleanName_ = " " + cleanName + " ";
 			n.isLatin = isLatin;
 			n.image = image;
 			names.add(n);
 			return n;
 		}
 		
-		public CandidateEntry copy(int score, String matchedName) {
+		public CandidateEntry copy(int score) {
 			CandidateEntry copy = new CandidateEntry();
 			copy.score = score;
-			copy.matchedName = matchedName;
 			
 			copy.entry = this.entry;
 			copy.names = this.names;
@@ -207,12 +229,20 @@ public class SearchIndexBuilder extends AbstractWorker {
 		
 	}
 	
-	private void createBuckets() {
+	public void createBuckets() {
 		System.out.println("createBuckets>");
 		createBuckets("");
 		System.out.println("createBuckets<");
+		
+		// not sure this is really helpful, but once the buckets are created we don't use this list again
+		this.candidates = null;
 	}
+	/**
+	 * The purpose of these buckets is to partition out all the entry/key combinations such that we at least 
+	 * exclude matches that don't even partially match a given candidate.  We use the minKeyLength for that reason
+	 */
 	private void createBuckets(String current) {
+//		System.out.println("createBuckets." + current);
 		for (int i = 0; i < letters.length(); i++) {
 			char c = letters.charAt(i);
 			String next = current + c;
@@ -220,8 +250,10 @@ public class SearchIndexBuilder extends AbstractWorker {
 				createBuckets(next);
 			} else if (next.length() < maxKeyLen) {
 				Set<CandidateEntry> bucket = subKeyBuckets.get(next);
+				// TODO there is a chance to reduce memory by removing all buckets that have no candidates - just need to handle that situation correctly in the intersection logic
 				if (bucket == null) {
 					bucket = new HashSet<CandidateEntry>();
+//					System.out.println("subKeyBuckets.put." + next);
 					subKeyBuckets.put(next, bucket);
 				}
 				for (CandidateEntry candidate : candidates) {
@@ -238,19 +270,18 @@ public class SearchIndexBuilder extends AbstractWorker {
 	
 	public void iterateOverKeys() throws Exception {
 		createBuckets();
-		KeyEntry root = new KeyEntry();
-		root.key = "";
+		KeyEntry root = new KeyEntry("");
 		iterateOverKeys(root);
 	}
 	
 	private int iterateOverKeys(KeyEntry key) throws Exception {
+//		System.out.println("iterateOverKeys." + key.key);
 		if (key.key.length() > maxKeyLen) {
 			return 0;
 		}
 		int found = 0;
 		for (int i = 0; i < letters.length(); i++) {
-			KeyEntry nextKey = new KeyEntry();
-			nextKey.key = key.key + letters.charAt(i);
+			KeyEntry nextKey = new KeyEntry(key.key + letters.charAt(i));
 			// check the min length - no point to visit 1 letter?
 			boolean foundMatches = true;
 			if (nextKey.key.length() >= minKeyLen) {
@@ -282,20 +313,18 @@ public class SearchIndexBuilder extends AbstractWorker {
 		Set<CandidateEntry> intersection = createIntersection(key);
 		
 		for (CandidateEntry candidate : intersection) {
-			for (CandidateName name : candidate.names) {
-				int score = score(name, key.key);
-				if (score > 0 && (score > key.topScore || key.topMatches.size() <= topMatchesMax)) {
-					CandidateEntry copy = candidate.copy(score, name.prettyName);
-					if (score > key.topScore) {
-						key.topScore = score;
-					}
-					key.topMatches.add(copy);
+			int score = score(candidate, key);
+			if (score > 0 && (score > key.topScore || key.topMatches.size() <= topMatchesMax)) {
+				CandidateEntry copy = candidate.copy(score);
+				if (score > key.topScore) {
+					key.topScore = score;
+				}
+				key.topMatches.add(copy);
+				if (key.topMatches.size() > 1) {
 					Collections.sort(key.topMatches);
 					if (key.topMatches.size() > topMatchesMax) {
 						key.topMatches.remove(topMatchesMax);
 					}
-					// break now - we don't want the id in the list twice
-					break;
 				}
 			}
 		}
@@ -315,6 +344,10 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		return subkeys;
 	}
+	
+	/**
+	 * Finds all possible bucket matches for each minKeyLength bucket key.
+	 */
 	private Set<CandidateEntry> createIntersection(KeyEntry key) {
 		Set<String> subkeys = getSubKeys(key.key);
 		Set<CandidateEntry> intersection = null;
@@ -329,42 +362,52 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return intersection;
 	}
 	
-	public static int score(CandidateName name, String key) {
+	public static int score(CandidateEntry candidate, KeyEntry key) {
 		int score = 0;
-		if (name.searchName.equals(key)) {
-			// in this case we have an exact match, these are absolutely the highest
+		for (CandidateName name : candidate.names) {
+			score += score(name, key);
+		}
+		return score;
+	}
+	public static int score(CandidateName name, KeyEntry keyEntry) {
+		int score = 0;
+		if (name.searchName.equals(keyEntry.key)) {
+			// ANTS -> Ants
+			score = 100_000_000;
+		} else if (name._cleanName_.contains(keyEntry._key_)) {
+			// ANTS -> Wasp and Ants
 			score = 10_000_000;
-		} else {
-			if (name.searchName.startsWith(key)) {
-				score += 1_000_000;
-			}
-			if (containsKeyAsName(name.cleanName, key)) {
-				score += 100_000;
-			} 
-			if (name.searchName.contains(key)) {
-				score += 10_000;
-			}
+		} else if (name.searchName.startsWith(keyEntry.key)) {
+			// ANTS -> Antstones
+			score = 1_000_000;
+		} else if (name._cleanName.contains(keyEntry._key)) {
+			// ANTS -> Wigs and Antstones
+			score = 100_000;
+		} else if (name.searchName.contains(keyEntry.key)) {
+			// ANTS -> Shantsia
+			score = 10_000;
+		} else if (keyEntry._keyNoS_ != null && name._cleanName_.contains(keyEntry._keyNoS_)) {
+			// ANTS -> My Ant
+			score = 5_000;
 		}
-		if (!name.isLatin) {
-			score *= 2;
-		}
-		
-		// give a boost based on how short the name is that it's matching
+
 		if (score > 0) {
-			score += ((float) key.length() / (float) name.searchName.length()) * 1000;
-			// slight preference if there is an image - this will only help in rare common name cases
+			// give a boost based on how short the name is that it's matching
+			score += ((float) keyEntry.key.length() / (float) name.searchName.length()) * 1000;
+			// slight preference if there is an image - this will only help in rare cases
 			if (name.image) {
 				score += 10;
+			}
+			// in all cases prefer the common name
+			if (!name.isLatin) {
+				score *= 2;
 			}
 		}
 		
 		return score;
 	}
-	private static boolean containsKeyAsName(String name, String key) {
-		return (" " + name + " ").contains(" " + key + " ");
-	}
 	
-	public CandidateEntry toCandidate(Entry entry) {
+	public static CandidateEntry toCandidate(Entry entry) {
 		CandidateEntry candidate = new CandidateEntry();
 		candidate.entry = entry;
 		
@@ -382,7 +425,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		
 		return candidate;
 	}
-	private String cleanSearchName(String name, boolean removeSpaces) {
+	private static String cleanSearchName(String name, boolean removeSpaces) {
 		if (name == null) {
 			return null;
 		}
@@ -400,7 +443,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		return name;
 	}
-	private List<CandidateEntry> toCandidates(List<Entry> entries) {
+	private static List<CandidateEntry> toCandidates(List<Entry> entries) {
 		List<CandidateEntry> candidates = new ArrayList<CandidateEntry>();
 		
 		// convert each one
@@ -503,19 +546,24 @@ public class SearchIndexBuilder extends AbstractWorker {
 		buf.append("],\n");
 		
 		buf.append("\t\"entries\" : {\n");
-		// output unique candidates
-		Set<Integer> foundIds = new HashSet<Integer>();
+		// output unique candidates (in id order)
+		List<Integer> foundIds = new ArrayList<Integer>();
+		Map<Integer, CandidateEntry> entryMap = new HashMap<>();
 		for (String localKey : localKeyList) {
 			List<CandidateEntry> some = localKeys.get(localKey);
 			for (CandidateEntry entry : some) {
-				if (foundIds.add(entry.entry.getId())) {
-					appendEntry(buf, entry);
-					buf.append(",\n");
+				if (entryMap.put(entry.entry.getId(), entry) == null) {
+					foundIds.add(entry.entry.getId());
 				}
 			}
-			count++;
 		}
 		if (!foundIds.isEmpty()) {
+			Collections.sort(foundIds);
+			for (Integer id : foundIds) {
+				CandidateEntry entry = entryMap.get(id);
+				appendEntry(buf, entry);
+				buf.append(",\n");
+			}
 			buf.setLength(buf.length() - 2);
 		}
 		buf.append("\n\t}\n");
@@ -530,7 +578,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		buf.append("\t\"local\" : {\n");
 		
 		
-		 Map<String, Set<Integer>> treeKeys = buildLocalKeyTree(localKeyList, localKeys);
+		 Map<String, List<Integer>> treeKeys = buildLocalKeyTree(localKeyList, localKeys);
 		 List<String> keyNamesList = new ArrayList<String>(treeKeys.keySet());
 		 Collections.sort(keyNamesList);
 		
@@ -541,9 +589,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			buf.append(localKey.toLowerCase());
 			buf.append("\" : ");
 
-			Set<Integer> idsSet = treeKeys.get(localKey);
-			List<Integer> idsList = new ArrayList<Integer>(idsSet);
-			Collections.sort(idsList);
+			List<Integer> idsList = treeKeys.get(localKey);
 			// this is implementation dependent, but I think it's safe?
 			buf.append(idsList);
 
@@ -558,12 +604,12 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private static class LocalKey {
 		String key;
 		String longestKey;
-		Set<Integer> ids = new HashSet<Integer>();
+		List<Integer> ids = new ArrayList<Integer>();
 		List<LocalKey> children = new ArrayList<LocalKey>();
 		LocalKey parent;
 	}
 	
-	private Map<String, Set<Integer>> buildLocalKeyTree(List<String> localKeyList, Map<String, List<CandidateEntry>> localKeysToCandidates) {
+	private Map<String, List<Integer>> buildLocalKeyTree(List<String> localKeyList, Map<String, List<CandidateEntry>> localKeysToCandidates) {
 		// Step 1 - build the tree
 		Map<String, LocalKey> localKeysMap = new HashMap<String, LocalKey>();
 		for (String key : localKeyList) {
@@ -597,14 +643,14 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 
 		// Step 3 - grab all the keys
-		Map<String, Set<Integer>> combinedKeys = new HashMap<String, Set<Integer>>();
+		Map<String, List<Integer>> combinedKeys = new HashMap<String, List<Integer>>();
 		for (LocalKey lkey : toPrune) {
 			addCombinedLocalKeys(lkey, combinedKeys);
 		}
 		
 		return combinedKeys;
 	}
-	private void addCombinedLocalKeys(LocalKey key, Map<String, Set<Integer>> combinedKeys) {
+	private void addCombinedLocalKeys(LocalKey key, Map<String, List<Integer>> combinedKeys) {
 		if (key.longestKey != null) {
 			String combinedKey = key.key + "|" + key.longestKey.substring(key.key.length());
 			combinedKeys.put(combinedKey, key.ids);
@@ -619,8 +665,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		boolean pruned = false;
 		List<LocalKey> children = new ArrayList<LocalKey>(key.children);
 		for (LocalKey child : children) {
-			boolean prunedThis = pruneLocalKey(child);
-			pruned = pruned || prunedThis;
+			boolean prunedChild = pruneLocalKey(child);
+			pruned = pruned || prunedChild;
 		}
 		if (	key.parent != null && key.parent.longestKey == null
 				// the parent has just one child (this key), and it has the same ids
@@ -716,9 +762,6 @@ public class SearchIndexBuilder extends AbstractWorker {
 		String json = toString(remoteKeys, localKeys);
 		System.out.println(json);
 		System.out.println("saveKeyFile." + key.key + "." + key.allDownstreamEntryIds.size());
-		if (!saveFile) {
-			return;
-		}
 		String path = "";
 		String fileName;
 		if (isRoot) {
@@ -737,8 +780,10 @@ public class SearchIndexBuilder extends AbstractWorker {
 
 		String folder = JsonFileUtils.outputDir + "/s" + path + "/" + fileName;
 		
-		File file = new File(folder);
-		FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
+		if (saveFile) {
+			File file = new File(folder);
+			FileUtils.writeStringToFile(file, json, Charset.defaultCharset());
+		}
 		key.outputted = true;
 		key.dispose();
 	}

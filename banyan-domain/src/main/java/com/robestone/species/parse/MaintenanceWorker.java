@@ -32,11 +32,11 @@ public class MaintenanceWorker extends AbstractWorker {
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
 		boolean crawlNewLinks = true;
 		boolean crawlOldLinks = true;
-		boolean runMaintenance = true;
+		boolean runMaintenance = !true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
-		boolean runPeriodicMaintenance = true;
-		boolean runJs = true;
+		boolean runPeriodicMaintenance = !true;
+		boolean runJs = !true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB

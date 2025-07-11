@@ -21,7 +21,10 @@ import com.robestone.species.parse.ImagesCreater.ImageInfo;
 
 public class RandomTreeBuilder extends AbstractWorker {
 	
-
+	public static void main(String[] args) throws Exception {
+		new RandomTreeBuilder().buildRandomFiles();
+	}
+	
 	public Collection<Entry> buildRandomTree(Integer pinnedId) throws Exception {
 		Collection<Entry> entries = buildRandomTreeByMatching(pinnedId);
 		if (entries == null) {
@@ -51,11 +54,11 @@ public class RandomTreeBuilder extends AbstractWorker {
 			return;
 		}
 		ImageInfo ii = ImagesCreater.toImageInfo(entry);
-		String image = ii.getFilePathRelative();
+		String image = ii.getUrlBasePath();
 		Entry p = entry.getParent();
 		while (p != null) {
 			if (p.getImage() != null) {
-				String pimage = ImagesCreater.toImageInfo(p).getFilePathRelative();
+				String pimage = ImagesCreater.toImageInfo(p).getUrlBasePath();
 				if (pimage.equals(image)) {
 					p.setPinned(false);
 				}

@@ -23,28 +23,29 @@ $(document).ready(function() {
 			return findSearchSuggestions(request.term, callback);
 		},
 		select : function(event, ui) {
-			return submitSearchQuery(event, ui);
+			event.preventDefault();
+			var value = $(this).val();
+			var searched = submitSearchQuery(event, ui);
+			$(this).val(value);
+			return searched;
 		},
-		/* these affect the list item, not the text box
-		focus : function(event, ui) {console.log("focus")},
-		change : function(event, ui) {console.log("change")},
-		*/
+		focus : function(event) {
+			event.preventDefault();
+		},
+		change : function(event) {
+			event.preventDefault();
+		},
 		minLength : minSearchKeyLength,
 		autoFocus: true
-	})
-	.autocomplete("instance")._renderItem = function( ul, item ) {
+	}).focus(function () {
+	    $(this).autocomplete("search");
+	}).autocomplete("instance")._renderItem = function( ul, item ) {
 		// $(ul).addClass("Node");
       	return $( "<li class='searchSuggestion'>" )
         	.append( createSuggestionHtml(item) )
         	.appendTo( ul );
     };
 	$("#textfield").focus();
-	// TODO I don't actually remember what these are for
-	$(".Button").bind("mouseover focus", function(event) {
-		$(this).addClass("ButtonOver");
-	}).bind('mouseout blur', function(event) {
-		$(this).removeClass("ButtonOver");
-	});
 	$("*").mousemove(function() {areMenusAllowed = true;});
 	$(".navQueryLink").click(queryLinkEvent);
 });
@@ -84,6 +85,7 @@ var defaultNoSuggestions = { label: "No results found" };
 var isMenuActive = false;
 var cancelerEvent = null;
 var areMenusAllowed = true;
+var detailedId = false;
 
 var menuData = [
 	{"id": "mShowChildren", "png": "open_children", 	"caption": "Show More Children"},
@@ -124,18 +126,18 @@ function initLazyButtons() {
 }
 function initContextMenu() {
 	renderContextMenu();
-	$("#menu").mouseenter(function(e) {
+	$("#menu").mouseenter(function() {
 		isMenuActive = true;
 	});
-	$("#menu").mouseleave(function(e) {
+	$("#menu").mouseleave(function() {
 		hideContextMenu();
 	});
-	$("#menu").mousemove(function(e) {
+	$("#menu").mousemove(function() {
 		areMenusAllowed = true;
 		isMenuActive = true;
 	});
 	
-	$(".mButton").bind("click", function(e) {
+	$(".mButton").bind("click", function() {
 		contextMenuClicked(this);
 		return false;
 	});
@@ -195,13 +197,7 @@ function performMenuAction(action, id) {
 		hideChildren(id);
 	} else if (action == "mShowChildren") {
 		var e = getMapEntry(id);
-		if (e.mBack) {
-			// this is kind of a dumb way to determine if isDetail
-			// need to switch to tree view
-			
-			// NO - it's not the current tree, it's a different tree
-			renderTreeFromDetailsTab();
-		} else {
+		if (!e.mBack) {
 			loadAllChildren(id);
 		}
 	} else if (action == "mShowMore") {
@@ -390,8 +386,7 @@ function initTreeEvents() {
 		},
 		"mousemove.preview": function(e) {
 			areMenusAllowed = true;
-			var previewE = $("#preview");
-				showPreviewPanel(e);
+			showPreviewPanel(e);
 		}
 	});
 
@@ -1128,7 +1123,6 @@ function initEntryDetailsCrunchedIds(e) {
 }
 function initPartitionPath(e) {
 	if (e.partitionPath) {
-		// TODO kind of dumb too - maybe need a way to traverse the tree instead?
 		return;
 	}
 	var p = e.parent;
@@ -1136,7 +1130,6 @@ function initPartitionPath(e) {
 		e.partitionPath = "0";
 	} else {
 		if (!p.partitionPath) {
-			// TODO this is a dumb way to do it
 			initPartitionPath(p);
 		}
 		var index = indexOf(p.childrenIds, e.id);
@@ -1237,18 +1230,6 @@ function renderCurrentTree(skipUrl) {
 		setUrlToAllVisibleIds();
 	}
 	hideContextMenu();
-}
-function renderTreeFromDetailsTab() {
-	// get the url
-
-	// parse the focussed id
-	// mark it as pinned
-	
-	// get the rest of the ids (should just be the parents and children)
-	
-	// mark them as shown
-	
-	// render the tree
 }
 function renderTree(id, keepOnlyNew) {
 	$("#treeTab").empty();
@@ -1384,7 +1365,7 @@ function renderEntryLinesElement(h, e, showLine) {
 	table.appendTo(h);
 }
 
-function renderExampleNode(h, e, depth) {
+function renderExampleNode(h, e) {
 	if (e.type == "example") {
 		var pinnedScaling = .50;
 		var height = pinnedScaling * e.pHeight;
@@ -1419,7 +1400,7 @@ function renderExampleNode(h, e, depth) {
 }
 function renderNodeEntryLine(h, e, depth) {
 	if (e.example) {
-		renderExampleNode(h, e, depth);
+		renderExampleNode(h, e);
 		return;
 	}
 	var spanClass = "EntryLine";
@@ -1508,9 +1489,9 @@ function renderNodeEntryLine(h, e, depth) {
 	span.append('<a class="' + imgClass + ' treeQueryLink"' + linkTitle + ' id="entry-' + e.id + '" href="?q=' + detailsHash + '">' 
 			 + name + img + '</a>');
 	
-	addMenuButtonToEntryLine(e, span, false);
+	addMenuButtonToEntryLine(e, span);
 }
-function addMenuButtonToEntryLine(e, span, isDetails) {
+function addMenuButtonToEntryLine(e, span) {
 	// menu button style/image
 	var canShowMore = (e.mShowChildren || e.mShowMore);
 	var menuMore = "menu_more.png";
@@ -1556,7 +1537,7 @@ function renderDetails(id) {
 	var e = getMapEntry(id);
 
 	var displayName = getEntrySimpleDisplayName(e);
-	$("#DetailTitle").html(displayName); // TODO should list all names
+	$("#DetailTitle").html(displayName);
 	if (e.cname) {
 		$("#DetailLatinTitle").html(e.lname);
 		$("#DetailLatinTitle").show();
@@ -1579,37 +1560,12 @@ function renderDetails(id) {
 
 	var taxoEntry = $("#TaxonomyCell");
 	taxoEntry.empty();
-	var table = $("<table></table>").appendTo(taxoEntry);
-	var ancestors = [];
-	var allEntries = [];
-	var p = e;
-	while (p) {
-		allEntries.push(p);
-		ancestors.push(p);
-		p = p.parent;
-	}
-	
-	// prepare all the menu buttons
-	var children = e.children; // we show all whether they were visible or not
-	if (children) {
-		for (i = 0; i < children.length; i++) {
-			allEntries.push(children[i]);
-		}
-	}
-	for (i = 0; i < allEntries.length; i++) {
-		prepareNodesForRender(allEntries[i], true);
-	}
 
-	var i;
-	for (i = ancestors.length - 1; i >= 0; i--) {
-		var a = ancestors[i];
-		var tr = $("<tr class='DetailsRow'><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
-		var td = $("<td></td>").appendTo(tr);
-		renderDetailsEntryPreviewPart(td, a, "taxo");
-	}
+	renderFlatTaxonNode(taxoEntry, e);
+	
 	// if there are no children, we should hide that area
 	var subTableNode = $("#SubSpeciesTableNode");
-	if (!children || children.length == 0) {
+	if (!e.children || e.children.length == 0) {
 		subTableNode.hide();
 		$('#SubSpeciesLine').hide();
 	} else {
@@ -1621,10 +1577,10 @@ function renderDetails(id) {
 		var subTable = $("#SubSpeciesTable");
 		// divide them up into columns
 		subTable.empty();
-		for (i = 0; i < children.length; i++) {
+		for (var i = 0; i < e.children.length; i++) {
 			var tr = $("<tr></tr>").appendTo(subTable);
 			var td = $("<td class='DetailsRow'></td>").appendTo(tr);
-			renderDetailsEntryPreviewPart(td, children[i], "child");
+			renderDetailsEntryPreviewPart(td, e.children[i], "child");
 		}
 	}
 	
@@ -1645,6 +1601,37 @@ function renderDetails(id) {
 	
 	initTreeEvents();
 	
+}
+function renderFlatTaxonNode(cell, e) {
+	
+	var ancestors = [];
+	var allEntries = [];
+	var p = e;
+	while (p) {
+		allEntries.push(p);
+		ancestors.push(p);
+		p = p.parent;
+	}
+
+	// prepare all the menu buttons
+	var children = e.children; // we show all whether they were visible or not
+	if (children) {
+		for (var i = 0; i < children.length; i++) {
+			allEntries.push(children[i]);
+		}
+	}
+	for (var i = 0; i < allEntries.length; i++) {
+		prepareNodesForRender(allEntries[i], true);
+	}
+	
+	var table = $("<table></table>").appendTo(cell);
+	for (var i = ancestors.length - 1; i >= 0; i--) {
+		var a = ancestors[i];
+		var tr = $("<tr class='DetailsRow'><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
+		var td = $("<td></td>").appendTo(tr);
+		renderDetailsEntryPreviewPart(td, a, "taxo");
+	}
+
 }
 function getRankOfChildren(e) {
 	if (e.children && e.children.length > 0) {
@@ -1680,7 +1667,7 @@ function renderDetailsEntryPreviewPart(td, e, idPrefix) {
 			+ "' class='Thumb' src='" + getImageTinySrcPath(e) + "'></img>").appendTo(previewA);
 	}
 	
-	addMenuButtonToEntryLine(e, td, true);
+	addMenuButtonToEntryLine(e, td);
 
 }
 
@@ -1801,7 +1788,7 @@ function loadCommandFromURL() {
 function loadRootSearchIndex() {
 	loadRemoteIndexEntry("@root");
 }
-function submitSearchQuery(event, ui) {
+function submitSearchQuery(_event, ui) {
 	// (ui.item.value + " // " + ui.item.label + " // " + ui.item.extra);
 	if (ui.item.notFound) {
 		return;
@@ -1809,12 +1796,22 @@ function submitSearchQuery(event, ui) {
 	var id = ui.item.id;
 	var ids = uncrunch(ui.item.ids);
 	// make sure we're on the tree page, (not the detail page)
-	// (working on) renderCurrentTree(false);
+	if (isTabShown("detailsTab")) {
+		showTreeTabFromDetailsTab();
+	}
 	loadJsonThenMarkNewIdsVisible(ids, function() {
 		if (getMapEntry(id).img) {
 			pinNode(id, true);
 		}
 	});
+}
+function isTabShown(name) {
+	return $("#" + name).is(":visible");
+}
+// needed because on details, all nodes get marked as hidden
+function showTreeTabFromDetailsTab() {
+	var url = $("#treeLink").attr("href");
+	loadCommandFromQuery(url);
 }
 function findSearchSuggestions(term, callback) {
 	term = cleanIndexKey(term);
@@ -1984,7 +1981,7 @@ function loadDetails(params) {
 	loadJsonOnly(otherIds, build_loadDetails_callback(id));
 }
 function build_loadDetails_callback(id) {
-	return function(entries) {
+	return function() {
 		renderDetails(id);
 		showTab("detailsTab");
 	};
@@ -2077,7 +2074,7 @@ function loadExampleFile(fileName) {
 	}
 }
 function build_loadExampleFile_callback(fileName) {
-	return function(entries) {
+	return function() {
 		loadExampleFile(fileName);
 	};
 }
@@ -2214,7 +2211,7 @@ function isFileName(name) {
 	return (fileTypes.indexOf(code) >= 0 && name.charAt(1) == ":");
 }
 function buildLoadJsonNextEntriesCallback(idsWithoutParents, callback, outerEntries) {
-	return function(newEntries) {
+	return function() {
 		loadJson(idsWithoutParents, callback, outerEntries);
 	};
 }
@@ -2372,18 +2369,6 @@ function leftPad(s, padSize, padChar) {
 		s = padChar + s;
 	}
 	return s;
-}
-// TODO delete these two test methods
-function testCrunch() {
-	var val = $("#uncrunchedIds").val();
-	var nums = val.split(",");
-	var crunched = crunch(nums);
-	$("#crunchOutput").val(crunched);
-}
-function testUncrunch() {
-	var val = $("#crunchedIds").val();
-	var uncrunched = uncrunch(val);
-	$("#crunchOutput").val(uncrunched);
 }
 function uncrunch(s) {
 	var ids = [];

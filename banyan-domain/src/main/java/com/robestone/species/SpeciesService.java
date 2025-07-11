@@ -37,7 +37,7 @@ public class SpeciesService implements ParameterizedRowMapper<Entry> {
 	private boolean useInterestingAttributesForSearches = true;
 
 	private Cache cache;
-	private EntrySearcher searcher;
+	private SqlSearcher searcher;
 	
 	public String getBoringColumn() {
 		if (useInterestingAttributesForSearches) {
@@ -490,7 +490,7 @@ public class SpeciesService implements ParameterizedRowMapper<Entry> {
 	public int findBestId(String query, Collection<Integer> existingIds) {
 		return getSearcher().search(query, existingIds);
 	}
-	private EntrySearcher getSearcher() {
+	private SqlSearcher getSearcher() {
 		if (searcher == null) {
 			searcher = new SqlSearcher(this);
 		}

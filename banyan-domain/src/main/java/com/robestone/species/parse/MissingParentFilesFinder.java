@@ -49,7 +49,7 @@ public class MissingParentFilesFinder extends AbstractWorker {
 		for (Entry e: entries) {
 			// check if the child exists - it might have been a red link
 			String cname = e.getLatinName();
-			boolean exists = WikiSpeciesCache.CACHE.isFilePresent(cname, false);
+			boolean exists = WikiSpeciesCache.CACHE.isFilePresent(cname);
 			if (exists) {
 				continue;
 			}

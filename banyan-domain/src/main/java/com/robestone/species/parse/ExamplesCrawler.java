@@ -29,7 +29,7 @@ public class ExamplesCrawler extends AbstractWorker {
 		
 		boolean forceDownload = false; // set to true if the local files should be re-doownloaded
 		
-		WikiSpeciesCache.DEFAULT_MAX_RETRIES = 0;
+		AbstractSiteFileCache.DEFAULT_MAX_RETRIES = 0;
 		
 		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
 		crawler.setForceNewDownloadForCache(forceDownload);

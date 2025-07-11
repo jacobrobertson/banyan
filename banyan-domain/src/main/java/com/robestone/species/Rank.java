@@ -35,10 +35,10 @@ public enum Rank {
 	
 	Regio(100),
 	Imperium(110),
-	Superregnum(120, "*Super-kingdom"),
+	Superregnum(120, "*Super-kingdom", "Superkingdom"),
 	Regnum(130, "*Kingdom"),
-	Subregnum(140, "*Sub-kingdom"),
-	Infraregnum(145, "*Sub-kingdom"),
+	Subregnum(140, "*Sub-kingdom", "Subkingdom"),
+	Infraregnum(145, "*Sub-kingdom"), // TODO need to merge these or something - what does wikidata say?
 
 	Domain(146, "*Domain"),
 	
@@ -54,7 +54,7 @@ public enum Rank {
 	Megaclassis(218),
 	Superclassis(220, "*Super-class", "Superclasses"),
 	Classis(230, "+Class", "Classes"),
-	Subclassis(240, "*Sub-class", "Subclasses", "Sub-classis"),
+	Subclassis(240, "*Sub-class", "Subclasses", "Subclass", "Sub-classis"),
 	
 	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
 	
@@ -96,7 +96,7 @@ public enum Rank {
 	Infraordo(380, "*Sub-order", "Infraordines", "Infraorder"),
 	
 	// -- do not know the order of these
-	Parvordo(381, "*Sub-order"),
+	Parvordo(381, "*Sub-order", "Parvorder"),
 	Subinfraordo(382, "*Sub-order"),
 	Microordo(385, "*Sub-order"),
 	
@@ -148,6 +148,7 @@ public enum Rank {
 	Superforma(630, "*Super-form", "Superform", "Superformae"),
 	Forma(640, "+Form", "Formae"),
 	Subforma(650, "*Sub-form", "Subform", "Subformae"),
+	FormaSpecialis(655, "Forma specialis"),
 	
 	Aberratio(660),
 	Lusus(670),
@@ -170,8 +171,10 @@ public enum Rank {
 	Cultivar(705), // found in between Alliance and Nothogenera
 	Nothovarietas(710),
 	
+	// extinct species - fossils
 	Ichnogenus(820),
 	Ichnospecies(840),
+	FossilTaxon(860, "Fossil taxon"), // this is a catch-all that is usually an error, but is common enough
 	
 	// virus only?
 	Realm(900),
@@ -183,6 +186,7 @@ public enum Rank {
 	private Set<String> names;
 	private String commonName;
 	private boolean isValidRank;
+	private String qID;
 	
 	static {
 		// execute after other init
@@ -192,6 +196,10 @@ public enum Rank {
 				throw new IllegalArgumentException("Rank " + rank + " has duplicate index");
 			}
 		}
+	}
+
+	static {
+		Familia.qID = "Q35409";
 	}
 	
 	Rank(int rankIndex, String... alternateNames) {
@@ -230,12 +238,18 @@ public enum Rank {
 	public int getRankIndex() {
 		return rankIndex;
 	}
+	public String getQid() {
+		return qID;
+	}
 	public static Rank valueOfWithAlternates(String s) {
 		if (s == null) {
 			throw new IllegalArgumentException("Rank value cannot be null");
 		}
 		for (Rank r: values()) {
 			if (r.toString().equalsIgnoreCase(s)) {
+				return r;
+			}
+			if (r.commonName.equalsIgnoreCase(s)) {
 				return r;
 			}
 			for (String a: r.names) {

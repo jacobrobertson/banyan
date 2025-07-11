@@ -3,6 +3,7 @@ package com.robestone.species.parse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +47,7 @@ public class VernacularCrawler {
 	
 	public void run(String latinName) throws IOException {
 		String file = dir + latinName;
-		String page = IOUtils.toString(new FileInputStream(file));
+		String page = IOUtils.toString(new FileInputStream(file), Charset.defaultCharset());
 		Entry e = parser.parse(latinName, page, false);
 		if (e != null && e.getCommonName() == null) {
 			String sidebar = getSidebar(latinName, page);

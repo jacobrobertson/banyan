@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 import org.springframework.jdbc.core.simple.ParameterizedRowMapper;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
 
-public class ExamplesService implements IExamplesService {
+public class ExamplesService {
 
 	private SpeciesService speciesService;
 	private SimpleJdbcTemplate template;
