@@ -66,33 +66,61 @@ body {height:90%;background: #e8f3db;}
 	color: #466522;
 	background: #f8fbf4;
 }
-/* Style from autocomplete jquery */
-.ui-menu-item {
-	width: 100%;
-	box-sizing: border-box;
-	white-space: nowrap;
+
+.autocomplete-suggestion-img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 0.6em;
+  background: #f8fbf4;
+  border: 1px solid #b2c7a2;
+  flex-shrink: 0;
+  /* No display: block or inline-block needed; img is inline by default, flex will align it */
 }
-.ui-menu-item-wrapper {
-	display: block;
-	width: 100%;
-	box-sizing: border-box;
-	white-space: nowrap;
+
+.autocomplete-suggestion-text {
+  display: flex; /* ensures common/latin are in a row, not column */
+  align-items: center; /* ensures both text spans are centered to each other and the image */
+  white-space: nowrap;
+  font-size: 1em;
 }
+
 .searchLatin {
-	box-sizing: border-box;
-	width: 100%;
-	font-style: italic;
-	white-space: nowrap;
+  margin-left: 0.3em;
+  font-style: italic;
+  color: #466522;
 }
-/*
-.searchCommon {
-	width: 100%;
-	padding-left: 5px;
-	white-space: nowrap;
-	padding-right: 5px;
-	text-align: left;
+.autocomplete-suggestion-img {
+  border: 1.5px solid #b2c7a2;
 }
-*/
+
+.ui-menu .ui-state-active .autocomplete-suggestion-text,
+.ui-menu .ui-state-active .searchCommon {
+  color: black !important;
+}
+.ui-menu .ui-state-active .searchLatin {
+  color: #b2c7a2 !important;
+}
+.ui-menu .autocomplete-suggestion-row {
+  display: flex;
+  align-items: center;
+  width: 100% !important;
+  box-sizing: border-box;
+  border-bottom: 1px solid #b2c7a2 !important; /* darker green, change to red/black to debug */
+  background: #fff;
+  min-height: 36px;
+  padding: 2px 8px;
+}
+.ui-menu .autocomplete-suggestion-row:last-child {
+  border-bottom: none !important;
+}
+.ui-menu .ui-state-active,
+.ui-menu .ui-state-hover {
+  background: #e8f3db !important;  /* Light green from your theme */
+  color: #2d4012 !important;        /* Ensure text is readable */
+  border: none !important;
+}
 .NodeButtons { width: 12px; }
 .NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
 .NodeButtons img { margin: 0px; padding: 0px; border: 0px;}
@@ -219,9 +247,6 @@ td.Bottom {
 div	.NodeDiv {
 	border: solid 1px black;
 }
-.Blank {
-	/*border: 1px yellow dashed;*/
-}
 table.SpeciesTree {
 	border-collapse: collapse;
 	margin: 0px;
@@ -277,8 +302,6 @@ td {
 	vertical-align: top;
 	width: 50%;
 	padding-left: 4em;
-}
-.DetailImage {
 }
 .DetailImageDiv {
 	padding-top: 1em;
@@ -338,6 +361,10 @@ td {
 	width: 20px;
 	height: 20px;
 	padding: 1px;
+}
+#open_children.faqOpenChildren {
+	padding-left: 2em;
+	padding-right: .25em;
 }
 .detail-button {
 	margin: 0px;
@@ -556,7 +583,6 @@ img.PinnedImage {
 }
 .Logo {
 	position: absolute;
-	zzfloat: right;
 	top: -3px;
 	padding-right: 15px;
 	right: 1px;

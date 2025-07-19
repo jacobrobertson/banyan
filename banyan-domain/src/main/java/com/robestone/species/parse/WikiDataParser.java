@@ -1,12 +1,14 @@
 package com.robestone.species.parse;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -66,19 +68,25 @@ public class WikiDataParser {
 	
 	public void crawlLocalCache() throws Exception {
 		qidsInDB.addAll(wdService.findAllTaxonQids());
+		System.out.println("crawlLocalCache.findAllTaxonQids.taxons." + qidsInDB.size());
 		qidsInDB.addAll(wdService.findAllNonTaxonQids());
+		System.out.println("crawlLocalCache.findAllTaxonQids.all." + qidsInDB.size());
 		
-		crawlLocalCache(new File(WikiDataCache.WIKIDATA_LOCAL_PATH + "/Q"));
+		crawlLocalCache(new File(WikiDataCache.WIKIDATA_LOCAL_PATH + "/Q").toPath());
 	}
-	private void crawlLocalCache(File dir) throws Exception {
-		File[] childrenArray = dir.listFiles();
-		List<File> childrenList = Arrays.asList(childrenArray);
-		Collections.shuffle(childrenList);
+	private void crawlLocalCache(Path dir) throws Exception {
 		
-		for (File child : childrenList) {
-			if (child.isFile()) {
-				String key = child.getName();
-				key = key.split("\\.")[0];
+		System.out.println("crawlLocalCache." + dir.toString());
+		int count = 0;
+
+		DirectoryStream<Path> ds = Files.newDirectoryStream(dir);	
+		Iterator<Path> paths = ds.iterator();
+		
+		while (paths.hasNext()) {
+			Path child = paths.next();
+			String name = child.getFileName().toString();
+			if (name.endsWith(".json")) {
+				String key = name.split("\\.")[0];
 				boolean alreadyDone = qidsInDB.contains(key);
 				if (!alreadyDone) {
 					String doc = readTaxonOnlyToString(child);
@@ -93,11 +101,17 @@ public class WikiDataParser {
 						wdService.insertNonTaxonQid(key);
 					}
 				}
+				if (++count % 100 == 0) {
+					System.out.println("crawlLocalCache." + dir.toString() + ".count." + count);
+				}
 			} else {
 				crawlLocalCache(child);
 			}
 		}
+		
+		ds.close();
 	}
+	
 	private void visitQFileFromLocal(String doc, String qid) throws Exception {
 		WdTaxon taxon = parseQFileFromLocal(doc, qid);
 		if (taxon == null) {
@@ -182,11 +196,9 @@ public class WikiDataParser {
 			Value.FossilTaxon.getNumericId(),
 			Value.ExtinctTaxon.getNumericId()};
 
-	private int lowestPositionForP31 = Integer.MAX_VALUE;
-	
-	private String readTaxonOnlyToString(File file) throws Exception {
+	private String readTaxonOnlyToString(Path file) throws Exception {
 		
-		try (InputStream in = new FileInputStream(file)) {
+		try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
 		
 			// 0. read in some of the file - we know the token is later on, and this simplifies the logic later
 			int headLen = 100; // could probably be much higher
@@ -201,9 +213,6 @@ public class WikiDataParser {
 			if (!found1) {
 				return null;
 			}
-			
-			// check the position - so we can figure out how far to seek
-			int bufLenAtP31 = buf.length();
 			
 			// 2. read until this part is found (white space will be different)
 			/*
@@ -234,11 +243,6 @@ public class WikiDataParser {
 				int read;
 				while ((read = in.read()) >= 0) {
 					buf.append((char) read);
-				}
-				
-				if (bufLenAtP31 < lowestPositionForP31) {
-					lowestPositionForP31 = bufLenAtP31;
-					System.out.println("lowestPositionForP31." + lowestPositionForP31 + "." + file.getAbsolutePath());
 				}
 				
 				return buf.toString();
@@ -348,9 +352,9 @@ public class WikiDataParser {
 	public enum Value {
 		MonotypicTaxon("Q310890", "monotypic taxon"),
 		Taxon("Q16521", "taxon"),
-		MontageImage("Q310890", "monotypic taxon"),
 		FossilTaxon("Q23038290", "fossil taxon"),
 		ExtinctTaxon("Q98961713", "extinct taxon"),
+		MontageImage("Q310890", "monotypic taxon"),
 		;
 		
 		private String qID;
@@ -412,9 +416,9 @@ public class WikiDataParser {
 
 		@Override
 		protected String toHash(String pageKey) {
-			String hash1 = ImagesCreater.getImagePathHashed(pageKey);
+			String hash1 = ImagesWorker.getImagePathHashed(pageKey);
 			String part = hash1 + "/" + pageKey;
-			String hash2 = ImagesCreater.getImagePathHashed(part);
+			String hash2 = ImagesWorker.getImagePathHashed(part);
 			String left = pageKey.substring(0, 1);
 			return left + "/" + hash1 + "/" + hash2;
 		}

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.robestone.species.parse.ImagesCreater;
+import com.robestone.species.parse.ImagesWorker;
 
 /**
  * Create a new pruner each time.
@@ -161,7 +161,7 @@ public class BoringPruner {
 		logger.debug("normalizeImageNames > " + entries.size());
 		for (Entry e: entries) {
 			if (e.getImageLink() != null) {
-				String name = ImagesCreater.parseFileName(e.getImageLink());
+				String name = ImagesWorker.parseFileName(e.getImageLink());
 				if (!name.equals(e.getImageLink())) {
 					e.setImageLink(name);
 				}

@@ -1,13 +1,12 @@
 package com.robestone.species;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import junit.framework.TestCase;
 
 public class SpeciesServiceTest extends TestCase {
 
@@ -51,38 +50,6 @@ public class SpeciesServiceTest extends TestCase {
 		String common = e.getCommonName();
 		int pos = common.indexOf(code);
 		assertEquals(4, pos);
-	}
-	/**
-	 * Shows that after X number of searches, each new id is still unique.
-	 */
-	public void testSearchWhereNotIn() {
-		Set<Integer> ids = new HashSet<Integer>();
-		int count = 10;
-		for (int i = 0; i < count; i++) {
-			int id = service.findBestId("owl", ids);
-			boolean added = ids.add(id);
-			assertTrue(added);
-		}
-	}
-	public void testCache() {
-		int id = service.findBestId("owl", new HashSet<Integer>());
-		Entry found1 = service.findEntry(id);
-		Entry found2 = service.findEntry(id);
-		
-		EntryProperties p1 = found1.getEntryProperties();
-		EntryProperties p2 = found2.getEntryProperties();
-		
-		assertSame(p1, p2);
-		
-		service.clearCache();
-		Entry found3 = service.findEntry(id);
-		EntryProperties p3 = found3.getEntryProperties();
-		assertTrue(p3 != p1);
-	}
-	public void testFindOwls() {
-		int id = service.findBestId("owl", new HashSet<Integer>());
-		Entry found = service.findEntry(id);
-		assertEquals("Owl", found.getCommonName());
 	}
 	public void test45293Fails() {
 		Entry entry = service.findEntry(45293);
@@ -136,82 +103,4 @@ public class SpeciesServiceTest extends TestCase {
 		return ids;
 	}
 
-	public void testCucurbitoideae() {
-		String name = "Cucurbitoideae";
-		Entry found = service.findEntryByLatinName(name);
-		assertEquals(name, found.getLatinName());
-		
-		int id = service.findBestId(name, new HashSet<Integer>());
-		assertEquals(id, found.getId().intValue());
-	}
-	
-	/**
-	 * Keeps failing due to changing data...
-	 */
-	public void ztestCucurbitales() {
-		String name = "Cucurbitales";
-		Entry found = service.findEntryByLatinName(name);
-		
-		int persistedChildren = 6;
-		int loadedChildren = 3;
-		
-		assertEquals(persistedChildren, found.getPersistedChildCount());
-
-		Collection<Integer> cids = service.findChildrenIds(found.getId());
-		assertEquals(loadedChildren, cids.size());
-		
-		Set<Integer> ids = new HashSet<Integer>(cids);
-		Entry root = service.findTreeForNodes(ids);
-		Tree tree = EntryUtilities.buildTree(root);
-		Entry cuc = tree.get(found.getId());
-		assertEquals(loadedChildren, cuc.getChildren().size());
-	}
-	public void zzztestCucumbers() {
-		assertEquals("Cucumerinae", "Cucumerinae");
-		String[] names = 
-			{
-				"Plantae",
-				"Magnoliophyta", 
-				"Magnoliopsida", 
-				"Cucurbitales", 
-				"Cucurbitaceae", 
-				"Cucurbitoideae",
-				"Melothrieae", 
-				"Cucumerinae", 
-				"Cucumis",
-				"Cucumis sativus",
-				};
-
-		String name = names[names.length - 1];
-		int id = service.findBestId(name, new HashSet<Integer>());
-		Set<Integer> ids = new HashSet<Integer>();
-		ids.add(id);
-		Entry entry = service.findTreeForNodes(ids);
-		
-		Tree tree = EntryUtilities.buildTree(entry);
-		
-		Entry found = tree.get(id);
-		
-		assertEquals(id, found.getId().intValue());
-		
-		// check the parents are what I expect
-		for (int i = names.length - 1; i >= 0; i--) {
-			assertEquals(names[i], found.getLatinName());
-			found = found.getParent();
-			System.out.println(names[i]);
-		}
-	}
-	
-	public void testFindBestId() {
-		doTestFindBestId("canidae", true);
-		doTestFindBestId("fox", true);
-		doTestFindBestId("Dormouse", true);
-		doTestFindBestId("rat", true);
-		doTestFindBestId("fluffy", true);
-	}
-	private void doTestFindBestId(String search, boolean expect) {
-		int found = service.findBestId(search, new HashSet<Integer>());
-		assertEquals(expect, found > 0);
-	}
-	
 }

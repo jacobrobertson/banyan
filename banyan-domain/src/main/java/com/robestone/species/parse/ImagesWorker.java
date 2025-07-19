@@ -12,6 +12,7 @@ import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,9 +27,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.image.ImageIoUtilities;
 import com.robestone.species.Entry;
+import com.robestone.species.Image;
 import com.robestone.species.LogHelper;
 
-public class ImagesCreater extends AbstractWorker {
+public class ImagesWorker extends AbstractWorker {
 
 	public static final String TINY = "tiny";
 	public static final String PREVIEW = "preview";
@@ -46,10 +48,12 @@ public class ImagesCreater extends AbstractWorker {
 	
 	public static void main(String[] args) throws Exception {
 		
-		ImagesCreater ic = new ImagesCreater();
-		ic.requireAllImagesExistForCheck = true;
-		ic.downloadAll(true, false);
+		System.out.println(getImagePathHashed("Ptilostemon chamaepeuce"));
 		
+		ImagesWorker ic = new ImagesWorker();
+		ic.requireAllImagesExistForCheck = true;
+//		ic.downloadAll(true, false);
+//		ic.deleteImagesWithNoEntry();
 //		ic.fixOldBadImages(false);
 		
 
@@ -64,9 +68,31 @@ public class ImagesCreater extends AbstractWorker {
 			"a/ae/Hoya_benitotanii_2011_stamp_of_the_Philippines.jpg", "b/b9/Osedax_rubiplumus.jpg"
 	};
 	
-	public ImagesCreater() {
+	public ImagesWorker() {
 	}
 
+	/**
+	 * This happens if an image gets deleted, or put on a blacklist.
+	 */
+	public void deleteImagesWithNoEntry() {
+		System.out.println(">images.deleteImagesWithNoEntry");
+		List<Image> images = imageService.findAllImages();
+		System.out.println(">images.deleteImagesWithNoEntry." + images.size());
+		for (Image image : images) {
+			Entry entry = speciesService.findEntry(image.getEntryId());
+			if (entry == null) {
+				System.out.println(">images.deleteImagesWithNoEntry." + image.getEntryId());
+				imageService.deleteImage(image);
+			} else if (entry.getImageLink() == null) {
+				System.out.println(">images.deleteImagesWithNoEntry." + image.getEntryId() + "." + entry.getLatinName());
+				imageService.deleteImage(image);
+			}
+		}
+	}
+	public void runMaintenance() {
+		removeBlackListedImages();
+		deleteImagesWithNoEntry();
+	}
 	public void removeBlackListedImages() {
 		speciesService.udpateBlacklistedImages(BLACKLIST);
 	}

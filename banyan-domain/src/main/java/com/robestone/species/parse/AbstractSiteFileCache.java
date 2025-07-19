@@ -41,7 +41,7 @@ public abstract class AbstractSiteFileCache {
 		return file;
 	}
 	protected String toHash(String pageKey) {
-		String hash = ImagesCreater.getImagePathHashed(pageKey);
+		String hash = ImagesWorker.getImagePathHashed(pageKey);
 		return hash;
 	}
 

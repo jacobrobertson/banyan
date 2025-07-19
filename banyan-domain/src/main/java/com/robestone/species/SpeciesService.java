@@ -37,7 +37,6 @@ public class SpeciesService implements ParameterizedRowMapper<Entry> {
 	private boolean useInterestingAttributesForSearches = true;
 
 	private Cache cache;
-	private SqlSearcher searcher;
 	
 	public String getBoringColumn() {
 		if (useInterestingAttributesForSearches) {
@@ -487,15 +486,6 @@ public class SpeciesService implements ParameterizedRowMapper<Entry> {
 		return template.query("select " + cols + " from species where " +
 				"not (image_link is null)", this);
 	}
-	public int findBestId(String query, Collection<Integer> existingIds) {
-		return getSearcher().search(query, existingIds);
-	}
-	private SqlSearcher getSearcher() {
-		if (searcher == null) {
-			searcher = new SqlSearcher(this);
-		}
-		return searcher;
-	}
 
 	public Entry findTreeForNodes(Collection<Integer> ids, Entry existingRoot) {
 		Set<Integer> set = new HashSet<Integer>(ids);
@@ -602,7 +592,11 @@ public class SpeciesService implements ParameterizedRowMapper<Entry> {
 	}
 	private Entry getEntryFromCache(Integer id) {
 		EntryProperties p = getCache().getEntryProperties(id);
-		return new Entry(p);
+		if (p == null) {
+			return null;
+		} else {
+			return new Entry(p);
+		}
 	}
 	
 	private void makeInteresting(Entry entry) {

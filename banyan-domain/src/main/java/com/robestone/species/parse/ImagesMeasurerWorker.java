@@ -51,9 +51,9 @@ public class ImagesMeasurerWorker extends AbstractWorker {
 		Image image = new Image();
 		image.setEntryId(entry.getId());
 		boolean okay = true;
-		okay = okay && measure(entry, image, ImagesCreater.TINY);
-		okay = okay && measure(entry, image, ImagesCreater.PREVIEW);
-		okay = okay && measure(entry, image, ImagesCreater.DETAIL);
+		okay = okay && measure(entry, image, ImagesWorker.TINY);
+		okay = okay && measure(entry, image, ImagesWorker.PREVIEW);
+		okay = okay && measure(entry, image, ImagesWorker.DETAIL);
 		if (!okay) {
 			return null;
 		}
@@ -61,23 +61,23 @@ public class ImagesMeasurerWorker extends AbstractWorker {
 	}
 	private boolean measure(Entry entry, Image image, String type) {
 		try {
-			String path = ImagesCreater.getImageFilePath(entry, type);
+			String path = ImagesWorker.getImageFilePath(entry, type);
 			File file = new File(path);
 //			LogHelper.speciesLogger.info("measure." + file);
 			BufferedImage bi = ImageIoUtilities.getImage(file);
 			int h = bi.getHeight();
 			int w = bi.getWidth();
-			if (type.equals(ImagesCreater.TINY)) {
+			if (type.equals(ImagesWorker.TINY)) {
 				// even though we are downloading larger, we will scale to a fixed size
 				// for now, just assume we download at "40" and divide here to half
 				int fh = h / 2;
 				int fw = w / 2;
 				image.setTinyHeight(fh);
 				image.setTinyWidth(fw);
-			} else if (type.equals(ImagesCreater.PREVIEW)) {
+			} else if (type.equals(ImagesWorker.PREVIEW)) {
 				image.setPreviewHeight(h);
 				image.setPreviewWidth(w);
-			} else if (type.equals(ImagesCreater.DETAIL)) {
+			} else if (type.equals(ImagesWorker.DETAIL)) {
 				image.setDetailHeight(h);
 				image.setDetailWidth(w);
 			}

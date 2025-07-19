@@ -1,0 +1,15 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background for contrast, can be omitted if not needed -->
+  <rect width="32" height="32" rx="6" fill="#f8fbf4"/>
+  <!-- Mirrored leaf shape, faded for placeholder -->
+  <path d="M10.5 8.5
+           Q6.5 17 18.5 25
+           Q22 22.5 23.5 17
+           Q22 10.5 12 8.5
+           Q11.5 8.4 10.5 8.5Z"
+        fill="#7bb163" fill-opacity="0.20"/>
+  <!-- Main vein (mirrored) -->
+  <path d="M10.8 10.7 Q15.8 16.5 18 23" stroke="#52793d" stroke-width="1.2" stroke-linecap="round" opacity="0.18"/>
+  <!-- Secondary vein (mirrored, subtle) -->
+  <path d="M14 13 Q17.5 16.5 19 19.5" stroke="#52793d" stroke-width="0.7" stroke-linecap="round" opacity="0.11"/>
+</svg>

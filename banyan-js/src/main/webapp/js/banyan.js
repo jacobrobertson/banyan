@@ -80,7 +80,6 @@ var minSearchKeyLength = 3;
 var maxSearchKeyLength = 12;
 var dbLocalSearchIndex = {};
 var dbRemoteSearchIndex = new Set(["@root"]);
-var defaultNoSuggestions = { label: "No results found" };
 
 var isMenuActive = false;
 var cancelerEvent = null;
@@ -1302,6 +1301,7 @@ function renderTreeAndRows(h, e) {
 	// this td is for the root element's info
 	var td = $("<td rowspan='" + (children.length * 2) + "'></td>").appendTo(tr);
 	var showLine = (children.length > 1);
+	
 	renderEntryLinesElement(td, e, showLine);
 
 	var lastIndex = children.length - 1;
@@ -1351,10 +1351,13 @@ function renderEntryLinesElement(h, e, showLine) {
 		}
 	
 		// this will always be empty if we are rendering children
+		// renderFlatTaxonNode(div, e, e.collapsed);
+		//* JUST FOR FUN
 		for (var i = 0; i < e.collapsed.length; i++) {
 			div.append($("<br/>"));
 			renderNodeEntryLine(div, e.collapsed[i], i + 1);
 		}
+		//*/
 	}
 	
 	var blankTr = $("<tr></tr>").appendTo(table);
@@ -1602,15 +1605,23 @@ function renderDetails(id) {
 	initTreeEvents();
 	
 }
-function renderFlatTaxonNode(cell, e) {
+function renderFlatTaxonNode(cell, e, collapsed) {
 	
-	var ancestors = [];
+	var toShow = [];
 	var allEntries = [];
 	var p = e;
 	while (p) {
 		allEntries.push(p);
-		ancestors.push(p);
+		if (collapsed == null) {
+			toShow.push(p);
+		}
 		p = p.parent;
+	}
+	
+	if (collapsed != null) {
+		for (var i = collapsed.length - 1; i >= 0; i--) {
+			toShow.push(collapsed[i]);
+		}
 	}
 
 	// prepare all the menu buttons
@@ -1625,8 +1636,8 @@ function renderFlatTaxonNode(cell, e) {
 	}
 	
 	var table = $("<table></table>").appendTo(cell);
-	for (var i = ancestors.length - 1; i >= 0; i--) {
-		var a = ancestors[i];
+	for (var i = toShow.length - 1; i >= 0; i--) {
+		var a = toShow[i];
 		var tr = $("<tr class='DetailsRow'><td class='Rank'><span>" + a.rank + "</span></td></tr>").appendTo(table);
 		var td = $("<td></td>").appendTo(tr);
 		renderDetailsEntryPreviewPart(td, a, "taxo");
@@ -1813,11 +1824,11 @@ function showTreeTabFromDetailsTab() {
 	var url = $("#treeLink").attr("href");
 	loadCommandFromQuery(url);
 }
-function findSearchSuggestions(term, callback) {
-	term = cleanIndexKey(term);
-	doFindSearchSuggestions(term, 1, callback);
+function findSearchSuggestions(originalQuery, callback) {
+	var term = cleanIndexKey(originalQuery);
+	doFindSearchSuggestions(term, originalQuery, 1, callback);
 }
-function doFindSearchSuggestions(term, subTermLength, callback) {
+function doFindSearchSuggestions(term, originalQuery, subTermLength, callback) {
 	// if the root term is loaded, we are done
 	var suggestions = dbLocalSearchIndex[term];
 	if (suggestions) {
@@ -1831,18 +1842,18 @@ function doFindSearchSuggestions(term, subTermLength, callback) {
 	if (dbRemoteSearchIndex.has(subTerm)) {
 		// load that remote, and callback to this method again
 		var innerCallback = function() {
-			doFindSearchSuggestions(term, subTermLength + 1, callback);
+			doFindSearchSuggestions(term, originalQuery, subTermLength + 1, callback);
 		};
 		loadRemoteIndexEntry(subTerm, innerCallback);
 	} else if (subTermLength < term.length) {
-		doFindSearchSuggestions(term, subTermLength + 1, callback);
+		doFindSearchSuggestions(term, originalQuery, subTermLength + 1, callback);
 	} else {
 		// we can't find it
 		//console.log("doFindSearchSuggestions.notFound." + term + "." + subTerm);
 		var suggestion = {
 			notFound: true,
-			common: "No results found for - " + term,
-			value: term
+			common: "No results found for - " + originalQuery,
+			value: originalQuery
 		};
 		callback([suggestion]);
 	}
@@ -1909,7 +1920,48 @@ function buildRemoteIndexEntry(data, callback) {
 	}
 }
 function createSuggestionHtml(entry) {
-	var html = "<span>";
+  var imgSrc = entry.image
+    ? ("data:image;base64," + entry.image)
+    : "icons/search-placeholder.svg";
+  var html = "<div class='autocomplete-suggestion-row'>";
+  html += "<img class='autocomplete-suggestion-img' src='" + imgSrc + "' alt='' />";
+  html += "<span class='autocomplete-suggestion-text'>";
+  if (entry.common && entry.common.length > 0) {
+    html += "<span class='searchCommon'>" + entry.common + "</span>";
+  }
+  if (entry.latin) {
+    html += "<span class='searchLatin'>(" + entry.latin + ")</span>";
+  }
+  html += "</span></div>";
+  return html;
+}
+function createSuggestionHtml_2(entry) {
+	var html = "<div class='autocomplete-suggestion-row'>";
+	if (entry.image) {
+		var imgSrc = "data:image;base64," + entry.image;
+		html += "<img class='autocomplete-suggestion-img' src='" + imgSrc + "'></img>";
+	} else {
+		html += "<span class='autocomplete-suggestion-placeholder'></span>";
+	}
+	html += "<span class='autocomplete-suggestion-text'>";
+	if (entry.common && entry.common.length > 0) {
+		html += "<span class='searchCommon'>" + entry.common + "</span>";
+	}
+	if (entry.latin) {
+		html += "<span class='searchLatin'>(" + entry.latin + ")</span>";
+	}
+	html += "</span></div>";
+	return html;
+}
+function createSuggestionHtml_WORKINGON(entry) {
+	var html = "<span class='suggestionRow'>";
+	if (entry.image) {
+		html = html + "<span class='suggestionImage'><img src='data:image;base64,"
+			+ entry.image + "'></img></span>";
+		// "data:image;base64,"
+	} else {
+		html = html + "<span class='suggestionBlankImage'>&nbsp;</span>";		
+	}
 	if (entry.common && entry.common.length > 0) {
 		html = html + entry.common + "&nbsp;";
 	}

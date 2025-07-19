@@ -8,11 +8,11 @@ import org.apache.commons.lang3.StringUtils;
 public class WikiSpeciesCache extends AbstractSiteFileCache {
 
 	public static void main(String[] args) {
-		System.out.println(CACHE.getFile("Herpophyllum"));
+		System.out.println(CACHE.getFile("Carcinus maenas"));
 	}
 	
 	
-	public static String LOCAL_STORAGE_DIR = "D:/wikispecies-cache/";
+	public static String LOCAL_STORAGE_DIR = "D:/banyan/caches/wikispecies/";
 	public static final WikiSpeciesCache CACHE = new WikiSpeciesCache(LOCAL_STORAGE_DIR, "html");
 
 	public WikiSpeciesCache(String localStorageDir, String pageExt) {

@@ -2,7 +2,6 @@ package com.robestone.species;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -14,7 +13,7 @@ public class ImageService implements ParameterizedRowMapper<Image> {
 
 	private SimpleJdbcTemplate template;
 	
-	public Collection<Image> findAllImages() {
+	public List<Image> findAllImages() {
 		return template.query("select * from images", this);
 	}
 	public Image findImage(Integer id) {
@@ -38,6 +37,9 @@ public class ImageService implements ParameterizedRowMapper<Image> {
 		return i;
 	}
 
+	public void deleteImage(Image i) {
+		template.update("delete from images where entry_id = ?", i.getEntryId());
+	}
 	public void updateImage(Image i) {
 		template.update("update images set " +
 				"tiny_width = ?, tiny_height = ?, " +

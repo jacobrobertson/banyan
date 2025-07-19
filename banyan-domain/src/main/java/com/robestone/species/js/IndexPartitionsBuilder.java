@@ -19,13 +19,13 @@ import com.robestone.species.SpeciesService;
  * Create json files from the master tree
  * @author jacob
  */
-public class JsonPartitioner {
+public class IndexPartitionsBuilder {
 
 	private int maxPartitionSize = 300;
 	private String pathChars = "0123456789abcdefghijklmnopqrstuvwxyz";
 	private SpeciesService speciesService;
 
-	public JsonPartitioner(SpeciesService speciesService) {
+	public IndexPartitionsBuilder(SpeciesService speciesService) {
 		this.speciesService = speciesService;
 	}
 	public void partition(Node node) {
@@ -347,7 +347,7 @@ public class JsonPartitioner {
 	}
 	public static void testPartition() throws Exception {
 		Node root = JsonFileUtils.parseRecursive(1);
-		new JsonPartitioner(null).partition(root);
+		new IndexPartitionsBuilder(null).partition(root);
 	}
 
 }

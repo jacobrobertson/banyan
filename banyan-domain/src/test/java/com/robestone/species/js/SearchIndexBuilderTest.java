@@ -471,7 +471,7 @@ public class SearchIndexBuilderTest extends TestCase {
 		entry.setCommonName(commonName);
 		entry.setId(Integer.valueOf(expectedScore));
 		
-		CandidateEntry candidate = SearchIndexBuilder.toCandidate(entry);
+		CandidateEntry candidate = new SearchIndexBuilder.CandidateEntry(entry, null);
 		candidates.add(candidate);
 		
 		if (key != null) {

@@ -16,13 +16,46 @@ import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.SpeciesService;
 import com.robestone.species.parse.AbstractWorker;
-import com.robestone.species.parse.ImagesCreater;
-import com.robestone.species.parse.ImagesCreater.ImageInfo;
+import com.robestone.species.parse.ImagesWorker;
+import com.robestone.species.parse.ImagesWorker.ImageInfo;
 
 public class RandomTreeBuilder extends AbstractWorker {
 	
 	public static void main(String[] args) throws Exception {
-		new RandomTreeBuilder().buildRandomFiles();
+		new RandomTreeBuilder().
+//		outputCleanedList();
+		buildRandomFiles();
+	}
+	
+	private SearchIndexBuilder searcher;
+	
+	public void outputCleanedList() throws Exception {
+		List<String> terms = getListFromFile();
+		List<String> spaces = new ArrayList<String>();
+		for (String term : terms) {
+			addVariants(term, spaces);
+		}
+		for (String term : terms) {
+			boolean duplicate = false;
+			for (String check : spaces) {
+				if (term.startsWith(check)) {
+					duplicate = true;
+					break;
+				}
+			}
+			if (!duplicate) {
+				System.out.println(term.trim());
+			}
+		}
+	}
+	private void addVariants(String term, List<String> spaces) {
+		spaces.add(term + " ");
+//		String[] split = StringUtils.split(term);
+//		String current = "";
+//		for (int i = 0; i < split.length; i++) {
+//			current = (current + " " + split[i]).trim();
+//			spaces.add(current + " ");
+//		}
 	}
 	
 	public Collection<Entry> buildRandomTree(Integer pinnedId) throws Exception {
@@ -53,12 +86,12 @@ public class RandomTreeBuilder extends AbstractWorker {
 		if (entry.getImage() == null) {
 			return;
 		}
-		ImageInfo ii = ImagesCreater.toImageInfo(entry);
+		ImageInfo ii = ImagesWorker.toImageInfo(entry);
 		String image = ii.getUrlBasePath();
 		Entry p = entry.getParent();
 		while (p != null) {
 			if (p.getImage() != null) {
-				String pimage = ImagesCreater.toImageInfo(p).getUrlBasePath();
+				String pimage = ImagesWorker.toImageInfo(p).getUrlBasePath();
 				if (pimage.equals(image)) {
 					p.setPinned(false);
 				}
@@ -572,7 +605,7 @@ public class RandomTreeBuilder extends AbstractWorker {
 		}
 	}
 	
-	public void buildRandomFiles() throws Exception {
+	public List<String> getListFromFile() throws Exception {
 		// load the index
 		List<String> lines = 
 				FileUtils.readLines(new File("../banyan-js/src/main/resources/random-seed-list.txt"), Charset.defaultCharset());
@@ -580,8 +613,17 @@ public class RandomTreeBuilder extends AbstractWorker {
 		for (String line : lines) {
 			terms.add(line.toLowerCase().trim());
 		}
+		List<String> list = new ArrayList<String>(terms);
+		Collections.sort(list);
+		return list;
+	}
+	public void buildRandomFiles() throws Exception {
+		List<String> terms = getListFromFile();
 		System.out.println(terms.size() + " unique terms");
 
+		searcher = new SearchIndexBuilder();
+		searcher.initForQueries();
+		
 		for (String term : terms) {
 			buildOneRandomFileFromQuery(term);
 		}
@@ -607,15 +649,11 @@ public class RandomTreeBuilder extends AbstractWorker {
 		}
 	}
 	private Entry findEntryFromQuery(String query) throws Exception {
-		int id = speciesService.findBestId(query, new ArrayList<>());
-		if (id >= 0) {
-			Entry e = speciesService.findEntry(id);
+		Entry e = searcher.findBestMatchByQuery(query);
+		if (e != null) {
 			System.out.println(query + " >> " + e.getLatinName() + " // " + e.getCommonNames() + " // " + e.getCommonName());
-			return e;
-		} else {
-			System.out.println(query + " >> Not Found");
-			return null;
 		}
+		return e;
 	}
 	public void outputRandomFileIndex() throws Exception {
 		String fileName = "random-index";

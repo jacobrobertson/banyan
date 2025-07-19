@@ -2,10 +2,10 @@ package com.robestone.species.js;
 
 import com.robestone.species.parse.AbstractWorker;
 
-public class JsonBuilder extends AbstractWorker {
+public class JsonWorker extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		JsonBuilder b = new JsonBuilder();
+		JsonWorker b = new JsonWorker();
 		
 		// recreate json
 		b.rebuildAllJson();
@@ -20,18 +20,23 @@ public class JsonBuilder extends AbstractWorker {
 	}
 	
 	public void rebuildAllJson() throws Exception {
-		new JsonPartitioner(speciesService).partitionFromDB();
+		System.out.println(">copyAdditionalJsonResources");
+		JsonFileUtils.copyAdditionalJsonResources();
+		System.out.println(">partitionFromDB");
+		new IndexPartitionsBuilder(speciesService).partitionFromDB();
+		System.out.println(">runExamples");
 		new ExamplesBuilder(this).runExamples();
 		// this is the longest running
 		System.out.println(">buildRandomFiles");
 		new RandomTreeBuilder().buildRandomFiles();
-		System.out.println(">copyAdditionalJsonResources");
-		JsonFileUtils.copyAdditionalJsonResources();
+		System.out.println(">buildSearchIndex");
+		new SearchIndexBuilder().run();
 	}
 	
 	public void runMaintenance() throws Exception {
 		JsonFileUtils.deleteJsonDir();
 		rebuildAllJson();
+		JsonFileUtils.generateSiteMap();
 	}
 
 }

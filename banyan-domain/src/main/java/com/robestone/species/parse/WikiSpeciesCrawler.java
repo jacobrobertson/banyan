@@ -15,11 +15,37 @@ import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Rank;
 import com.robestone.species.UpdateType;
+import com.robestone.species.js.RandomTreeBuilder;
 import com.robestone.util.html.EntityMapper;
 
 public class WikiSpeciesCrawler extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
+		runArgs(args);
+//		runRandomSeedList();
+	}
+	public static void runRandomSeedList()  throws Exception {
+		List<String> list = new RandomTreeBuilder().getListFromFile();
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(false);
+		
+		for (String url : list) {
+			Entry entry = crawler.speciesService.findEntryByLatinName(url);
+			if (entry == null) {
+				ParseStatus ps = new ParseStatus();
+				ps.setUrl(url);
+				System.out.println("Crawl: " + url);
+				try {
+					crawler.crawlOne(ps, false);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				System.out.println("Skip: " + url);
+			}
+		}
+	}
+	public static void runArgs(String[] args) throws Exception {
 		
 		boolean forceNewDownloadForCache = true;
 		boolean crawlAllStoredLinks = false;
@@ -350,149 +376,5 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public static final String CRAWL_LIST = 
-  "Abies beshanzuensis\r\n"
-  + "Acaciella\r\n"
-  + "Acianthus pusillus\r\n"
-  + "Aglaiocercus berlepschi\r\n"
-  + "Ammonastes pelzelni\r\n"
-  + "Ampelornis griseiceps\r\n"
-  + "Anabazenops dorsalis\r\n"
-  + "Asthenes ayacuchensis\r\n"
-  + "Asthenes berlepschi\r\n"
-  + "Asthenes coryi\r\n"
-  + "Asthenes harterti\r\n"
-  + "Asthenes vilcabambae\r\n"
-  + "Atriplex sturtii\r\n"
-  + "Atronanus fuliginosus\r\n"
-  + "Automolus cervinigularis\r\n"
-  + "Bourreria tomentosa\r\n"
-  + "Brachysola halganiacea\r\n"
-  + "Cacicus koepckeae\r\n"
-  + "Campylopterus duidae\r\n"
-  + "Campylorhamphus multostriatus\r\n"
-  + "Campylorhamphus probatus\r\n"
-  + "Chloanthes glandulosa\r\n"
-  + "Chlorostilbon olivaresi\r\n"
-  + "Cichlocolaptes mazarbarnetti\r\n"
-  + "Colaptes aeruginosus\r\n"
-  + "Conopophaga ardesiaca\r\n"
-  + "Conostylis crassinerva subsp. crassinerva\r\n"
-  + "Cranioleuca henricae\r\n"
-  + "Cyanostegia corifolia\r\n"
-  + "Cyanostegia cyanocalyx\r\n"
-  + "Cyanostegia microphylla\r\n"
-  + "Dendrocolaptes sanctithomae punctipectus\r\n"
-  + "Diglossa duidae\r\n"
-  + "Diglossa venezuelensis\r\n"
-  + "Eriocnemis isabellae\r\n"
-  + "Eriocnemis mirabilis\r\n"
-  + "Eucalyptus sporadica\r\n"
-  + "Euchrepomis sharpei\r\n"
-  + "Frederickena fulva\r\n"
-  + "Frederickena unduliger\r\n"
-  + "Glaucidium parkeri\r\n"
-  + "Goldmania bella\r\n"
-  + "Grallaria albigula\r\n"
-  + "Grallaria atuensis\r\n"
-  + "Grallaria ayacuchensis\r\n"
-  + "Grallaria cajamarcae\r\n"
-  + "Grallaria chthonia\r\n"
-  + "Grallaria cochabambae\r\n"
-  + "Grallaria eludens\r\n"
-  + "Grallaria erythroleuca\r\n"
-  + "Grallaria excelsa\r\n"
-  + "Grallaria gravesi\r\n"
-  + "Grallaria griseonucha\r\n"
-  + "Grallaria occabambae\r\n"
-  + "Grallaria sinaensis\r\n"
-  + "Grallaricula cumanensis\r\n"
-  + "Grallaricula loricata\r\n"
-  + "Grusonia aggeria\r\n"
-  + "Havardia albicans\r\n"
-  + "Herpsilochmus roraimae\r\n"
-  + "Hypsipetes parvirostris\r\n"
-  + "Knipolegus aterrimus heterogyna\r\n"
-  + "Margarornis bellulus\r\n"
-  + "Mariosousa\r\n"
-  + "Molothrus armenti\r\n"
-  + "Monosolenium tenerum\r\n"
-  + "Mustelirallus colombianus\r\n"
-  + "Myrmelastes brunneiceps\r\n"
-  + "Myrmelastes caurensis\r\n"
-  + "Myrmelastes saturatus\r\n"
-  + "Myrmothera subcanescens\r\n"
-  + "Myrmotherula ambigua\r\n"
-  + "Myrmotherula grisea\r\n"
-  + "Myrmotherula sunensis\r\n"
-  + "Nasikabatrachus bhupathi\r\n"
-  + "Nesospiza wilkinsi\r\n"
-  + "Oceanites pincoyae\r\n"
-  + "Odontophorus dialeucos\r\n"
-  + "Oxystophyllum\r\n"
-  + "Percnostola arenarum\r\n"
-  + "Pheugopedius schulenbergi\r\n"
-  + "Phlegopsis borbae\r\n"
-  + "Phragmipedium [215] talamancanum\r\n"
-  + "Pilularia americana\r\n"
-  + "Pithys castaneus\r\n"
-  + "Pityrodia brynesii\r\n"
-  + "Polioptila clementsi\r\n"
-  + "Polioptila facilis\r\n"
-  + "Polioptila guianensis\r\n"
-  + "Polioptila paraensis\r\n"
-  + "Premnoplex tatei\r\n"
-  + "Pyriglena atra\r\n"
-  + "Pyriglena similis\r\n"
-  + "Pyrrhura hoematotis\r\n"
-  + "Quercus laceyi\r\n"
-  + "Quercus mohriana\r\n"
-  + "Quercus pungens\r\n"
-  + "Quoya paniculata\r\n"
-  + "Ramphocaenus sticturus\r\n"
-  + "Ramphocinclus sanctaeluciae\r\n"
-  + "Rhaphidospora bonneyana\r\n"
-  + "Sakesphorus canadensis pulchellus\r\n"
-  + "Sciaphylax castanea\r\n"
-  + "Setopagis heterura\r\n"
-  + "Setopagis maculosa\r\n"
-  + "Stigmatodactylus aegeridantennatus\r\n"
-  + "Stigmatodactylus aquamarinus\r\n"
-  + "Stigmatodactylus bracteatus\r\n"
-  + "Stigmatodactylus confusus\r\n"
-  + "Stigmatodactylus corniculatus\r\n"
-  + "Stigmatodactylus croftianus\r\n"
-  + "Stigmatodactylus cymbalariifolius\r\n"
-  + "Stigmatodactylus elegans\r\n"
-  + "Stigmatodactylus gibbsiae\r\n"
-  + "Stigmatodactylus grandiflorus\r\n"
-  + "Stigmatodactylus halleanus\r\n"
-  + "Stigmatodactylus heptadactylus\r\n"
-  + "Stigmatodactylus lamrii\r\n"
-  + "Stigmatodactylus macroglossus\r\n"
-  + "Stigmatodactylus oxyglossus\r\n"
-  + "Stigmatodactylus paradoxus\r\n"
-  + "Stigmatodactylus richardianus\r\n"
-  + "Stigmatodactylus serratus\r\n"
-  + "Stigmatodactylus sikokianus\r\n"
-  + "Stigmatodactylus tenuilabris\r\n"
-  + "Stigmatodactylus variegatus\r\n"
-  + "Stigmatodactylus veillonis\r\n"
-  + "Stigmatodactylus vulcanicus\r\n"
-  + "Streptoprocne phelpsi\r\n"
-  + "Synallaxis castanea\r\n"
-  + "Synallaxis moesta\r\n"
-  + "Syndactyla striata\r\n"
-  + "Thamnistes anabatinus aequatorialis\r\n"
-  + "Thamnistes rufescens\r\n"
-  + "Thamnophilus aroyae\r\n"
-  + "Thamnophilus bernardi shumbae\r\n"
-  + "Turdus daguae\r\n"
-  + "Turdus haplochrous\r\n"
-  + "Turdus murinus\r\n"
-  + "Turdus ravidus\r\n"
-  + "Vireo latimeri\r\n"
-  + "Vireo masteri\r\n"
-  + "Westringia cremnophila\r\n"
-  + "Westringia grandifolia\r\n"
-  + "Xenodacnis parina";
+  "Euonymus ser. Maackianae";
 }

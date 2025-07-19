@@ -15,16 +15,20 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
+import com.robestone.species.SpeciesService;
 import com.robestone.species.Tree;
 import com.robestone.species.parse.AbstractWorker;
+import com.robestone.species.parse.ImagesWorker;
+import com.robestone.species.parse.ImagesWorker.ImageInfo;
 import com.robestone.util.html.EntityMapper;
 
 public class SearchIndexBuilder extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-//		new SearchIndexBuilder(5, 3, 4, false).run();
-		SearchIndexBuilder sb = new SearchIndexBuilder();
-//		sb.testListSize = 1000;
+		SearchIndexBuilder sb = 
+				new SearchIndexBuilder();
+//				new SearchIndexBuilder(5, 3, 4, false);
+//		sb.testListSize = 100;
 		sb.run();
 	}
 
@@ -74,7 +78,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		String _keyNoS_;
 		
 		public KeyEntry(String key) {
-			this.key = key;
+			this.key = key.toUpperCase();
 			this._key_ = " " + key + " ";
 			this._key = " " + key;
 			if (key != null && key.endsWith("S")) {
@@ -110,8 +114,29 @@ public class SearchIndexBuilder extends AbstractWorker {
 	}
 	public static class CandidateEntry implements Comparable<CandidateEntry> {
 		Entry entry;
+		Entry imageEntry;
 		List<CandidateName> names = new ArrayList<CandidateName>();
 		int score;
+		
+		public CandidateEntry() {
+		}
+		public CandidateEntry(Entry entry, Entry imageEntry) {
+			this.entry = entry;
+			this.imageEntry = imageEntry;
+			
+			String latin = cleanSearchName(entry.getLatinName(), true);
+			if (latin != null) {
+				String clean = cleanSearchName(entry.getLatinName(), false);
+				this.addName(latin, entry.getLatinName(), clean, true, entry.getImageLink() != null);
+			}
+			
+			String common = cleanSearchName(entry.getCommonName(), true);
+			if (common != null) {
+				String clean = cleanSearchName(entry.getCommonName(), false);
+				this.addName(common, entry.getCommonName(), clean, false, entry.getImageLink() != null);
+			}
+			
+		}
 		
 		@Override
 		public int compareTo(CandidateEntry c) {
@@ -140,6 +165,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			copy.score = score;
 			
 			copy.entry = this.entry;
+			copy.imageEntry = this.imageEntry;
 			copy.names = this.names;
 			
 			return copy;
@@ -150,9 +176,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 		this.candidates = candidates;
 	}
 	void createCandidates() throws Exception {
-		final Tree tree = buildTree();
-		List<Entry> entries = tree.getEntries();
-		List<CandidateEntry> entryNames = toCandidates(entries);
+		List<Entry> entries = buildTree();
+		List<CandidateEntry> entryNames = toCandidates(entries, speciesService);
 		
 		System.out.println(">createCandidates.found." + entryNames.size());
 //		if (testListSize > 0) {
@@ -170,17 +195,16 @@ public class SearchIndexBuilder extends AbstractWorker {
 	 * The whole purpose of this method is to ensure the search index has the exact same entries as the partition.
 	 * We don't care about the "tree" just the entries, so we don't worry about hooking it all together.
 	 */
-	private Tree buildTree() {
-		Node nroot = JsonPartitioner.buildTree(speciesService);
+	private List<Entry> buildTree() {
+		Node nroot = IndexPartitionsBuilder.buildTree(speciesService);
 		if (testListSize > 0) {
 			pruneTree(nroot);
 		}
 		
 		Map<Integer, Entry> map = new HashMap<Integer, Entry>();
-		Entry root = buildTree(nroot, map);
+		buildTree(nroot, map);
 
-		Tree tree = new Tree(root, map);
-		return tree;
+		return new ArrayList<Entry>(map.values());
 	}
 	private void pruneTree(Node nroot) {
 		List<Node> current = new ArrayList<Node>();
@@ -222,7 +246,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		Integer pid = c.entry.getParentId();
 		if (pid != null && !ids.containsKey(pid)) {
 			Entry pe = tree.get(pid);
-			CandidateEntry pc = toCandidate(pe);
+			CandidateEntry pc = toCandidateEntry(pe, speciesService);
 			ids.put(pid, pc);
 			addParents(pc, tree, ids);
 		}
@@ -307,6 +331,24 @@ public class SearchIndexBuilder extends AbstractWorker {
 			saveKeyFile(key);
 		}
 		return found;
+	}
+
+	public void initForQueries() throws Exception {
+		createCandidates();
+		createBuckets();
+	}
+	/**
+	 * First build the buckets.
+	 */
+	public Entry findBestMatchByQuery(String query) {
+		query = cleanSearchName(query, true);
+		KeyEntry key = new KeyEntry(query);
+		boolean okay = buildKey(key);
+		if (!okay) {
+			return null;
+		} else {
+			return key.topMatches.get(0).entry;
+		}
 	}
 	
 	private boolean buildKey(KeyEntry key) {
@@ -407,24 +449,6 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return score;
 	}
 	
-	public static CandidateEntry toCandidate(Entry entry) {
-		CandidateEntry candidate = new CandidateEntry();
-		candidate.entry = entry;
-		
-		String latin = cleanSearchName(entry.getLatinName(), true);
-		if (latin != null) {
-			String clean = cleanSearchName(entry.getLatinName(), false);
-			candidate.addName(latin, entry.getLatinName(), clean, true, entry.getImageLink() != null);
-		}
-		
-		String common = cleanSearchName(entry.getCommonName(), true);
-		if (common != null) {
-			String clean = cleanSearchName(entry.getCommonName(), false);
-			candidate.addName(common, entry.getCommonName(), clean, false, entry.getImageLink() != null);
-		}
-		
-		return candidate;
-	}
 	private static String cleanSearchName(String name, boolean removeSpaces) {
 		if (name == null) {
 			return null;
@@ -443,15 +467,21 @@ public class SearchIndexBuilder extends AbstractWorker {
 		}
 		return name;
 	}
-	private static List<CandidateEntry> toCandidates(List<Entry> entries) {
+	private static CandidateEntry toCandidateEntry(Entry eentry, SpeciesService speciesService) {
+		Entry ientry = null;
+		if (eentry.getImage() != null) {
+			ientry = speciesService.findEntry(eentry.getImage().getEntryId());
+		}
+		CandidateEntry candidate = new CandidateEntry(eentry, ientry);
+		return candidate;
+	}
+	private static List<CandidateEntry> toCandidates(List<Entry> entries, SpeciesService speciesService) {
 		List<CandidateEntry> candidates = new ArrayList<CandidateEntry>();
 		
 		// convert each one
 		for (Entry entry : entries) {
-			CandidateEntry candidate = toCandidate(entry);
-			if (candidate != null) {
-				candidates.add(candidate);
-			}
+			CandidateEntry candidate = toCandidateEntry(entry, speciesService);
+			candidates.add(candidate);
 		}
 		
 		return candidates;
@@ -734,6 +764,24 @@ public class SearchIndexBuilder extends AbstractWorker {
 		if (c.entry.getCommonName() != null) {
 			buf.append(", \"common\" : \"");
 			buf.append(JsonFileUtils.escape(c.entry.getCommonName()));
+			buf.append("\"");
+		}
+		
+		Entry imageEntry;
+		if (c.imageEntry == null) {
+			imageEntry = c.entry;
+		} else {
+			imageEntry = c.imageEntry;
+		}
+		
+		if (imageEntry.getImage() != null) {
+//			System.out.println("appendEntry: entryLatin=" + c.entry.getLatinName() + ", entryId=" + c.entry.getId() + 
+//					", imageLatin=" + imageEntry.getLatinName() + ", imageEntryId=" + imageEntry.getId());
+			ImageInfo ii = ImagesWorker.toImageInfo(imageEntry);
+			String localImageFullPath = ii.getFilePath(ImagesWorker.TINY);
+			String data = JsonFileUtils.createImageDataString(localImageFullPath);
+			buf.append(", \"image\" : \"");
+			buf.append(data);
 			buf.append("\"");
 		}
 		buf.append(" }");

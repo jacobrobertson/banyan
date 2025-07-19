@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
-
 /**
  * TODO there is a problem with me trying to use numbers in an order for
  * the rank because cladus and taxon can go anywhere.  It might not matter
@@ -38,9 +36,11 @@ public enum Rank {
 	Superregnum(120, "*Super-kingdom", "Superkingdom"),
 	Regnum(130, "*Kingdom"),
 	Subregnum(140, "*Sub-kingdom", "Subkingdom"),
-	Infraregnum(145, "*Sub-kingdom"), // TODO need to merge these or something - what does wikidata say?
+	Infraregnum(145, "*Sub-kingdom", "Infrakingdom"), // TODO need to merge these or something - what does wikidata say?
 
-	Domain(146, "*Domain"),
+	Superdomain(147), // TODO this numbering is out of order, so if I do a renumber I will want to fix this
+	Domain(146),
+	Subdomain(148),
 	
 	Superphylum(150, "*Super-division"),
 	Phylum(160, "*Division", "Divisio (Phylum)"),
@@ -52,16 +52,17 @@ public enum Rank {
 	Subdivisio(200, "*Sub-division", "Subdivision", "Subdivisione"),
 	
 	Megaclassis(218),
-	Superclassis(220, "*Super-class", "Superclasses"),
+	Superclassis(220, "*Super-class", "Superclasses", "Superclass"),
 	Classis(230, "+Class", "Classes"),
 	Subclassis(240, "*Sub-class", "Subclasses", "Subclass", "Sub-classis"),
 	
 	MorphologicalGroup(231, "*Morphological group", "Morphological group (\u2248Classis)"),
 	
 	// --
-	Infraclassis(245, "*Sub-class", "Infraclasses"),
+	Infraclassis(245, "*Sub-class", "Infraclasses", "Infraclass"),
 	
 	Parvclassis(250, "*Sub-class", "Parvclasses"),
+	Subterclass(255),
 	
 //	Superdivisio(260), -- moved it
 //	Divisio(270),
@@ -86,12 +87,12 @@ public enum Rank {
 	
 	Stem(335),
 	
-	Magnordo(337),
+	Magnordo(337, "Magnorder"),
 	Superordo(340, "*Super-order", "Superorder"),
-	Grandordo(345),
-	Mirordo(347),
+	Grandordo(345, "Grandorder"),
+	Mirordo(347, "+Mirorder"),
 	Ordo(350, "+Order", "Ordines", "Ordine"),
-	Hyperordo(360, "Hyperorder", "Hypordo"),
+	Hyperordo(360, "Hyperorder", "Hypordo", "Hyporder"),
 	Subordo(370, "*Sub-order", "Subordines", "Suborder", "Subordine"),
 	Infraordo(380, "*Sub-order", "Infraordines", "Infraorder"),
 	
@@ -116,7 +117,9 @@ public enum Rank {
 	
 	Supertribus(430, "*Super-tribe", "Supertribe", "Supertribes"),
 	Tribus(440, "+Tribe", "Tribu", "Tribes"),
+	Supersubtribe(445),
 	Subtribus(450, "*Sub-tribe", "Subtribu", "Subtribe", "Subtribes", "Subtribi"),
+	Infratribe(452),
 	
 	Supergenus(460, "*Super-genus"),
 	Genus(470, "Genua"),
@@ -133,6 +136,7 @@ public enum Rank {
 		// TODO fix "Susbspecies" and "Sudspecies" and "species" in wikispecies
 		//		the only reason I haven't is that on some of these there's so many pages or templates
 	SpeciesGroup(565, "+Species Group", "Species group"),
+	SpeciesAggregate(566, "+Species Aggregate"),
 	
 	Klepton(550),
 	Hybrid(570),
@@ -153,7 +157,8 @@ public enum Rank {
 	Aberratio(660),
 	Lusus(670),
 	
-	// Viruses
+	// Viruses (and bacteria?)
+	Pathovar(672),
 	Strain(675),
 	Subtype(676),
 	Serotype(678),
@@ -169,12 +174,13 @@ public enum Rank {
 	Nothospecies(701),
 	Nothosubspecies(702),
 	Cultivar(705), // found in between Alliance and Nothogenera
+	CultivarGroup(707, "+Cultivar group"),
 	Nothovarietas(710),
 	
 	// extinct species - fossils
 	Ichnogenus(820),
 	Ichnospecies(840),
-	FossilTaxon(860, "Fossil taxon"), // this is a catch-all that is usually an error, but is common enough
+	FossilTaxon(860, "+Fossil taxon"), // this is a catch-all that is usually an error, but is common enough
 	
 	// virus only?
 	Realm(900),
@@ -267,141 +273,6 @@ public enum Rank {
 			}
 		}
 		throw new IllegalArgumentException("Rank value (" + i + ") not valid");
-	}
-	
-	public static void main(String[] args) {
-		
-//		String t = MorphologicalGroup.getNames().toString();
-//		LogHelper.speciesLogger.info(t);
-		
-		// see http://en.wikipedia.org/wiki/Taxonomic_rank
-		String[] lines = {
-		"	regio	",
-		"",
-		"",
-		"	imperium	",
-		"	superregnum	",
-		"",
-		"",
-		"	regnum	",
-		"	subregnum	",
-		"",
-		"",
-		"",
-		"	superphylum	",
-		"",
-		"",
-		"	phylum	",
-		"	subphylum	",
-		"	infraphylum	",
-		"	divisio	",
-		"	subdivisio	",
-		"	claudius	",
-		"	superclassis	",
-		"",
-		"	classis	",
-		"	subclassis	",
-		"",
-		"	parvclassis	",
-		"	superdivisio	",
-		"	divisio	",
-		"	subdivisio	",
-		"	sectio	",
-		"",
-		"",
-		"",
-		"",
-		"	legio	",
-		"",
-		"",
-		"	supercohors	",
-		"	cohors	",
-		"	subcohors	",
-		"",
-		"	superordo	",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"	ordo	",
-		"	hyperordo	",
-		"	subordo	",
-		"	infraordo	",
-		"",
-		"	falanx	",
-		"	superfamilia	",
-		"",
-		"	familia	",
-		"",
-		"	subfamilia	",
-		"",
-		"	supertribus	",
-		"	tribus	",
-		"	subtribus	",
-		"",
-		"	supergenus	",
-		"",
-		"	genus	",
-		"	subgenus	",
-		"",
-		"	supersectio	",
-		"	sectio	",
-		"	subsectio	",
-		"",
-		"",
-		"	series	",
-		"",
-		"",
-		"	superspecies	",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"	species	",
-		"",
-		"	klepton	",
-		"",
-		"	subspecies	",
-		"",
-		"",
-		"	hybrid	",
-		"	convarietas	",
-		"	supervarietas	",
-		"	varietas	",
-		"	subvarietas	",
-		"",
-		"	natio	",
-		"	superforma	",
-		"	forma, morpha	",
-		"	subforma	",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"	aberratio	",
-		"",
-		"",
-		"",
-		"",
-		"",
-		"	lusus	"};
-		int index = 100;
-		for (String line: lines) {
-			line = line.trim();
-			line = StringUtils.trimToNull(line);
-			if (line == null) {
-				continue;
-			}
-			line = line.substring(0, 1).toUpperCase() + line.substring(1);
-			LogHelper.speciesLogger.info(line + "(" + index + "),");
-			index += 10;
-		}
 	}
 	
 }

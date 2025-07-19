@@ -34,8 +34,8 @@ import com.robestone.species.EntryUtilities;
 import com.robestone.species.Example;
 import com.robestone.species.ExampleGroup;
 import com.robestone.species.SpeciesService;
-import com.robestone.species.parse.ImagesCreater;
-import com.robestone.species.parse.ImagesCreater.ImageInfo;
+import com.robestone.species.parse.ImagesWorker;
+import com.robestone.species.parse.ImagesWorker.ImageInfo;
 
 // mostly just a very dumb implementation for testing purposes
 public class JsonFileUtils {
@@ -46,24 +46,27 @@ public class JsonFileUtils {
 		generateSiteMap();
 	}
 
-	public static final String jsonDir = "../banyan-js/src/main/webapp/json";
 	private static final String baseUrl = "http://jacobrobertson.com/banyan/";
 	public static final String outputDir = "D:/banyan/banyan-json/json";
+//	public static final String jsonDir = "../banyan-js/src/main/webapp/json";
 	private static final String additionalResourcesDir = "../banyan-js/src/main/resources/webapp/json";
+	private static final String siteMapFileLocation = "../banyan-js/src/main/webapp/sitemap.txt";
 	
 	public static void generateSiteMap() throws Exception {
 		StringBuilder buf = new StringBuilder();
 		buf.append(baseUrl + "\n");
 		
-		createExamples(buf);
-		createRandoms(buf);
+		addExamplesLines(buf);
+		addRandomsLines(buf);
 		
+		System.out.println("generateSiteMap:");
 		System.out.println(buf);
+		FileUtils.writeStringToFile(new File(siteMapFileLocation), buf.toString(), Charset.defaultCharset());
 	}
 
-	public static void createExamples(StringBuilder buf) throws Exception {
+	private static void addExamplesLines(StringBuilder buf) throws Exception {
 		buf.append(baseUrl + "q/t/examplesTab\n");
-		File[] files = new File(jsonDir + "/e").listFiles();
+		File[] files = new File(outputDir + "/e").listFiles();
 		for (File file : files) {
 			String name = FilenameUtils.removeExtension(file.getName());
 			if (!"examples-index".equals(name) && !"examples-structure".equals(name)) {
@@ -71,8 +74,8 @@ public class JsonFileUtils {
 			}
 		}
 	}
-	public static void createRandoms(StringBuilder buf) throws Exception {
-		File[] files = new File(jsonDir + "/r").listFiles();
+	private static void addRandomsLines(StringBuilder buf) throws Exception {
+		File[] files = new File(outputDir + "/r").listFiles();
 		for (File file : files) {
 			String name = FilenameUtils.removeExtension(file.getName());
 			if (!"random-index".equals(name)) {
@@ -83,8 +86,8 @@ public class JsonFileUtils {
 		}
 	}
 	
-	public static Node parseFile(String f) throws Exception {
-		File file = new File(jsonDir + "\\" + f);
+	private static Node parseFile(String f) throws Exception {
+		File file = new File(outputDir + "\\" + f);
 		if (!file.exists()) {
 			return null;
 		}
@@ -316,7 +319,7 @@ public class JsonFileUtils {
 				append(buf, true, "caption", ex.getCaption());
 				// "6e/Hippotion rafflesii rafflesii.jpg"
 				Entry e = entriesForImages.get(ex.getDepictedImage().getEntryId());
-				ImageInfo ii = ImagesCreater.toImageInfo(e);
+				ImageInfo ii = ImagesWorker.toImageInfo(e);
 				append(buf, true, "image", ii.getFilePathRelative());
 				append(buf, true, "width", ex.getDepictedImage().getPreviewWidth());
 				append(buf, true, "height", ex.getDepictedImage().getPreviewHeight());
@@ -355,7 +358,7 @@ public class JsonFileUtils {
 	
 			if (e.getImg() != null) {
 				String latinName = e.getImg();
-				latinName = ImagesCreater.getCleanLatinName(latinName);
+				latinName = ImagesWorker.getCleanLatinName(latinName);
 
 				append(buf, true, "img", e.getImg());
 				append(buf, true, "tHeight", e.gettHeight());
@@ -445,11 +448,11 @@ public class JsonFileUtils {
 				imageEntry = linkedImageEntry;
 			}
 			
-			ImageInfo ii = ImagesCreater.toImageInfo(imageEntry);
+			ImageInfo ii = ImagesWorker.toImageInfo(imageEntry);
 			// "6e/Hippotion rafflesii rafflesii.jpg"
 			je.setImg(ii.getFilePathRelative());
 			je.setWikiSpeciesLink(ii.getUrlBasePath());
-			String localImageFullPath = ii.getFilePath(ImagesCreater.TINY); // ImagesCreater.LOCAL_STORAGE_DIR + "/tiny/" + e.getImage().getImagePathPart();
+			String localImageFullPath = ii.getFilePath(ImagesWorker.TINY); // ImagesCreater.LOCAL_STORAGE_DIR + "/tiny/" + e.getImage().getImagePathPart();
 			String data = createImageDataString(localImageFullPath);
 			je.setImgData(data);
 		}

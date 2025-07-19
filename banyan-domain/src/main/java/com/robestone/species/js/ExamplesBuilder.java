@@ -23,7 +23,7 @@ import com.robestone.species.parse.AbstractWorker;
 public class ExamplesBuilder {
 
 	public static void main(String[] args) throws Exception {
-		ExamplesBuilder eb = new ExamplesBuilder(new JsonBuilder());
+		ExamplesBuilder eb = new ExamplesBuilder(new JsonWorker());
 		
 //		eb.convertCrunchedIdsToLatinDbList("c:.1_1vnj-1111113121411111111311223111111112_4h1u-1751651z_gG0f_3Pb:p:-tR1v-c751_hf_3Pq");
 		eb.runExamples();

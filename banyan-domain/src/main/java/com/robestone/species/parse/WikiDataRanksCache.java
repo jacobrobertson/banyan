@@ -1,5 +1,6 @@
 package com.robestone.species.parse;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.Charset;
@@ -20,6 +21,28 @@ import com.robestone.species.Rank;
  */
 public class WikiDataRanksCache {
 
+	public static void main(String[] args) {
+		File f = new File("D:\\banyan\\caches\\wikidata\\Q");
+		countFiles(f);
+	}
+	public static int countFiles(File f) {
+		System.out.println(f.getAbsolutePath() + ".>");
+		int count = 0;
+		
+		File[] children = f.listFiles();
+		System.out.println(f.getAbsolutePath() + ".children." + children.length);
+		for (File c : children) {
+			if (!c.getName().endsWith(".json")) {
+				count += countFiles(c);
+			} else {
+				count++;
+			}
+		}
+		
+		System.out.println(f.getAbsolutePath() + "." + count);
+		return count;
+	}
+	
 	private static final String RANKS_FILE = WikiDataParser.WikiDataCache.WIKIDATA_LOCAL_PATH + "/WikiDataRanks.txt";
 	private static final char SPLIT_TOKEN = '|';
 	

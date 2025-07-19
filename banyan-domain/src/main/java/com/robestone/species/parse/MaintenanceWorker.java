@@ -9,7 +9,7 @@ import org.apache.log4j.Level;
 import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.WikiSpeciesTreeFixer;
-import com.robestone.species.js.JsonBuilder;
+import com.robestone.species.js.JsonWorker;
 import com.robestone.species.js.SearchIndexBuilder;
 
 /**
@@ -30,13 +30,13 @@ public class MaintenanceWorker extends AbstractWorker {
 		boolean doEverything = !true; // when true - overrides all below
 		
 		boolean recreateCleanNames = false; // this is a long-running worker, and needed only after big updates
-		boolean crawlNewLinks = true;
-		boolean crawlOldLinks = true;
-		boolean runMaintenance = !true;
+		boolean crawlNewLinks = !true;
+		boolean crawlOldLinks = !true;
+		boolean runMaintenance = true;
 		boolean downloadImages = true;
 		boolean runMaintenanceOnly = !true;
 		boolean runPeriodicMaintenance = !true;
-		boolean runJs = !true;
+		boolean runJs = true;
 		
 		// this should be true for nightly/weekly refreshes
 		// this should be false when you have already built the clean DB
@@ -70,8 +70,8 @@ public class MaintenanceWorker extends AbstractWorker {
 		}
 		if (runJs || doEverything) {
 			// JS will break if not all images are downloaded, and this is a pretty fast check if they're already done
-			new ImagesCreater().downloadAll(true, false);
-			new JsonBuilder().runMaintenance();
+			new ImagesWorker().downloadAll(true, false);
+			new JsonWorker().runMaintenance();
 			new SearchIndexBuilder().run();
 		}
 	}
@@ -113,7 +113,7 @@ public class MaintenanceWorker extends AbstractWorker {
 			speciesService.recreateCleanNames();
 		}
 
-		new ImagesCreater().removeBlackListedImages();
+		new ImagesWorker().runMaintenance();
 		
 		// run full boring suite
 		new BoringPrunerWorker().run(true, true);
@@ -137,7 +137,7 @@ public class MaintenanceWorker extends AbstractWorker {
 		// download the images - has to be last due to "System.exit"
 		// - I don't think it does that anymore... but doing last is fine?
 		if (downloadImages) {
-			new ImagesCreater().downloadAll(true, false);
+			new ImagesWorker().downloadAll(true, false);
 		}
 	}
 	public void runReports() throws Exception {

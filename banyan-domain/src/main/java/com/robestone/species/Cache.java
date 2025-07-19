@@ -50,9 +50,12 @@ public class Cache {
 		EntryProperties p = entryProperties.get(id);
 		if (p == null) {
 			Entry e = speciesService.findEntryFromPersistence(id);
-			p = e.getEntryProperties();
-			p.image = getImage(e);
-			entryProperties.put(id, p);
+			// this wouldn't typically be null, but in some cases during maintenance it might
+			if (e != null) {
+				p = e.getEntryProperties();
+				p.image = getImage(e);
+				entryProperties.put(id, p);
+			}
 		}
 		return p;
 	}
