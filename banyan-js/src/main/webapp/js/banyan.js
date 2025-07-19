@@ -1935,45 +1935,6 @@ function createSuggestionHtml(entry) {
   html += "</span></div>";
   return html;
 }
-function createSuggestionHtml_2(entry) {
-	var html = "<div class='autocomplete-suggestion-row'>";
-	if (entry.image) {
-		var imgSrc = "data:image;base64," + entry.image;
-		html += "<img class='autocomplete-suggestion-img' src='" + imgSrc + "'></img>";
-	} else {
-		html += "<span class='autocomplete-suggestion-placeholder'></span>";
-	}
-	html += "<span class='autocomplete-suggestion-text'>";
-	if (entry.common && entry.common.length > 0) {
-		html += "<span class='searchCommon'>" + entry.common + "</span>";
-	}
-	if (entry.latin) {
-		html += "<span class='searchLatin'>(" + entry.latin + ")</span>";
-	}
-	html += "</span></div>";
-	return html;
-}
-function createSuggestionHtml_WORKINGON(entry) {
-	var html = "<span class='suggestionRow'>";
-	if (entry.image) {
-		html = html + "<span class='suggestionImage'><img src='data:image;base64,"
-			+ entry.image + "'></img></span>";
-		// "data:image;base64,"
-	} else {
-		html = html + "<span class='suggestionBlankImage'>&nbsp;</span>";		
-	}
-	if (entry.common && entry.common.length > 0) {
-		html = html + entry.common + "&nbsp;";
-	}
-	var latinPart;
-	if (entry.latin) {
-		var latinPart = "<i class='searchLatin'>(" + entry.latin + ")</i>";
-	} else {
-		latinPart = "";
-	}
-	var html = html + latinPart + "</span>";
-	return html;
-}
 function getPreviewImageCaption(img) {
 	var e = getImageEntry(img);
 	var latinNameCaption = "<span id='previewLatin'>(" + e.lname + ")</span>";

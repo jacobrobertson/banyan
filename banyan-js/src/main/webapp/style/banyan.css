@@ -1,5 +1,10 @@
 body {height:90%;background: #e8f3db;}
-
+body, .Node, .HeaderDiv, .Quote, .FaqTitle, #menu {
+  font-family: 'Quicksand', 'Montserrat', 'Segoe UI', sans-serif;
+  font-size: 95%;
+  font-weight: 425;
+  vertical-align: baseline;
+}
 .tabCommand {
 	display: none;
 }
@@ -54,11 +59,16 @@ body {height:90%;background: #e8f3db;}
 	border-radius: 25px 60px 5px 50px;
 }
 #textfield {
-	background-image: url("../icons/search.png");
-    background-size: contain;
-    background-position: right;
+    background-image: url("../icons/search.png");
+    background-position: right 0.15em center;
     background-repeat: no-repeat;
+    background-size: 1.2em;
+    border-radius: 20px 28px 18px 36px;
+    border: 1.5px solid #b2c7a2;
+    padding-right: 2.1em;
+    padding-left: .75em;
 }
+
 .searchSuggestion {
 	width: 100%;
 	padding-top: 2px;
@@ -70,15 +80,15 @@ body {height:90%;background: #e8f3db;}
 .autocomplete-suggestion-img {
   width: 32px;
   height: 32px;
-  object-fit: cover;
+  object-fit: contain;           /* <--- was cover, now contain */
+  object-position: center center;/* ensure centering inside the box */
   border-radius: 4px;
   margin-right: 0.6em;
   background: #f8fbf4;
-  border: 1px solid #b2c7a2;
+  border: 1.5px solid #b2c7a2;
   flex-shrink: 0;
-  /* No display: block or inline-block needed; img is inline by default, flex will align it */
+  display: block;                /* makes sure margins/padding are respected */
 }
-
 .autocomplete-suggestion-text {
   display: flex; /* ensures common/latin are in a row, not column */
   align-items: center; /* ensures both text spans are centered to each other and the image */
@@ -91,23 +101,20 @@ body {height:90%;background: #e8f3db;}
   font-style: italic;
   color: #466522;
 }
-.autocomplete-suggestion-img {
-  border: 1.5px solid #b2c7a2;
-}
 
 .ui-menu .ui-state-active .autocomplete-suggestion-text,
 .ui-menu .ui-state-active .searchCommon {
   color: black !important;
 }
 .ui-menu .ui-state-active .searchLatin {
-  color: #b2c7a2 !important;
+  color: #2d4012 !important;
 }
 .ui-menu .autocomplete-suggestion-row {
   display: flex;
   align-items: center;
   width: 100% !important;
   box-sizing: border-box;
-  border-bottom: 1px solid #b2c7a2 !important; /* darker green, change to red/black to debug */
+  border-bottom: 1px dashed #b2c7a2 !important; /* darker green, change to red/black to debug */
   background: #fff;
   min-height: 36px;
   padding: 2px 8px;
@@ -117,9 +124,16 @@ body {height:90%;background: #e8f3db;}
 }
 .ui-menu .ui-state-active,
 .ui-menu .ui-state-hover {
-  background: #e8f3db !important;  /* Light green from your theme */
-  color: #2d4012 !important;        /* Ensure text is readable */
-  border: none !important;
+  background: #e8f3db !important;
+  color: #2d4012 !important;
+  border-left: 3px solid #7bb163 !important;
+  border-bottom: 1px solid #b2c7a2 !important;
+  border-top: 1px solid #b2c7a2 !important;
+  border-right: none !important;
+}
+.ui-menu .autocomplete-suggestion-row:last-child.ui-state-active,
+.ui-menu .autocomplete-suggestion-row:last-child.ui-state-hover {
+  border-bottom: 1px solid #b2c7a2 !important;
 }
 .NodeButtons { width: 12px; }
 .NodeButtons a { margin: 0px; padding: 0px; border: 0px;}
@@ -181,7 +195,6 @@ body {height:90%;background: #e8f3db;}
 }
 .Node .Link {
 	color: #466522;
-	font-weight: bold;
 }
 .Welcome {
 	font-style: italic;
@@ -197,6 +210,10 @@ a.CreditLink {
 .HeaderDiv {
 	position: relative;
 	padding-left: 5px;
+}
+.HeaderDiv a.navQueryLink {
+	vertical-align: baseline;
+	font-weight: 500;
 }
 .Star {
 	text-align: center;
@@ -219,7 +236,11 @@ a.CreditLink {
 	font-style: normal;
 	text-decoration: none;
 }
-.FaqTitle { font-style: italic; color: #466522; font-size: 1.2em; }
+.FaqTitle  {
+	font-style: italic;
+	color: #466522;
+	font-size: 1.05em;
+}
 .Spacer {
 	margin-left: .2em;
 	margin-right: .2em;
@@ -335,6 +356,8 @@ td {
 	position: absolute;
 	border: solid #466522 1px;
 	padding: 0px;
+	font-size: .9em;
+	font-weight: 400;
 	background: white;
 }
 #menu a {
@@ -499,7 +522,7 @@ td {
 }
 .ExampleInnerCaption {
 	padding-right: .25em;
-	padding-left: .3em;
+	padding-left: .5em;
 }
 .ExampleInnerCaptionFirstLine {
 	font-weight: bold;
