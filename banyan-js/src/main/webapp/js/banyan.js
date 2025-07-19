@@ -645,6 +645,9 @@ function highlightNodes(ids) {
 		entries = entries.add(entry);
 	}
 	var nodes = entries.closest(".Node");
+	var topNode = $(nodes.get(0));
+	var scrollPos = topNode.offset().top - $(window).height() + topNode.height() + 10;
+	$('html, body').animate({ scrollTop: scrollPos }, 200);
 	nodes
 		.animate({opacity: .2}, 100)
 		.animate({opacity: 1}, 500)
