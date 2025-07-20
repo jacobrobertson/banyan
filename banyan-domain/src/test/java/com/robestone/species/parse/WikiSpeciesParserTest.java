@@ -284,7 +284,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Centropogon (Campanulaceae)", null, "Lobelioideae", "thumb/a/a5/Centropogon_ferrugineus_1.jpg/250px-Centropogon_ferrugineus_1.jpg", Rank.Genus);
 	}
 	public void testStenocorusStenocorus() throws IOException {
-		doTest("Stenocorus (Stenocorus)", null, "Stenocorus", null, Rank.Subgenera);
+		doTest("Stenocorus (Stenocorus)", null, "Stenocorus", null, Rank.Subgenus);
 	}
 	/* still can't parse it even with new rank
 	public void testHyphomycetes() throws IOException {

@@ -111,10 +111,6 @@ public enum Rank {
 	Parafamilia(415),
 	Subfamilia(420, "*Sub-family", "Subfamiliae", "Subfamilae", "Subfamily", "Subfamilie", "Subfamila", "Subfamillia", "Subfamilila"),
 	
-	// TODO -- ? these might be another term for "genus"
-	Genera(425, "*Genus", "Generus", "Genre", "genera"),
-	Subgenera(426, "*Sub-genus"),
-	
 	Supertribus(430, "*Super-tribe", "Supertribe", "Supertribes"),
 	Tribus(440, "+Tribe", "Tribu", "Tribes"),
 	Supersubtribe(445),
@@ -122,8 +118,8 @@ public enum Rank {
 	Infratribe(452),
 	
 	Supergenus(460, "*Super-genus"),
-	Genus(470, "Genua"),
-	Subgenus(480, "*Sub-genus", "Subenus"),
+	Genus(470, "Genua", "Generus", "Genre", "Genera"),
+	Subgenus(480, "*Sub-genus", "Subenus", "Subgenera"),
 	GenusGroup(485, "+Genus Group"),
 	FormGenus(488, "Form genus", "Form genera"),
 	

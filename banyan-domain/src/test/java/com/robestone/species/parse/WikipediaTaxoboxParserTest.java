@@ -29,7 +29,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTest("Ghost slug", "Ghost slug", "Selenochlamys ysbryda", "Ghost_Slug_adult.jpg", null, Rank.Species, "Selenochlamys", "Rowson & Symondson, 2008<ref>Rowson B. & Symondson O. C.: ''Selenochlamys ysbryda sp. nov. from Wales, UK: a Testacella-like slug new to western Europe (Stylommatophora: Trigonochlamydidae)''. Journal of Conchology, June 2008, Vol. 39, part 5,  537-552. ([http://www.conchsoc.org/resources/show-abstract-39.php?id=%20%20%20%20%20%20%20%20%20%20%20%20151 abstract])</ref>");
 	}
 	public void testBananaSlug() {
-		doTest("Banana slug", "Banana slug", "Ariolimax", "Ariolimax_columbianus_9428.JPG", "Ariolimax columbianus", Rank.Genus, "Ariolimacinae", "[[Otto Andreas Lowson Mörch|Mörch]], 1859");
+		doTest("Banana slug", "Banana slug", "Ariolimax", "Ariolimax_columbianus_9428.JPG", "Ariolimax columbianus", Rank.Genus, "Ariolimacinae", "[[Otto Andreas Lowson Mï¿½rch|Mï¿½rch]], 1859");
 	}
 	public void testVeronicellidae() {
 		doTest("Veronicellidae", "leatherleaf slugs", "Veronicellidae", "Laevecaulis-2.jpg", "Laevicaulis alte", Rank.Familia, "Veronicelloidea", "[[Gray]], 1840");
@@ -50,7 +50,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTest("Vaginulus", null, "Vaginulus", "Vaginulus occidentalis 002.jpg", "Vaginulus occidentalis", Rank.Genus, "Veronicellidae", "");
 	}
 	public void testArionfuscus() {
-		doTest("Arion fuscus", null, "Arion fuscus", "Arion subfuscus.jpg", "Arion fuscus", Rank.Species, "Arion", "([[Otto Friedrich Müller|O. F. Müller]], [[1774]])");
+		doTest("Arion fuscus", null, "Arion fuscus", "Arion subfuscus.jpg", "Arion fuscus", Rank.Species, "Arion", "([[Otto Friedrich Mï¿½ller|O. F. Mï¿½ller]], [[1774]])");
 	}
 	public void testMeghimatium() {
 		doTest("Meghimatium", null, "Meghimatium", "Meghimatium fruhstorferi.JPG", "Meghimatium fruhstorferi", Rank.Genus, "Philomycidae", "");
@@ -62,7 +62,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTest("Empidonax", null, "Empidonax", "Empidonax traillii.jpg", "Empidonax traillii extimus", Rank.Genus, "Tyrannidae", "[[Jean Cabanis|Cabanis]] 1855</small>");
 	}
 	public void testSerpophaga() {
-		doTest("Serpophaga", null, "Serpophaga", "TIQUITUIQUI DE BAÑADO Serpophaga nigricans.jpg", "Serpophaga nigricans", Rank.Genus, "Tyrannidae", null);
+		doTest("Serpophaga", null, "Serpophaga", "TIQUITUIQUI DE BAÃ‘ADO Serpophaga nigricans.jpg", "Serpophaga nigricans", Rank.Genus, "Tyrannidae", null);
 	}
 	public void testCureti_siva() {
 		doTest("Curetis siva", "Shiva's Sunbeam", "Curetis siva", null, null, Rank.Species, "Curetis", "Evans, 1954.");
@@ -131,7 +131,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTestGetTaxoBoxString(
 				"{{Automatic Taxobox\r\n" + 
 				"| name = Protoceratids\r\n" + 
-				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431–438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
+				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431ï¿½438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
 				"| image = Synthetoceras_BW.jpg\r\n" + 
 				"| image_caption = ''[[Synthetoceras]]''\r\n" + 
 				"| image_upright = 0.7\r\n" + 
@@ -139,28 +139,28 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 				"| authority =\r\n" + 
 				"| subdivision_ranks = Subfamilies and Genera\r\n" + 
 				"| subdivision =\r\n" + 
-				"†Leptotragulinae (same as Protoceratid)\r\n" + 
-				"* †''[[Heteromeryx]]''\r\n" + 
-				"* †''[[Leptoreodon]]''\r\n" + 
-				"* †''[[Leptotragulus]]''\r\n" + 
-				"* †''[[Poabromylus]]''\r\n" + 
-				"* †''[[Toromeryx]]''\r\n" + 
-				"* †''[[Trigenicus]]''\r\n" + 
-				"†[[Protoceratinae]]\r\n" + 
-				"* †''[[Paratoceras]]''\r\n" + 
-				"* †''[[Protoceras]]''\r\n" + 
-				"* †''[[Pseudoprotoceras]]''\r\n" + 
-				"†[[Synthetoceratinae]]\r\n" + 
-				"* †''[[Kyptoceras]]''\r\n" + 
-				"*''†[[Lambdoceras]]''\r\n" + 
-				"* †''[[Prosynthetoceras]]''\r\n" + 
-				"* †''[[Synthetoceras]]''\r\n" + 
-				"* †''[[Syndyoceras]]''\r\n" + 
+				"ï¿½Leptotragulinae (same as Protoceratid)\r\n" + 
+				"* ï¿½''[[Heteromeryx]]''\r\n" + 
+				"* ï¿½''[[Leptoreodon]]''\r\n" + 
+				"* ï¿½''[[Leptotragulus]]''\r\n" + 
+				"* ï¿½''[[Poabromylus]]''\r\n" + 
+				"* ï¿½''[[Toromeryx]]''\r\n" + 
+				"* ï¿½''[[Trigenicus]]''\r\n" + 
+				"ï¿½[[Protoceratinae]]\r\n" + 
+				"* ï¿½''[[Paratoceras]]''\r\n" + 
+				"* ï¿½''[[Protoceras]]''\r\n" + 
+				"* ï¿½''[[Pseudoprotoceras]]''\r\n" + 
+				"ï¿½[[Synthetoceratinae]]\r\n" + 
+				"* ï¿½''[[Kyptoceras]]''\r\n" + 
+				"*''ï¿½[[Lambdoceras]]''\r\n" + 
+				"* ï¿½''[[Prosynthetoceras]]''\r\n" + 
+				"* ï¿½''[[Synthetoceras]]''\r\n" + 
+				"* ï¿½''[[Syndyoceras]]''\r\n" + 
 				"|range_map = Protoceratidae range.png\r\n" + 
 				"|range_map_caption = Range of Protoceratidae based on fossil record.\r\n" + 
 				"}}", 
 				"| name = Protoceratids\r\n" + 
-				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431–438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
+				"| fossil_range = {{Fossil range|Middle Eocene|Early Pliocene|ref=<ref name=Prothero98>{{cite book |last=Prothero |first=D.R. |coauthors= |editor=Janis, C.M. |editor2=Scott, K.M. |editor3=Jacobs, L.L. |title=Evolution of Tertiary mammals of North America |edition= |year=1998 |publisher=Cambridge University Press |location=Cambridge |isbn=0-521-35519-2 |pages=431ï¿½438 |chapter=Protoceratidae }}</ref>}}\r\n" + 
 				"| image = Synthetoceras_BW.jpg\r\n" + 
 				"| image_caption = ''[[Synthetoceras]]''\r\n" + 
 				"| image_upright = 0.7\r\n" + 
@@ -168,23 +168,23 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 				"| authority =\r\n" + 
 				"| subdivision_ranks = Subfamilies and Genera\r\n" + 
 				"| subdivision =\r\n" + 
-				"†Leptotragulinae (same as Protoceratid)\r\n" + 
-				"* †''[[Heteromeryx]]''\r\n" + 
-				"* †''[[Leptoreodon]]''\r\n" + 
-				"* †''[[Leptotragulus]]''\r\n" + 
-				"* †''[[Poabromylus]]''\r\n" + 
-				"* †''[[Toromeryx]]''\r\n" + 
-				"* †''[[Trigenicus]]''\r\n" + 
-				"†[[Protoceratinae]]\r\n" + 
-				"* †''[[Paratoceras]]''\r\n" + 
-				"* †''[[Protoceras]]''\r\n" + 
-				"* †''[[Pseudoprotoceras]]''\r\n" + 
-				"†[[Synthetoceratinae]]\r\n" + 
-				"* †''[[Kyptoceras]]''\r\n" + 
-				"*''†[[Lambdoceras]]''\r\n" + 
-				"* †''[[Prosynthetoceras]]''\r\n" + 
-				"* †''[[Synthetoceras]]''\r\n" + 
-				"* †''[[Syndyoceras]]''\r\n" + 
+				"ï¿½Leptotragulinae (same as Protoceratid)\r\n" + 
+				"* ï¿½''[[Heteromeryx]]''\r\n" + 
+				"* ï¿½''[[Leptoreodon]]''\r\n" + 
+				"* ï¿½''[[Leptotragulus]]''\r\n" + 
+				"* ï¿½''[[Poabromylus]]''\r\n" + 
+				"* ï¿½''[[Toromeryx]]''\r\n" + 
+				"* ï¿½''[[Trigenicus]]''\r\n" + 
+				"ï¿½[[Protoceratinae]]\r\n" + 
+				"* ï¿½''[[Paratoceras]]''\r\n" + 
+				"* ï¿½''[[Protoceras]]''\r\n" + 
+				"* ï¿½''[[Pseudoprotoceras]]''\r\n" + 
+				"ï¿½[[Synthetoceratinae]]\r\n" + 
+				"* ï¿½''[[Kyptoceras]]''\r\n" + 
+				"*''ï¿½[[Lambdoceras]]''\r\n" + 
+				"* ï¿½''[[Prosynthetoceras]]''\r\n" + 
+				"* ï¿½''[[Synthetoceras]]''\r\n" + 
+				"* ï¿½''[[Syndyoceras]]''\r\n" + 
 				"|range_map = Protoceratidae range.png\r\n" + 
 				"|range_map_caption = Range of Protoceratidae based on fossil record.");
 	}

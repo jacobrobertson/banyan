@@ -645,13 +645,16 @@ function highlightNodes(ids) {
 		entries = entries.add(entry);
 	}
 	var nodes = entries.closest(".Node");
-	var topNode = $(nodes.get(0));
-	var scrollPos = topNode.offset().top - $(window).height() + topNode.height() + 10;
-	$('html, body').animate({ scrollTop: scrollPos }, 200);
-	nodes
-		.animate({opacity: .2}, 100)
-		.animate({opacity: 1}, 500)
-	;
+	
+	if (nodes.length > 0) {
+		var topNode = $(nodes.get(0));
+		var scrollPos = topNode.offset().top - $(window).height() + topNode.height() + 10;
+		$('html, body').animate({ scrollTop: scrollPos }, 200);
+		nodes
+			.animate({opacity: .2}, 100)
+			.animate({opacity: 1}, 500)
+		;
+	}
 }
 function hideAllNodes() {
 	if (getRootEntry()) {
@@ -677,15 +680,6 @@ function markEntryAsShown(e, show) {
 	setEntryShownAs(e, show);
 	if (!show) {
 		markEntryChildrenAsShown(e, false);
-	}
-}
-function markShowMoreAsShown(id) {
-	var e = getMapEntry(id);
-	for (var i = 0; i < e.showMoreLeafIds.length; i++) {
-		markIdAsShown(e.showMoreLeafIds[i], true);
-	}
-	for (var i = 0; i < e.showMoreOtherIds.length; i++) {
-		markIdAsShown(e.showMoreOtherIds[i], true);
 	}
 }
 function markChildrenAsShown(id, show) {
@@ -1518,7 +1512,7 @@ function setMenuButtonLink(id, jqueryElement) {
 function getNbsps(count) {
 	var pad = "";
 	for (var i = 0; i < count; i++) {
-		pad = pad + "&nbsp";
+		pad = pad + "&nbsp;";
 	}
 	return pad;
 }
@@ -1925,7 +1919,7 @@ function buildRemoteIndexEntry(data, callback) {
 function createSuggestionHtml(entry) {
   var imgSrc = entry.image
     ? ("data:image;base64," + entry.image)
-    : "icons/search-placeholder.svg";
+    : "icons/search-placeholder.png";
   var html = "<div class='autocomplete-suggestion-row'>";
   html += "<img class='autocomplete-suggestion-img' src='" + imgSrc + "' alt='' />";
   html += "<span class='autocomplete-suggestion-text'>";

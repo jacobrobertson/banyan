@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import com.robestone.species.parse.AbstractWorker;
 
 import junit.framework.TestCase;
 
@@ -18,11 +18,9 @@ public class SpeciesServiceTest extends TestCase {
 		setUpSpeciesService();
 	}
 	private void setUpSpeciesService() {
-		String path = "com/robestone/species/parse/SpeciesServices.spring.xml";
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(path);
-		service = (SpeciesService) context.getBean("SpeciesService");
-		
-		examplesService = (ExamplesService) context.getBean("ExamplesService");
+		AbstractWorker helper = new AbstractWorker();
+		this.service = helper.speciesService;
+		this.examplesService = helper.examplesService;
 	}
 	
 	public void testExampleService() throws Exception {
@@ -44,7 +42,7 @@ public class SpeciesServiceTest extends TestCase {
 	}
 	
 	public void testEntityMapper() {
-		String latin = "Varanus (Philippinosaurus) olivaceus";
+		String latin = "Varanus olivaceus";
 		char code = 8217;
 		Entry e = service.findEntryByLatinName(latin);
 		String common = e.getCommonName();

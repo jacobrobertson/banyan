@@ -627,7 +627,7 @@ public class WikiSpeciesParser {
 	}
 	private String[] ICON_NAMES = {
 			"Under_construction", "-logo.", "Edit-clear.svg", "Achtung.svg", "Disambig", "Help-", "Merge-", "_important.", "Keep_tidy", "_apps_",
-			"-logo-", "Status_iucn", "Question_mark"
+			"-logo-", "Status_iucn", "Question_mark", "Lock-green.svg"
 	};
 	private String getImage(String page) {
 		Matcher matcher = imageLinkPattern.matcher(page);

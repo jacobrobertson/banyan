@@ -91,9 +91,18 @@ public class SearchIndexBuilder extends AbstractWorker {
 				allDownstreamEntryIds.add(match.entry.getId());
 			}
 		}
+		private void countLocals() {
+			this.fillEntryIds();
+			for (KeyEntry child : this.children) {
+				// all children have already been filled, I just need to add to this one
+				if (!child.outputted) {
+					this.allDownstreamEntryIds.addAll(child.allDownstreamEntryIds);
+				}
+			}
+		}
+
 		/**
 		 * This is a memory fix - too large of a tree being kept in memory - need to prune the tree once we're done
-		 * @param key
 		 */
 		void dispose() {
 			allDownstreamEntryIds = null;
@@ -725,16 +734,6 @@ public class SearchIndexBuilder extends AbstractWorker {
 		return lkey;
 	}
 
-	private void countLocals(KeyEntry key) {
-		key.fillEntryIds();
-		for (KeyEntry child : key.children) {
-			// all children have already been filled, I just need to add to this one
-			if (!child.outputted) {
-				key.allDownstreamEntryIds.addAll(child.allDownstreamEntryIds);
-			}
-		}
-	}
-
 	/**
 	 * Only called once we know the counts are there, so no need to check thresholds, etc.
 	 */
@@ -791,7 +790,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private void saveKeyFile(KeyEntry key) throws Exception {
 
 		// we are visiting this key to see if it should be saved
-		countLocals(key);
+		key.countLocals();
 		
 		// these cannot be saved to drive, so skip and they will get combined elsewhere
 		boolean isNul = key.key.toLowerCase().startsWith("nul");
