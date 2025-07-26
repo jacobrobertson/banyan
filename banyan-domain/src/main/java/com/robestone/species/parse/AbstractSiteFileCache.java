@@ -117,6 +117,7 @@ public abstract class AbstractSiteFileCache {
 			HttpURLConnection hconn = (HttpURLConnection) con;
 			con.setConnectTimeout(15000); // not sure what a good number is here?
 			hconn.addRequestProperty("Content-Type", "text/html;charset=UTF-8");
+			hconn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"); 
 			hconn.setUseCaches(false);
 			int status = hconn.getResponseCode();
 			if (status == HttpURLConnection.HTTP_NOT_FOUND) {
@@ -124,6 +125,13 @@ public abstract class AbstractSiteFileCache {
 				// this is a pretty big workaround, but it should work...
 //				LogHelper.speciesLogger.info("status." + status + "." + link);
 				return DELETED_PAGE;
+			} else if (status == 429) {
+				String secondsString = hconn.getHeaderField("retry-after");
+				if (secondsString != null) {
+					int seconds = Integer.parseInt(secondsString);
+					// respecting their time was crazy high, they wanted 2 minutes
+					Thread.sleep(seconds * 50);
+				}
 			}
 			InputStream in = con.getInputStream();
 			String contentEncoding = con.getHeaderField("Content-Encoding");

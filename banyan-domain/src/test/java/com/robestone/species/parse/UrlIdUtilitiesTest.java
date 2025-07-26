@@ -31,7 +31,7 @@ public class UrlIdUtilitiesTest extends TestCase {
 	}
 	private void doTestToId(String id) {
 		Integer got = UrlIdUtilities.getIdFromUrlId(id);
-		assertEquals(new Integer(1), got);
+		assertEquals(Integer.valueOf(1), got);
 	}
 	
 }

@@ -7,7 +7,6 @@ import java.util.Random;
 import java.util.Set;
 
 import com.robestone.species.Entry;
-import com.robestone.species.Entry;
 import com.robestone.species.EntryUtilities;
 import com.robestone.species.Rank;
 import com.robestone.species.Tree;
@@ -104,8 +103,8 @@ public class Mocks {
 		Entry next = root;
 		next = addChild(next, Rank.Cladus, "eukaryotes", "Eukaryota");
 		next = addChild(next, Rank.Supergroup, "Opisthokonta", "Opisthokonta");
-		next = addChild(next, Rank.Regnum, "animals", "Animalia");
-		next = addChild(next, Rank.Subregnum, "eumetazoans", "Eumetazoa");
+		next = addChild(next, Rank.Kingdom, "animals", "Animalia");
+		next = addChild(next, Rank.Subkingdom, "eumetazoans", "Eumetazoa");
 		next = addChild(next, Rank.Cladus, "bilaterians", "Bilateria");
 		next = addChild(next, Rank.Cladus, "Deuterostome", "Deuterostomia");
 		next = addChild(next, Rank.Phylum, "Chordates", "Chordata");
@@ -115,7 +114,7 @@ public class Mocks {
 		// We don't want the whole chain right now...
 		root = next;
 
-		next = addChild(next, Rank.Superclassis, "Tetrapods", "Tetrapoda");
+		next = addChild(next, Rank.Superclass, "Tetrapods", "Tetrapoda");
 
 		addChild(next, getMammals());
 		addChild(next, getReptiles());
@@ -129,31 +128,31 @@ public class Mocks {
 	}
 
 	private Entry getSearchCases() {
-		Entry searchCases = new Entry(Rank.Classis, "", "Search Cases");
+		Entry searchCases = new Entry(Rank.Class, "", "Search Cases");
 
 		Entry next = searchCases;
 		
 		// if someone searches for "Friend" we probably want "F"
-		next = addChild(next, Rank.Infraclassis, "Friend mean", "M");
-		next = addChild(next, Rank.Subclassis, "Friends", "F");
-		next = addChild(next, Rank.Infraclassis, "Friend nice", "N");
+		next = addChild(next, Rank.Infraclass, "Friend mean", "M");
+		next = addChild(next, Rank.Subclass, "Friends", "F");
+		next = addChild(next, Rank.Infraclass, "Friend nice", "N");
 
-		next = addChild(next, Rank.Subclassis, "Beaver", "Castor");
-		next = addChild(next, Rank.Infraclassis, "Nestor (genus)", "Nestor");
+		next = addChild(next, Rank.Subclass, "Beaver", "Castor");
+		next = addChild(next, Rank.Infraclass, "Nestor (genus)", "Nestor");
 
-		next = addChild(next, Rank.Infraclassis, "Praire Dog", "p1");
+		next = addChild(next, Rank.Infraclass, "Praire Dog", "p1");
 
-		next = addChild(next, Rank.Infraclassis, "Jacob's dotted lichen", "Bacidia jacobi");
-		next = addChild(next, Rank.Infraclassis, "Abscess Root, Spreading Jacob's Ladder, False Jacob's Ladder, American Greek Valerian, Blue bells, Sweatroot", "Polemonium reptans");
+		next = addChild(next, Rank.Infraclass, "Jacob's dotted lichen", "Bacidia jacobi");
+		next = addChild(next, Rank.Infraclass, "Abscess Root, Spreading Jacob's Ladder, False Jacob's Ladder, American Greek Valerian, Blue bells, Sweatroot", "Polemonium reptans");
 		
-		next = addChild(next, Rank.Infraclassis, "Jacky Winter", "Microeca fascinans");
-		next = addChild(next, Rank.Infraclassis, "Jacobin (hummingbird)", "Florisuga");
+		next = addChild(next, Rank.Infraclass, "Jacky Winter", "Microeca fascinans");
+		next = addChild(next, Rank.Infraclass, "Jacobin (hummingbird)", "Florisuga");
 		
-		next = addChild(next, Rank.Infraclassis, "Needlefish", "Belonidae");
-		next = addChild(next, Rank.Infraclassis, "Bowmouth Guitarfish, Bowmouth Wedgefish, Shark Ray", "Rhina");
+		next = addChild(next, Rank.Infraclass, "Needlefish", "Belonidae");
+		next = addChild(next, Rank.Infraclass, "Bowmouth Guitarfish, Bowmouth Wedgefish, Shark Ray", "Rhina");
 		
-		next = addChild(next, Rank.Infraclassis, "Tengmalm's Owl, Boreal Owl", "Aegolius funereus");
-		next = addChild(next, Rank.Infraclassis, "Boreal Toad", "Anaxyrus boreas boreas");
+		next = addChild(next, Rank.Infraclass, "Tengmalm's Owl, Boreal Owl", "Aegolius funereus");
+		next = addChild(next, Rank.Infraclass, "Boreal Toad", "Anaxyrus boreas boreas");
 
 		next = addChild(next, Rank.Cladus, "Raccoons", "Procyonidae");
 		next = addChild(next, Rank.Cladus, "Raccoons", "Procyon");
@@ -182,26 +181,26 @@ public class Mocks {
 		return searchCases;
 	}
 	private Entry getReptiles() {
-		Entry reptiles = new Entry(Rank.Classis, "", "Reptilia");
+		Entry reptiles = new Entry(Rank.Class, "", "Reptilia");
 
 		Entry next = reptiles;
 		
-		next = addChild(next, Rank.Subclassis, "Diapsid", "Diapsida");
-		next = addChild(next, Rank.Infraclassis, "", "Lepidosauromorpha");
-		next = addChild(next, Rank.Superordo, "", "Lepidosauria");
-		next = addChild(next, Rank.Ordo, "Scaled Reptiles", "Squamata");
-		next = addChild(next, Rank.Subordo, "Snakes", "Serpentes");
+		next = addChild(next, Rank.Subclass, "Diapsid", "Diapsida");
+		next = addChild(next, Rank.Infraclass, "", "Lepidosauromorpha");
+		next = addChild(next, Rank.Superorder, "", "Lepidosauria");
+		next = addChild(next, Rank.Order, "Scaled Reptiles", "Squamata");
+		next = addChild(next, Rank.Suborder, "Snakes", "Serpentes");
 		Entry snakes = next;
 		
-		next = addChild(next, Rank.Superfamilia, "", "Colubroidea");
-		next = addChild(next, Rank.Familia, "Colubrid", "Colubridae");
-		next = addChild(next, Rank.Subfamilia, "", "Natricinae");
+		next = addChild(next, Rank.Superfamily, "", "Colubroidea");
+		next = addChild(next, Rank.Family, "Colubrid", "Colubridae");
+		next = addChild(next, Rank.Subfamily, "", "Natricinae");
 		next = addChild(next, Rank.Genus, "", "Natrix");
 		next = addChild(next, Rank.Species, "Grass Snake", "Natrix natrix");
 		
-		next = addChild(snakes, Rank.Superfamilia, "", "Booidea");
-		next = addChild(next, Rank.Familia, "Boas", "Boidae");
-		next = addChild(next, Rank.Subfamilia, "True Boas", "Boinae");
+		next = addChild(snakes, Rank.Superfamily, "", "Booidea");
+		next = addChild(next, Rank.Family, "Boas", "Boidae");
+		next = addChild(next, Rank.Subfamily, "True Boas", "Boinae");
 		next = addChild(next, Rank.Genus, "Anacondas", "Eunectes");
 		next = addChild(next, Rank.Species, "Bolevian Fakething", "Eunectes fakisis");
 		next = addChild(next, Rank.Species, "Bolivian Anaconda", "Eunectes beniensis");
@@ -212,7 +211,7 @@ public class Mocks {
 	}
 
 	private Entry getContrivedForTesting() {
-		Entry root = new Entry(Rank.Classis, "Testing", "Testerificus");
+		Entry root = new Entry(Rank.Class, "Testing", "Testerificus");
 
 		Entry next = root;
 		addChild(next, Rank.Species, "Finky", "T1");
@@ -259,7 +258,7 @@ public class Mocks {
 	}
 
 	private Entry getGigantopithecus() {
-		Entry root = new Entry(Rank.Classis, "Monkeys and Apes", "Monkeynusses");
+		Entry root = new Entry(Rank.Class, "Monkeys and Apes", "Monkeynusses");
 
 		Entry next = root;
 		next = addChild(next, Rank.Species, "", "Gigantopithecus");
@@ -268,36 +267,36 @@ public class Mocks {
 	}
 	
 	private Entry getMammals() {
-		Entry mammals = new Entry(Rank.Classis, "Mammals", "Mammalia");
+		Entry mammals = new Entry(Rank.Class, "Mammals", "Mammalia");
 
 		Entry next = mammals;
-		next = addChild(next, Rank.Subclassis, "", "Theria");
-		next = addChild(next, Rank.Infraclassis, "Placental mammals", "Placentalia");
+		next = addChild(next, Rank.Subclass, "", "Theria");
+		next = addChild(next, Rank.Infraclass, "Placental mammals", "Placentalia");
 //		next = addChild(next, Rank.Empty, "", "");
-		next = addChild(next, Rank.Ordo, "Rodents", "Rodentia");
+		next = addChild(next, Rank.Order, "Rodents", "Rodentia");
 		Entry rodents = next;
 		
-		next = addChild(next, Rank.Subordo, "Squirrel-like rodents", "Sciuromorpha");
+		next = addChild(next, Rank.Suborder, "Squirrel-like rodents", "Sciuromorpha");
 //		next = addChild(next, Rank.Empty, "", "");
-		next = addChild(next, Rank.Familia, "Mountain Beaver", "Aplodontiidae");
-		next = addChild(next, Rank.Subfamilia, "Mountain Beaver", "Aplodontiinae");
+		next = addChild(next, Rank.Family, "Mountain Beaver", "Aplodontiidae");
+		next = addChild(next, Rank.Subfamily, "Mountain Beaver", "Aplodontiinae");
 		next = addChild(next, Rank.Genus, "Mountain Beaver", "Aplodontia");
 		next = addChild(next, Rank.Species, "Mountain Beaver", "Aplodontia rufa");
 		
-		next = addChild(rodents, Rank.Subordo, "", "Castorimorpha");
+		next = addChild(rodents, Rank.Suborder, "", "Castorimorpha");
 //		next = addChild(next, Rank.Empty, "", "");
-		next = addChild(next, Rank.Familia, "", "Heteromyidae");
-		next = addChild(next, Rank.Subfamilia, "", "Perognathinae");
+		next = addChild(next, Rank.Family, "", "Heteromyidae");
+		next = addChild(next, Rank.Subfamily, "", "Perognathinae");
 		next = addChild(next, Rank.Genus, "", "Chaetodipus");
 		next = addChild(next, Rank.Species, "Lined Pocket Gopher", "Chaetodipus lineatus");
 	
-		next = addChild(mammals, Rank.Subclassis, "", "Prototheria");
+		next = addChild(mammals, Rank.Subclass, "", "Prototheria");
 //		next = addChild(next, Rank.Empty, "", "");
 //		next = addChild(next, Rank.Empty, "", "");
-		next = addChild(next, Rank.Ordo, "Monotremes/Egg-laying mammals", "Monotremata");
+		next = addChild(next, Rank.Order, "Monotremes/Egg-laying mammals", "Monotremata");
 //		next = addChild(next, Rank.Empty, "", "");
 //		next = addChild(next, Rank.Empty, "", "");
-		next = addChild(next, Rank.Familia, "Echidna", "Tachyglossidae");
+		next = addChild(next, Rank.Family, "Echidna", "Tachyglossidae");
 //		next = addChild(next, Rank.Empty, "", "");
 		next = addChild(next, Rank.Genus, "", "Zaglossus");
 		next = addChild(next, Rank.Species, "Western Long-beaked Echidna", "Zaglossus bruijni");

@@ -101,7 +101,7 @@ public class WikiDataParser {
 						wdService.insertNonTaxonQid(key);
 					}
 				}
-				if (++count % 100 == 0) {
+				if (++count % 10000 == 0) {
 					System.out.println("crawlLocalCache." + dir.toString() + ".count." + count);
 				}
 			} else {

@@ -2,7 +2,9 @@ package com.robestone.species;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -54,14 +56,29 @@ public class WikiDataService {
 			return found.get(0);
 		}
 	}
+	
+	public Map<String, WdTaxon> findAllTaxons() {
+		Map<String, WdTaxon> map = new HashMap<String, WdTaxon>();
+		List<WdTaxon> found = template.query(
+				"select qid, latin_name, parent_qid, rank, extinct, common_name from wd_taxons", WdTaxonMapper);
+		found.forEach(t -> map.put(t.getQid(), t));
+		return map;
+	}
+
+	public List<WdImage> findImagesForTaxon(String qID) {
+		List<WdImage> found = template.query(
+				"select qid, image_link, depicts_qid from wd_images where qid = ?", WdImageMapper, qID);
+		return found;
+	}
+	
 	public List<String> findAllTaxonQids() {
 		List<String> found = template.query(
-				"select qid from wd_taxons", new EntityMapperRowMapper());
+				"select qid from wd_taxons", new EntityMapperRowMapper(false));
 		return found;
 	}
 	public List<String> findAllNonTaxonQids() {
 		List<String> found = template.query(
-				"select qid from wd_non_taxons", new EntityMapperRowMapper());
+				"select qid from wd_non_taxons", new EntityMapperRowMapper(false));
 		return found;
 	}
 	
@@ -84,13 +101,14 @@ public class WikiDataService {
 			return t;
 		}
 	}
+	private static final WdImageMapper WdImageMapper = new WdImageMapper();
 	private static class WdImageMapper implements ParameterizedRowMapper<WdImage> {
 		public WdImage mapRow(ResultSet rs, int rowNum)
 				throws SQLException {
 			WdImage i = new WdImage();
 			i.setQid(rs.getString("qid").trim());
 			i.setImageLink(rs.getString("image_link").trim());
-			i.setDepictsQid(rs.getString("depicts_qid").trim());
+			i.setDepictsQid(StringUtils.trimToNull(rs.getString("depicts_qid")));
 			return i;
 		}
 	}

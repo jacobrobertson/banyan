@@ -90,6 +90,7 @@ var menuData = [
 	{"id": "mShowChildren", "png": "open_children", 	"caption": "Show More Children"},
 	{"id": "mShowMore", 	"png": "show-interesting", 	"caption": "Show More Species"},
 	{"id": "mHide", 		"png": "close-children", 	"caption": "Hide Children"},
+	{"id": "mHideSiblings",	"png": "close-children", 	"caption": "Hide Siblings"},
 	{"id": "mClose", 		"png": "close", 			"caption": "Close"},
 	{"id": "mFocus", 		"png": "focus", 			"caption": "Focus"},
 	{"id": "mPin", 			"png": "pin_image", 		"caption": "Pin Image"},

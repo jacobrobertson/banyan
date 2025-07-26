@@ -62,7 +62,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Isoptera incertae sedis", null, "Isoptera", null, Rank.Cladus);
 	}
 	public void testMastotermitidae() throws IOException {
-		doTest("Mastotermitidae", null, "Isoptera incertae sedis", null, Rank.Familia);
+		doTest("Mastotermitidae", null, "Isoptera incertae sedis", null, Rank.Family);
 	}
 	public void testMastotermes() throws IOException {
 		doTest("Mastotermes", "Giant Northern Termite", "Mastotermitidae", "thumb/a/a3/Mastotermes_darwiniensis.jpg/250px-Mastotermes_darwiniensis.jpg", Rank.Genus);
@@ -71,7 +71,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Mastotermes darwiniensis", "Giant Northern Termite", "Mastotermes", "thumb/a/a3/Mastotermes_darwiniensis.jpg/250px-Mastotermes_darwiniensis.jpg", Rank.Species);
 	}
 	public void testStrigiformes() throws IOException {
-		doTest("Strigiformes", "Owls", "Neognathae", "thumb/d/d6/Long_ear_owl_shandong.jpg/220px-Long_ear_owl_shandong.jpg", Rank.Ordo, false, null, "Asio otus");
+		doTest("Strigiformes", "Owls", "Neognathae", "thumb/d/d6/Long_ear_owl_shandong.jpg/220px-Long_ear_owl_shandong.jpg", Rank.Order, false, null, "Asio otus");
 	}
 	public void testNerodia_fasciata() throws IOException {
 		doTest("Nerodia fasciata", "Southern Water Snakes", "Nerodia", "thumb/0/04/Nerodia_fasciata_CDC.png/250px-Nerodia_fasciata_CDC.png", Rank.Species, false);
@@ -86,7 +86,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Acantharchus", "Mud sunfish", "Centrarchidae", "thumb/9/93/Acantharchus_pomotis.jpg/250px-Acantharchus_pomotis.jpg", Rank.Genus, false, null, "Acantharchus pomotis");
 	}
 	public void testDelphinoidea() throws IOException {
-		doTest("Delphinoidea", null, "Odontoceti", null, Rank.Superfamilia, false);
+		doTest("Delphinoidea", null, "Odontoceti", null, Rank.Superfamily, false);
 	}
 	// I'm changing my strategy for "redirected"
 	public void ztestAvialae() throws IOException {
@@ -108,7 +108,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Acropolitis magnana", null, "Acropolitis", null, Rank.Species);
 	}
 	public void testSurniinae() throws IOException {
-		doTest("Surniinae", null, "Strigidae", "thumb/1/17/Aegolius-funereus-001.jpg/220px-Aegolius-funereus-001.jpg", Rank.Subfamilia, false, null, "Aegolius funereus");
+		doTest("Surniinae", null, "Strigidae", "thumb/1/17/Aegolius-funereus-001.jpg/220px-Aegolius-funereus-001.jpg", Rank.Subfamily, false, null, "Aegolius funereus");
 	}
 	public void testPelecanus() throws IOException {
 		doTest("Pelecanus", "Pelicans", "Pelecanidae", "thumb/6/64/Lebski-pelikan.JPG/250px-Lebski-pelikan.JPG", Rank.Genus);
@@ -123,10 +123,10 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Coniothyrina", null, "Ascomycota", null, Rank.Genus);
 	}
 	public void testMastigoteuthidae() throws IOException {
-		doTest("Mastigoteuthidae", "Whip-lash Squid", "Oegopsina", null, Rank.Familia, false);
+		doTest("Mastigoteuthidae", "Whip-lash Squid", "Oegopsina", null, Rank.Family, false);
 	}
 	public void testLumbrineridae() throws IOException {
-		doTest("Lumbrineridae", null, "Eunicida", null, Rank.Familia, false);
+		doTest("Lumbrineridae", null, "Eunicida", null, Rank.Family, false);
 	}
 	public void testMotacillagrandis()  throws IOException {
 		doTest("Motacilla grandis", "Japanese Wagtail", "Motacilla", "thumb/1/1b/Segurosekirei_06f7982v.jpg/250px-Segurosekirei_06f7982v.jpg", Rank.Species, false);
@@ -138,7 +138,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Selkirkia columbia", null, "Selkirkia", null, Rank.Species, true);
 	}
 	public void testValettidae() throws IOException {
-		doTest("Valettidae", null, "Unassigned (Gammaridea)", null, Rank.Familia);
+		doTest("Valettidae", null, "Unassigned (Gammaridea)", null, Rank.Family);
 	}
 	public void testBeaver() throws IOException {
 		doTest("Aplodontia rufa", "Mountain Beaver", "Aplodontia", "3/3c/Aplodontia.jpg", Rank.Species);
@@ -153,7 +153,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Eurybia saxicastellii", null, "Eurybia (Asteraceae)", null, Rank.Species, false);
 	}
 	public void testTheria() throws IOException {
-		doTest("Theria", null, "Mammalia", "thumb/7/7b/Lagothrix_lagotricha.jpg/250px-Lagothrix_lagotricha.jpg", Rank.Subclassis, false, null, "Lagothrix lagotricha");
+		doTest("Theria", null, "Mammalia", "thumb/7/7b/Lagothrix_lagotricha.jpg/250px-Lagothrix_lagotricha.jpg", Rank.Subclass, false, null, "Lagothrix lagotricha");
 	}
 	public void testSus_cebifrons() throws IOException {
 		doTest("Sus cebifrons", "Visayan Warty Pig", "Sus", null, Rank.Species);
@@ -162,7 +162,7 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Scoloura", null, "Incertae sedis (Paratanoidea)", null, Rank.Genus);
 	}
 	public void testAnisoptera() throws IOException {
-		doTest("Anisoptera", "Dragonfly", "Odonata", "thumb/0/03/Sympetrum_flaveolum_-_side_%28aka%29.jpg/250px-Sympetrum_flaveolum_-_side_%28aka%29.jpg", Rank.Subordo, false, null, "Sympetrum flaveolum");
+		doTest("Anisoptera", "Dragonfly", "Odonata", "thumb/0/03/Sympetrum_flaveolum_-_side_%28aka%29.jpg/250px-Sympetrum_flaveolum_-_side_%28aka%29.jpg", Rank.Suborder, false, null, "Sympetrum flaveolum");
 	}
 	public void testNothobranchius() throws IOException {
 		doTest("Nothobranchius", null, "Nothobranchiidae", "7/72/Nothobranchius_rachovii_male.jpg", Rank.Genus, false, null, "Nothobranchius rachovii");
@@ -171,13 +171,13 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Ctenophora", "Comb jellies", "Eumetazoa (incertae sedis)", "thumb/2/2f/Mertensia_ovum.jpg/250px-Mertensia_ovum.jpg", Rank.Phylum, false, null, "Mertensia ovum");
 	}
 	public void testGracilentulus() throws IOException {
-		doTest("Gracilentulus", null, "Berberentulinae", null, Rank.Genus, false, Rank.Subfamilia, null);
+		doTest("Gracilentulus", null, "Berberentulinae", null, Rank.Genus, false, Rank.Subfamily, null);
 	}
 	public void testCuspirostrisornis() throws IOException {
 		doTest("Cuspirostrisornis", null, "Cuspirostrisornithidae", null, Rank.Genus, true);
 	}
 	public void testXenoturbellidae() throws IOException {
-		doTest("Xenoturbellidae", null, "Xenoturbellida", null, Rank.Familia);
+		doTest("Xenoturbellidae", null, "Xenoturbellida", null, Rank.Family);
 	}
 	public void testSceloglaux() throws IOException {
 		doTest("Sceloglaux", null, "Surniinae", null, Rank.Genus);
@@ -204,21 +204,21 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Endopterygota", "Complete Metamorphosis Insects", "Eumetabola", "thumb/7/7c/BeetleBrazil_068.jpg/250px-BeetleBrazil_068.jpg", Rank.Cladus);
 	}
 	public void testLethiscidae() throws IOException {
-		// Ordo: <a href="/wiki/A%C3%AFstopoda" title="Aïstopoda">Aïstopoda</a><br />
+		// order: <a href="/wiki/A%C3%AFstopoda" title="Aïstopoda">Aïstopoda</a><br />
 		// (String latin, String common, String parent, String image, Rank rank, boolean extinct, Rank parentRank, String depicted
-		doTest("Lethiscidae", null, "Aïstopoda", null, Rank.Familia, false, null, null);
+		doTest("Lethiscidae", null, "Aïstopoda", null, Rank.Family, false, null, null);
 	}
 	public void testArchaeognatha() throws IOException {
-		doTest("Archaeognatha", "Bristletails, jumping bristletails", "Basal Insecta", null, Rank.Ordo);
+		doTest("Archaeognatha", "Bristletails, jumping bristletails", "Basal Insecta", null, Rank.Order);
 	}
 	public void testBasal_Insecta() throws IOException {
 		doTest("Basal Insecta", null, "Insecta", null, Rank.Cladus);
 	}
 	public void testPilosa() throws IOException {
-		doTest("Pilosa", null, "Xenarthra", "thumb/1/18/Bradypus.jpg/250px-Bradypus.jpg", Rank.Ordo, false, null, "Bradypus variegatus infuscatus");
+		doTest("Pilosa", null, "Xenarthra", "thumb/1/18/Bradypus.jpg/250px-Bradypus.jpg", Rank.Order, false, null, "Bradypus variegatus infuscatus");
 	}
 	public void testEumolpinae() throws IOException {
-		doTest("Eumolpinae", "Oval Leaf Beetles", "Chrysomelidae", "2/22/Eumolpus.asclepiadeus.-.calwer.45.06.jpg", Rank.Subfamilia, false, null, "Eumolpus asclepiadeus");
+		doTest("Eumolpinae", "Oval Leaf Beetles", "Chrysomelidae", "2/22/Eumolpus.asclepiadeus.-.calwer.45.06.jpg", Rank.Subfamily, false, null, "Eumolpus asclepiadeus");
 	}
 	public void testHoangus_venustus() throws IOException {
 		doTest("Hoangus venustus", "Flax ladybird", "Hoangus", "thumb/b/be/Cassiculus_venustus_%28card_mount%29.jpg/250px-Cassiculus_venustus_%28card_mount%29.jpg", Rank.Species, false, null, null);
@@ -231,13 +231,13 @@ public class WikiSpeciesParserTest extends TestCase {
 		doTest("Cordylus giganteus", "Giant girdled lizard, Giant sungazer lizard", "Cordylus", "thumb/7/7b/Cordylus_giganteus.jpg/250px-Cordylus_giganteus.jpg", Rank.Species, false, null, null);
 	}
 	public void testAves() throws IOException {
-		doTest("Aves", "Birds", "Avialae", "thumb/f/f7/Pieni_2_0622.jpg/300px-Pieni_2_0622.jpg", Rank.Classis);
+		doTest("Aves", "Birds", "Avialae", "thumb/f/f7/Pieni_2_0622.jpg/300px-Pieni_2_0622.jpg", Rank.Class);
 	}
 	
 	// tests proper parsing of thumbs with two versions
 	// thumb/c/c6/Rapanea.gif/375px-Rapanea.gif 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Rapanea.gif/500px-Rapanea.gif 2x
 	public void testMyrsinoideae() throws IOException {
-		doTest("Myrsinoideae", null, "Primulaceae", "thumb/c/c6/Rapanea.gif/250px-Rapanea.gif", Rank.Subfamilia);
+		doTest("Myrsinoideae", null, "Primulaceae", "thumb/c/c6/Rapanea.gif/250px-Rapanea.gif", Rank.Subfamily);
 	}
 	/*
 https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv/640px--Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv.jpg	
@@ -248,13 +248,13 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Atelopus franciscus", "Central Coast Stubfoot Toad", "Atelopus", "thumb/7/7a/Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv/220px--Magnetic_resonance_imaging_of_Atelopus_franciscus_head_-_pone.0022080.s004.ogv.jpg", Rank.Species);
 	}
 	public void testPhiomorpha() throws IOException {
-		doTest("Phiomorpha", null, "Hystricognathi", "thumb/0/02/Nacktmull.jpg/220px-Nacktmull.jpg", Rank.Infraordo);
+		doTest("Phiomorpha", null, "Hystricognathi", "thumb/0/02/Nacktmull.jpg/220px-Nacktmull.jpg", Rank.Infraorder);
 	}
 	public void testCiliophrys() throws IOException {
 		doTest("Ciliophrys", null, "Pedinellaceae", null, Rank.Genus);
 	}
 	public void testChloranthales() throws IOException {
-		doTest("Chloranthales", null, "Magnoliopsida", "thumb/6/66/Chloranthus_serratus_%28200705%29.jpg/250px-Chloranthus_serratus_%28200705%29.jpg", Rank.Ordo);
+		doTest("Chloranthales", null, "Magnoliopsida", "thumb/6/66/Chloranthus_serratus_%28200705%29.jpg/250px-Chloranthus_serratus_%28200705%29.jpg", Rank.Order);
 	}
 	public void testRubus_racemosus() throws IOException {
 		doTest("Rubus racemosus", null, "Rubus subg. Idaeobatus", null, Rank.Species);
@@ -266,7 +266,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Dimares", null, "Dimarinae", null, Rank.Genus);
 	}
 	public void testTrachymedusae() throws IOException {
-		doTest("Trachymedusae", null, "Trachylinae", null, Rank.Ordo);
+		doTest("Trachymedusae", null, "Trachylinae", null, Rank.Order);
 	}
 	public void testPhosphaticola() throws IOException {
 		doTest("Phosphaticola", null, "Cosmopterigidae", null, Rank.Genus);
@@ -275,10 +275,10 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Herpophyllum", null, "Florideophyceae", null, Rank.Genus);
 	}
 	public void testTestacellidae() throws IOException {
-		doTest("Testacellidae", null, "Testacelloidea", "thumb/4/48/Testacella_haliotidea.jpg/250px-Testacella_haliotidea.jpg", Rank.Familia);
+		doTest("Testacellidae", null, "Testacelloidea", "thumb/4/48/Testacella_haliotidea.jpg/250px-Testacella_haliotidea.jpg", Rank.Family);
 	}
 	public void testSordarialesincertaesedis() throws IOException {
-		doTest("Sordariales incertae sedis", null, "Sordariales", null, Rank.Familia);
+		doTest("Sordariales incertae sedis", null, "Sordariales", null, Rank.Family);
 	}
 	public void testCentropogonCampanulaceae() throws IOException {
 		doTest("Centropogon (Campanulaceae)", null, "Lobelioideae", "thumb/a/a5/Centropogon_ferrugineus_1.jpg/250px-Centropogon_ferrugineus_1.jpg", Rank.Genus);
@@ -336,22 +336,22 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Tinodon", null, "Tinodontidae", null, Rank.Genus);
 	}
 	public void testPlecoptera() throws IOException {
-		doTest("Plecoptera", "Stonefly", "Plecopterida incertae sedis", null, Rank.Ordo);
+		doTest("Plecoptera", "Stonefly", "Plecopterida incertae sedis", null, Rank.Order);
 	}
 	public void testPsidium_sect__Apertiflora() throws IOException {
-		doTest("Psidium sect. Apertiflora", null, "Psidium", null, Rank.Sectio);
+		doTest("Psidium sect. Apertiflora", null, "Psidium", null, Rank.Section);
 	}
 	public void testCossinaCossina() throws IOException {
-		doTest("Cossina Cossina", null, "Cossina", null, Rank.Subsectio);
+		doTest("Cossina Cossina", null, "Cossina", null, Rank.Subsection);
 	}
 	public void testActinopteri() throws IOException {
-		doTest("Actinopteri", null, "Actinopterygii", null, Rank.Classis);
+		doTest("Actinopteri", null, "Actinopterygii", null, Rank.Class);
 	}
 	public void testLacertoidea() throws IOException {
-		doTest("Lacertoidea", null, "Squamata", null, Rank.Subordo);
+		doTest("Lacertoidea", null, "Squamata", null, Rank.Suborder);
 	}
 	public void testRhododendronsectPontica() throws IOException {
-		doTest("Rhododendron sect. Pontica", null, "Rhododendron subg. Hymenanthes", null, Rank.Sectio);
+		doTest("Rhododendron sect. Pontica", null, "Rhododendron subg. Hymenanthes", null, Rank.Section);
 	}
 	public void testRhododendronsubgHymenanthes() throws IOException {
 		doTest("Rhododendron subg. Hymenanthes", null, "Rhododendron", "thumb/3/35/Georgian_Snow_Rose.jpg/250px-Georgian_Snow_Rose.jpg", Rank.Subgenus);
@@ -363,7 +363,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Paederus (Anomalopaederus)", null, "Paederus", null, Rank.Subgenus);
 	}
 	public void testOsteichthyes() throws IOException {
-		doTest("Osteichthyes", "Bony fish", "Gnathostomata (Vertebrata)", "thumb/6/6f/Mullus_surmuletus.jpg/250px-Mullus_surmuletus.jpg", Rank.Megaclassis);
+		doTest("Osteichthyes", "Bony fish", "Gnathostomata (Vertebrata)", "thumb/6/6f/Mullus_surmuletus.jpg/250px-Mullus_surmuletus.jpg", Rank.Megaclass);
 	}
 	public void testNepenthes_xkinabaluensis() throws IOException {
 		doTest("Nepenthes \u00d7kinabaluensis", "Kinabalu Pitcher Plant", "Nepenthes", "thumb/8/87/Kinabalu_N._%C3%97_kinabaluensis_6.JPG/220px-Kinabalu_N._%C3%97_kinabaluensis_6.JPG", Rank.Hybrid);
@@ -384,19 +384,19 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Cohort Dictyoptera", null, "Polyneoptera", "thumb/3/31/Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg/220px-Male_Sphodromantis_viridis_from_near_Campo_Maior_%28%C3%89vora%29.jpg", Rank.Cohors);
 	}
 	public void testChaunacidae() throws IOException {
-		doTest("Chaunacidae", "Sea toad", "Chaunacioidea", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Familia);
+		doTest("Chaunacidae", "Sea toad", "Chaunacioidea", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Family);
 	}
 	public void testLepanthopsis() throws IOException {
 		doTest("Lepanthopsis", null, "Pleurothallidinae", "thumb/4/40/Lepanthopsis_comet-halleyi.jpg/250px-Lepanthopsis_comet-halleyi.jpg", Rank.Genus);
 	}
 	public void testUnassignedCalliptaminae() throws IOException {
-		doTest("Unassigned Calliptaminae", null, "Calliptaminae", null, Rank.Tribus);
+		doTest("Unassigned Calliptaminae", null, "Calliptaminae", null, Rank.Tribe);
 	}
 	public void testAnamorphicfungi() throws IOException {
 		doTest("Anamorphic fungi", "Deuteromycota", "Fungi", null, Rank.Phylum);
 	}
 	public void testChaunacioidea() throws IOException {
-		doTest("Chaunacioidea", null, "Ogcocephalioidei", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Superfamilia);
+		doTest("Chaunacioidea", null, "Ogcocephalioidei", "thumb/2/21/Chaunax_pictus.jpg/250px-Chaunax_pictus.jpg", Rank.Superfamily);
 	}
 	public void testAconitumsubgAconitum() throws IOException {
 		doTest("Aconitum subg. Aconitum", null, "Aconitum", null, Rank.Subgenus);
@@ -405,7 +405,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestWithFileName("Group_V_ssRNA(-)", "Group V: ssRNA(-)", null, "Virus", null, Rank.Group, false, null, null);
 	}
 	public void testMononegavirales() throws IOException {
-		doTest("Mononegavirales", "Mononegavirales", "Group V: ssRNA(-)", null, Rank.Ordo);
+		doTest("Mononegavirales", "Mononegavirales", "Group V: ssRNA(-)", null, Rank.Order);
 	}
 	public void testAptinuspyranaeus() throws IOException {
 		doTest("Aptinus pyranaeus", null, "Aptinus (Aptinus)", null, Rank.Species);
@@ -417,13 +417,13 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Pinnipedia", "Pinnipeds", "Pinnipediformes", "thumb/b/b1/Pinniped_collage.jpg/250px-Pinniped_collage.jpg", Rank.Cladus);
 	}
 	public void testRetroviridae() throws IOException {
-		doTest("Retroviridae", "Retroviruses", "Group VI: ssRNA(RT)", "thumb/9/97/Phylogeny_of_Retroviruses.svg/350px-Phylogeny_of_Retroviruses.svg.png", Rank.Familia);
+		doTest("Retroviridae", "Retroviruses", "Group VI: ssRNA(RT)", "thumb/9/97/Phylogeny_of_Retroviruses.svg/350px-Phylogeny_of_Retroviruses.svg.png", Rank.Family);
 	}
 	public void testLepospondyli() throws IOException {
-		doTest("Lepospondyli", null, "Amphibia", "thumb/e/e5/Diplocaulus_vale21DB.jpg/300px-Diplocaulus_vale21DB.jpg", Rank.Subclassis, true, null, null);
+		doTest("Lepospondyli", null, "Amphibia", "thumb/e/e5/Diplocaulus_vale21DB.jpg/300px-Diplocaulus_vale21DB.jpg", Rank.Subclass, true, null, null);
 	}
 	public void testFlaviviridae() throws IOException {
-		doTest("Flaviviridae", "Flavivirus group", "Group IV: ssRNA(+)", null, Rank.Familia);
+		doTest("Flaviviridae", "Flavivirus group", "Group IV: ssRNA(+)", null, Rank.Family);
 	}
 	public void testZygomyiasubmarginataHarrison() throws IOException {
 		doTest("Zygomyia submarginata Harrison", null, "Zygomyia", null, Rank.Species);
@@ -447,27 +447,27 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTest("Mus musculus", "House Mouse", "Mus (Mus)", "thumb/a/ab/House_mouse.jpg/250px-House_mouse.jpg", Rank.Species);
 	}
 	public void testGyrinidae() throws IOException {
-		doTest("Gyrinidae", "Whirligig beetles, whirlygig beetles", "Adephaga", "2/23/Gyrinus_natator.JPG", Rank.Familia);
+		doTest("Gyrinidae", "Whirligig beetles, whirlygig beetles", "Adephaga", "2/23/Gyrinus_natator.JPG", Rank.Family);
 	}
 	public void testLophophanescristatusmitratus() throws IOException {
 		doTest("Lophophanes cristatus mitratus", "European Crested Tit", "Lophophanes cristatus", "thumb/1/1f/Parus_cristatus_7183.jpg/250px-Parus_cristatus_7183.jpg", Rank.Subspecies);
 	}
 	public void testVirus() throws IOException {
-		doTest("Virus", "Virus", null, "thumb/1/1b/Bacteriophage_structure.png/250px-Bacteriophage_structure.png", Rank.Regnum);
+		doTest("Virus", "Virus", null, "thumb/1/1b/Bacteriophage_structure.png/250px-Bacteriophage_structure.png", Rank.Kingdom);
 		String page = getPage("Virus");
 		boolean isAuth = AuthorityUtilities.isAuthorityPage("Virus", page);
 		assertFalse(isAuth);
 	}
 	public void testMyliobatidae() throws IOException {
-		doTest("Myliobatidae", "Eagle rays", "Dasyatoidea", "thumb/6/6e/Manta_birostris-Thailand.jpg/300px-Manta_birostris-Thailand.jpg", Rank.Familia);
+		doTest("Myliobatidae", "Eagle rays", "Dasyatoidea", "thumb/6/6e/Manta_birostris-Thailand.jpg/300px-Manta_birostris-Thailand.jpg", Rank.Family);
 	}
 	public void testRankPatterns() {
 		// (?:<strong class=\"selflink\">|<a class=\"mw-selflink selflink\">)"
 		String[] tests = {
-				"<p>Familia: <i><strong class=\"selflink\">Moeritherium</strong></i><br />",
-				"<p>Familia: <strong class=\"selflink\">Moeritherium</strong><br />",
+				"<p>Family: <i><strong class=\"selflink\">Moeritherium</strong></i><br />",
+				"<p>Family: <strong class=\"selflink\">Moeritherium</strong><br />",
 				"<p>Taxon: †<strong class=\"selflink\">Moeritherium</strong><br />",
-				"<p>Regnum: †<i><a class=\"mw-selflink selflink\">Moeritherium</a></i><br>",
+				"<p>Kingdom: †<i><a class=\"mw-selflink selflink\">Moeritherium</a></i><br>",
 				"<p>Genus: †<i><b>Moeritherium</b></i><br />"
 		};
 		for (String test : tests) {
@@ -543,7 +543,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestGetParent("R. subg. Idaeobatus", "Subgenus", "Rubus", "Genus: <i><a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a></i><br />\r\nSubgenus: <strong class=\"selflink\"><i>R. subg. Idaeobatus</strong><br />");
 		doTestGetParent("R. subg. Idaeobatus", "Subgenus", "Rubus", "Rubeae</a><br />  Genus: <a href=\"/wiki/Rubus\" title=\"Rubus\">Rubus</a><br />  Subgenus: <strong class=\"selflink\">R. subg. Idaeobatus</strong><br />  Species: ");
 
-		doTestGetParent("Trachymedusae", "Ordo", "Trachylinae", "Sub-classis: <a href=\"/wiki/Trachylinae\" title=\"Trachylinae\">Trachylinae</a><br />\r\nOrdo: <strong class=\"selflink\">Trachymedusae</strong><br />\r\n");
+		doTestGetParent("Trachymedusae", "order", "Trachylinae", "Sub-classis: <a href=\"/wiki/Trachylinae\" title=\"Trachylinae\">Trachylinae</a><br />\r\norder: <strong class=\"selflink\">Trachymedusae</strong><br />\r\n");
 	}
 	private void doTestGetParent(String latinName, String rank, String expectParent, String text) {
 		WikiSpeciesParser parser = new WikiSpeciesParser();
@@ -654,7 +654,7 @@ https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Magnetic_resonance_ima
 		doTestVirusParentParse(test, true);
 	}
 	private void doTestVirusParentParse(String testLine, boolean expectMatch) {
-		String childRank = "Ordo";
+		String childRank = "order";
 		String childLatin = "Myvirus";
 		String test = testLine + "<br />\r\n" +
 				childRank + 

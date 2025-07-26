@@ -37,7 +37,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	private int minKeyLen;
 	private int maxKeyLen;
 	private boolean saveFile;
-	private int minKeysPerFile = 200;
+	private int minWeightPerFile = 200;
 	private int testListSize = -1;//1_000;
 	
 	private List<CandidateEntry> candidates;
@@ -67,7 +67,8 @@ public class SearchIndexBuilder extends AbstractWorker {
 	public static class KeyEntry {
 		String key;
 		int topScore = 0;
-		Set<Integer> allDownstreamEntryIds = new HashSet<Integer>();
+		private Set<Integer> allDownstreamEntryIds = new HashSet<Integer>();
+		private Set<Integer> allDownstreamEntryIdsWithImages = new HashSet<Integer>();
 		boolean outputted = false;
 		List<CandidateEntry> topMatches = new ArrayList<CandidateEntry>();
 		List<KeyEntry> children = new ArrayList<KeyEntry>();
@@ -85,18 +86,23 @@ public class SearchIndexBuilder extends AbstractWorker {
 				_keyNoS_ = " " + key.substring(0, key.length() - 1) + " ";
 			}
 		}
-		
-		public void fillEntryIds() {
-			for (CandidateEntry match : topMatches) {
-				allDownstreamEntryIds.add(match.entry.getId());
-			}
+		public int getChildWeightedCount() {
+			int imageMultiplier = 9; // based on the size of the JSON this is about right
+			return allDownstreamEntryIds.size() + (allDownstreamEntryIdsWithImages.size() * imageMultiplier);
 		}
 		private void countLocals() {
-			this.fillEntryIds();
+			for (CandidateEntry match : topMatches) {
+				// TODO HERE
+				allDownstreamEntryIds.add(match.entry.getId());
+				if (match.imageEntry != null) {
+					allDownstreamEntryIdsWithImages.add(match.entry.getId());
+				}
+			}
 			for (KeyEntry child : this.children) {
 				// all children have already been filled, I just need to add to this one
 				if (!child.outputted) {
 					this.allDownstreamEntryIds.addAll(child.allDownstreamEntryIds);
+					this.allDownstreamEntryIdsWithImages.addAll(child.allDownstreamEntryIdsWithImages);
 				}
 			}
 		}
@@ -106,6 +112,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 		 */
 		void dispose() {
 			allDownstreamEntryIds = null;
+			allDownstreamEntryIdsWithImages = null;
 			topMatches = null;
 			children = null;
 		}
@@ -204,7 +211,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 	 * The whole purpose of this method is to ensure the search index has the exact same entries as the partition.
 	 * We don't care about the "tree" just the entries, so we don't worry about hooking it all together.
 	 */
-	private List<Entry> buildTree() {
+	public List<Entry> buildTree() {
 		Node nroot = IndexPartitionsBuilder.buildTree(speciesService);
 		if (testListSize > 0) {
 			pruneTree(nroot);
@@ -798,7 +805,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 			return;
 		}
 		boolean isRoot = (key.key.length() == 0);
-		if (!isRoot && key.allDownstreamEntryIds.size() < minKeysPerFile) {
+		if (!isRoot && key.getChildWeightedCount() < minWeightPerFile) {
 			return;
 		}
 		
@@ -808,7 +815,7 @@ public class SearchIndexBuilder extends AbstractWorker {
 
 		String json = toString(remoteKeys, localKeys);
 		System.out.println(json);
-		System.out.println("saveKeyFile." + key.key + "." + key.allDownstreamEntryIds.size());
+		System.out.println("saveKeyFile: key=" + key.key + ", weight=" + key.getChildWeightedCount());
 		String path = "";
 		String fileName;
 		if (isRoot) {

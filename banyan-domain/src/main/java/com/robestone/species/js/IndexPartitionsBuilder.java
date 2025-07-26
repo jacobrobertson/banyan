@@ -332,7 +332,7 @@ public class IndexPartitionsBuilder {
 		Collection<Integer> ids = speciesService.findChildrenIds(id);
 		Node node = new Node(null, id, new ArrayList<>(ids));
 		int descendants = ids.size();
-		if (count[0] % 100 == 0) {
+		if (count[0] % 10_000 == 0) {
 			System.out.println("buildNodeRecursively id=" + id + ", depth=" + depth + 
 					", children=" + node.getChildIds().size() + ", desc=" + descendants + ",count=" + count[0]);
 		}

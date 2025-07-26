@@ -15,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.robestone.species.Rank;
+import com.robestone.species.parse.WikiDataParser.WikiDataCache;
 
 /**
  * The Q files for ranks didn't download as part of the dump, so we need to manage a way to get those all filled in.
@@ -22,7 +23,7 @@ import com.robestone.species.Rank;
 public class WikiDataRanksCache {
 
 	public static void main(String[] args) {
-		File f = new File("D:\\banyan\\caches\\wikidata\\Q");
+		File f = new File(WikiDataCache.WIKIDATA_LOCAL_PATH + "/Q");
 		countFiles(f);
 	}
 	public static int countFiles(File f) {
@@ -34,6 +35,7 @@ public class WikiDataRanksCache {
 		for (File c : children) {
 			if (!c.getName().endsWith(".json")) {
 				count += countFiles(c);
+				System.out.println(c.getAbsolutePath() + "." + count);
 			} else {
 				count++;
 			}

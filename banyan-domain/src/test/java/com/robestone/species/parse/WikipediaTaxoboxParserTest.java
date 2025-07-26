@@ -32,13 +32,13 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTest("Banana slug", "Banana slug", "Ariolimax", "Ariolimax_columbianus_9428.JPG", "Ariolimax columbianus", Rank.Genus, "Ariolimacinae", "[[Otto Andreas Lowson M�rch|M�rch]], 1859");
 	}
 	public void testVeronicellidae() {
-		doTest("Veronicellidae", "leatherleaf slugs", "Veronicellidae", "Laevecaulis-2.jpg", "Laevicaulis alte", Rank.Familia, "Veronicelloidea", "[[Gray]], 1840");
+		doTest("Veronicellidae", "leatherleaf slugs", "Veronicellidae", "Laevecaulis-2.jpg", "Laevicaulis alte", Rank.Family, "Veronicelloidea", "[[Gray]], 1840");
 	}
 	public void testTrigonochlamydidae() {
-		doTest("Trigonochlamydidae", null, "Trigonochlamydidae", "Ghost Slug adult.jpg", "Selenochlamys ysbryda", Rank.Familia, "Parmacelloidea", "");
+		doTest("Trigonochlamydidae", null, "Trigonochlamydidae", "Ghost Slug adult.jpg", "Selenochlamys ysbryda", Rank.Family, "Parmacelloidea", "");
 	}
 	public void testFrog() {
-		doTest("Frog", "Frogs", "Anura", "Caerulea3 crop.jpg", "Litoria caerulea", Rank.Ordo, "Amphibia", "[[Blasius Merrem|Merrem]], 1820");
+		doTest("Frog", "Frogs", "Anura", "Caerulea3 crop.jpg", "Litoria caerulea", Rank.Order, "Amphibia", "[[Blasius Merrem|Merrem]], 1820");
 	}
 	public void testVampire_Squid() {
 		doTest("Vampire_Squid", "Vampire Squid", "Vampyroteuthis infernalis", "vampyroteuthis illustration.jpg", null, Rank.Species, "Vampyroteuthis", "[[Carl Chun|Chun]], 1903");
@@ -56,7 +56,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 		doTest("Meghimatium", null, "Meghimatium", "Meghimatium fruhstorferi.JPG", "Meghimatium fruhstorferi", Rank.Genus, "Philomycidae", "");
 	}
 	public void testEriocranioidea() {
-		doTest("Eriocranioidea", null, "Eriocranioidea", "Eriocrania semipurpurella01.jpg", "Eriocrania semipurpurella", Rank.Familia, "Eriocranioidea", null);
+		doTest("Eriocranioidea", null, "Eriocranioidea", "Eriocrania semipurpurella01.jpg", "Eriocrania semipurpurella", Rank.Family, "Eriocranioidea", null);
 	}
 	public void testEmpidonax() {
 		doTest("Empidonax", null, "Empidonax", "Empidonax traillii.jpg", "Empidonax traillii extimus", Rank.Genus, "Tyrannidae", "[[Jean Cabanis|Cabanis]] 1855</small>");
@@ -71,7 +71,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 	// Serinus scotops - Forest Canary (Serinus scotops) facing left, side view.jpg
 
 	public void testRhinochimaeridae() {
-		doTest("Rhinochimaeridae", "Chimaeridae", "Rhinochimaeridae", "Harriotta raleighana (Narrownose chimaera).gif", "Harriotta raleighana", Rank.Familia, "Chimaeriformes", "");
+		doTest("Rhinochimaeridae", "Chimaeridae", "Rhinochimaeridae", "Harriotta raleighana (Narrownose chimaera).gif", "Harriotta raleighana", Rank.Family, "Chimaeriformes", "");
 	}
 	public void testSerinus_scotops() {
 		doTest("Serinus scotops", "Forest Canary", "Serinus scotops", "Forest Canary (Serinus scotops) facing left, side view.jpg", null, Rank.Species, "Serinus", "([[Carl Jakob Sundevall|Sundevall]], 1850)");
@@ -81,7 +81,7 @@ public class WikipediaTaxoboxParserTest extends TestCase {
 	}
 	
 	public void tests() {
-		doTest("Naticidae", "moon snails", "Naticidae", "hebraeus2.jpg", "Naticarius hebraeus", Rank.Familia, "Naticoidea", "[[Guilding]], 1834");
+		doTest("Naticidae", "moon snails", "Naticidae", "hebraeus2.jpg", "Naticarius hebraeus", Rank.Family, "Naticoidea", "[[Guilding]], 1834");
 		doTest("Forsterygion", null, "Forsterygion", "Fosterygion flavonigrum (Yellow & black triplefin).jpg", "Forsterygion flavonigrum", Rank.Genus, "Tripterygiidae", "Whitley & Phillipps , 1939");
 		doTest("Lampyris", "glowworms", "Lampyris", "Lampyris_noctiluca%2C_Nordisk_familjebok.png", "Lampyris noctiluca", Rank.Genus, "Lampyrini");
 		doTest("Ascaris", "giant intestinal roundworms", "Ascaris", "Ascaris lumbricoides.jpeg", null/*depict*/, Rank.Genus, "Ascarididae");

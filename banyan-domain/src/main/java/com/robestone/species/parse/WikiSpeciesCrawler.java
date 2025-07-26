@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -15,14 +16,17 @@ import com.robestone.species.Entry;
 import com.robestone.species.LogHelper;
 import com.robestone.species.Rank;
 import com.robestone.species.UpdateType;
+import com.robestone.species.WdImage;
+import com.robestone.species.WdTaxon;
 import com.robestone.species.js.RandomTreeBuilder;
 import com.robestone.util.html.EntityMapper;
 
 public class WikiSpeciesCrawler extends AbstractWorker {
 
 	public static void main(String[] args) throws Exception {
-		runArgs(args);
+//		runArgs(args);
 //		runRandomSeedList();
+		new WikiSpeciesCrawler().crawlWikiDataNewNames();
 	}
 	public static void runRandomSeedList()  throws Exception {
 		List<String> list = new RandomTreeBuilder().getListFromFile();
@@ -51,7 +55,7 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 		boolean crawlAllStoredLinks = false;
 		boolean argIsParentTree = !true;
 		boolean downstreamOnly = false;
-		boolean crawlOne = true; // to just "crawl" one only, otherwise, will crawl other links it finds too
+		boolean crawlOne = !true; // to just "crawl" one only, otherwise, will crawl other links it finds too
 		int distance = 2;
 		//*
 		args =  
@@ -89,6 +93,27 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	private RedirectPageParser redirectPageParser = new RedirectPageParser();
 	private int updatedCount = 0;
 	
+	public void crawlWikiDataNewNames() throws Exception {
+		WikiSpeciesCrawler crawler = new WikiSpeciesCrawler();
+		crawler.setForceNewDownloadForCache(forceNewDownloadForCache);
+		Map<String, WdTaxon> taxons = wikidataService.findAllTaxons();
+		for (WdTaxon wdTaxon : taxons.values()) {
+			
+			if (wdTaxon.getCommonName() == null) {
+				List<WdImage> images = wikidataService.findImagesForTaxon(wdTaxon.getQid());
+				if (images.isEmpty()) {
+					continue;
+				}
+			}
+			
+			Entry entry = speciesService.findEntryByLatinName(wdTaxon.getLatinName());
+			if (entry == null) {
+				ParseStatus ps = new ParseStatus();
+				ps.setUrl(wdTaxon.getLatinName());
+				crawler.crawlOne(ps, false);
+			}
+		}
+	}
 	
 	public void pushTree(String rootLatinName, int distance, boolean downstreamOnly) {
 		Set<String> names = speciesService.findLatinNamesInTree(rootLatinName, distance, downstreamOnly);
@@ -376,153 +401,5 @@ public class WikiSpeciesCrawler extends AbstractWorker {
 	}
 	
 	public static final String CRAWL_LIST = 
-  "Abantis venosa elegantula\r\n"
-  + "Acleros\r\n"
-  + "Agara draudti\r\n"
-  + "Agara pegasus\r\n"
-  + "Agara perissodra\r\n"
-  + "Agromyzidae\r\n"
-  + "Agyllia agylla bamptoni\r\n"
-  + "Agyllia kituina\r\n"
-  + "Ancyloxypha\r\n"
-  + "Artitropa erinnys\r\n"
-  + "Baracus hampsoni\r\n"
-  + "Barrolla barroni\r\n"
-  + "Borbo cinnara\r\n"
-  + "Borbo impar\r\n"
-  + "Borbo impar bipunctata\r\n"
-  + "Borbo impar impar\r\n"
-  + "Bowkeria phosphor\r\n"
-  + "Bowkeria phosphor borealis\r\n"
-  + "Bowkeria phosphor phosphor\r\n"
-  + "Bralus albida\r\n"
-  + "Bralus alco\r\n"
-  + "Burara etelka imperialis\r\n"
-  + "Caenides benga\r\n"
-  + "Caenides dacenilla\r\n"
-  + "Caenides hidaroides\r\n"
-  + "Caenides kangvensis\r\n"
-  + "Caenides soritia\r\n"
-  + "Caenides xychus\r\n"
-  + "Celaenorrhinus mokeezi\r\n"
-  + "Clito clito\r\n"
-  + "Coeliades anchises\r\n"
-  + "Coeliades anchises anchises\r\n"
-  + "Coeliades chalybe\r\n"
-  + "Coeliades chalybe chalybe\r\n"
-  + "Coeliades menelik\r\n"
-  + "Coeliades menelik menelik\r\n"
-  + "Coeliades menelik merua\r\n"
-  + "Coeliades rama\r\n"
-  + "Coeliades sejuncta\r\n"
-  + "Conga chydaea\r\n"
-  + "Cynea (Quinta)\r\n"
-  + "Daimio bhagava\r\n"
-  + "Dalla bubobon\r\n"
-  + "Damas (Hesperiidae)\r\n"
-  + "Daron seron\r\n"
-  + "Drephalys helixus\r\n"
-  + "Eagris tetrastigma\r\n"
-  + "Emmelus purpurascens\r\n"
-  + "Eogenes alcides\r\n"
-  + "Epargyreus deleoni\r\n"
-  + "Epargyreus spanna\r\n"
-  + "Epargyreus spina\r\n"
-  + "Epargyreus spina spina\r\n"
-  + "Epargyreus spinosa\r\n"
-  + "Ernsta confusa\r\n"
-  + "Eutus mubevensis\r\n"
-  + "Fulvatis fulvius\r\n"
-  + "Gorgyra aburae\r\n"
-  + "Gufa fusca\r\n"
-  + "Halpe zema\r\n"
-  + "Hesperia colorado hulbirti\r\n"
-  + "Heteropterus morpheus\r\n"
-  + "Holguinia holguin\r\n"
-  + "Hyarotis iadera\r\n"
-  + "Hylephila venustus\r\n"
-  + "Hypoleucis sophia\r\n"
-  + "Iolana iolas debilitata\r\n"
-  + "Iolana iolas khayyami\r\n"
-  + "Iolana iolas lessei\r\n"
-  + "Koruthaialos butleri\r\n"
-  + "Larsenia holtzi\r\n"
-  + "Lennia\r\n"
-  + "Lennia binoevatus\r\n"
-  + "Lennia lena\r\n"
-  + "Lennia maracanda\r\n"
-  + "Leona allyni\r\n"
-  + "Leona leonora\r\n"
-  + "Leona leonora leonora\r\n"
-  + "Lon hobomok\r\n"
-  + "Ludens\r\n"
-  + "Lurida lurida\r\n"
-  + "Marela tamyroides\r\n"
-  + "Matapa celsina\r\n"
-  + "Matapa cresta\r\n"
-  + "Megathynus coloradensis albasuffusa\r\n"
-  + "Melanis cinaron\r\n"
-  + "Melphinyet statirides\r\n"
-  + "Melphinyet tarace\r\n"
-  + "Metisella\r\n"
-  + "Metrocles briquenydan\r\n"
-  + "Metrocles devergens\r\n"
-  + "Metrocles hyboma\r\n"
-  + "Metrocles leucogaster\r\n"
-  + "Mnaseas\r\n"
-  + "Mnaseas evansi\r\n"
-  + "Mnaseas pandora\r\n"
-  + "Mooreana trichoneura\r\n"
-  + "Morvina morvus\r\n"
-  + "Nicephellus nicephorus\r\n"
-  + "Noxys viricuculla\r\n"
-  + "Oarisma powesheik\r\n"
-  + "Oenides vulpina\r\n"
-  + "Oligoria\r\n"
-  + "Oligoria rindgei\r\n"
-  + "Oxynthes trinka\r\n"
-  + "Paches gladiatus\r\n"
-  + "Paratrytone samenta\r\n"
-  + "Pardaleodes\r\n"
-  + "Pedesta masuriensis\r\n"
-  + "Pelopidas assamensis\r\n"
-  + "Phanes monastica\r\n"
-  + "Pheraeus montes\r\n"
-  + "Phocides\r\n"
-  + "Polites sonora\r\n"
-  + "Polygonus savigny punctus\r\n"
-  + "Potanthus rectifasciata\r\n"
-  + "Pseudoborbo bevani\r\n"
-  + "Psolos fuligo\r\n"
-  + "Psolos fuligo fuligo\r\n"
-  + "Psoralis\r\n"
-  + "Psoralis visendus\r\n"
-  + "Pyrgus malvae\r\n"
-  + "Quasimellana balsa\r\n"
-  + "Rhinthon osca\r\n"
-  + "Rhomba gertschi\r\n"
-  + "Santa trifasciatus\r\n"
-  + "Spialia phlomidis\r\n"
-  + "Spioniades abbreviata\r\n"
-  + "Staphylus huigra\r\n"
-  + "Staphylus iguala\r\n"
-  + "Staphylus imperspicua\r\n"
-  + "Staphylus menuda\r\n"
-  + "Tagiades japetus\r\n"
-  + "Tekliades ramanatek\r\n"
-  + "Tekliades ramanatek comorana\r\n"
-  + "Tekliades ramanatek ramanatek\r\n"
-  + "Telemiades contra\r\n"
-  + "Theagenes\r\n"
-  + "Thoressa bivitta\r\n"
-  + "Udaspes folus\r\n"
-  + "Venada advena\r\n"
-  + "Viuria herophile\r\n"
-  + "Xanthonymus xanthioides\r\n"
-  + "Xeniades pteras\r\n"
-  + "Xeniades rara\r\n"
-  + "Zeutus zeutus\r\n"
-  + "Zographetus ogygia\r\n"
-  + "Zographetus satwa\r\n"
-  + "rhagoletis pomonella";
+  "Ipomoea";
 }
