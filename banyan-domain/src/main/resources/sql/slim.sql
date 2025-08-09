@@ -22,4 +22,4 @@ delete from species where boring_final = true and id >= 600000 and id < 650000;
 drop table crawl;
 drop table redirect;
 
-call SYSCS_UTIL.SYSCS_COMPRESS_TABLE('APP', 'SPECIES', 1);
+-- call SYSCS_UTIL.SYSCS_COMPRESS_TABLE('APP', 'SPECIES', 1);
